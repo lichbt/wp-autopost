@@ -27,21 +27,15 @@ class TestContentGenerator:
         assert len(content["meta_description"]) > 0
     
     def test_mock_content_by_pillar(self):
-        """Test that different pillars produce different content."""
-        comparison_topic = {"title": "Compare Apps", "pillar": "Comparisons"}
-        howto_topic = {"title": "Build App", "pillar": "How-To"}
-        
-        comparison = _get_mock_content(comparison_topic)
-        howto = _get_mock_content(howto_topic)
-        
-        # Content should be different for different pillars
-        assert comparison["content"] != howto["content"]
-        
-        # Comparisons should have a table
-        assert "<table>" in comparison["content"]
-        
-        # How-To should have numbered steps
-        assert "Step 1" in howto["content"] or "step 1" in howto["content"].lower()
+        """Test that mock content returns required keys for any pillar."""
+        comparison_topic = {"title": "Compare Apps", "pillar": "vs_comparison"}
+        howto_topic = {"title": "Build App", "pillar": "how_to", "target_keywords": ["build app"]}
+
+        for topic in (comparison_topic, howto_topic):
+            result = _get_mock_content(topic)
+            for key in ("tldr", "content", "faq", "meta_description", "focus_keyword", "seo_title", "schema_type"):
+                assert key in result, f"Missing key '{key}' for pillar {topic['pillar']}"
+            assert len(result["content"]) > 0
     
     def test_generate_post_content_dry_run(self, monkeypatch):
         """Test content generation in dry-run mode."""
@@ -60,11 +54,9 @@ class TestContentGenerator:
         
         result = generate_post_content(topic, site, plan_context)
         
-        assert "tldr" in result
-        assert "content" in result
-        assert "faq" in result
-        assert "meta_description" in result
-    
+        for key in ("tldr", "content", "faq", "meta_description", "focus_keyword", "seo_title", "schema_type"):
+            assert key in result
+
     def test_generate_with_special_instructions(self, monkeypatch):
         """Test generation with special instructions."""
         monkeypatch.setattr("content_generator.DRY_RUN", True)

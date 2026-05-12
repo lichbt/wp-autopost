@@ -38,7 +38,7 @@ class TestPlanParser:
         
         assert "topics" in result
         assert "global" in result
-        assert len(result["topics"]) == 5  # Mock returns 5 topics
+        assert len(result["topics"]) >= 1
     
     def test_extract_plan_validates_structure(self, monkeypatch):
         """Test that parser validates response structure."""

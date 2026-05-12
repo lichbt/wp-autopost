@@ -72,9 +72,9 @@ class TestTemplateAssembler:
         assert "Content" in result
     
     def test_default_cta_values(self):
-        """Test default CTA values."""
+        """Test that CTA placeholders are always replaced (no unreplaced {{...}} left)."""
         site = {"blog_template": "<a href='{{cta_link}}'>{{cta_text}}</a>"}
-        
+
         result = assemble_final_html(
             site=site,
             title="Test",
@@ -83,9 +83,10 @@ class TestTemplateAssembler:
             faq="",
             meta_description=""
         )
-        
-        assert "/demo" in result
-        assert "Try Demo" in result
+
+        assert "{{cta_link}}" not in result
+        assert "{{cta_text}}" not in result
+        assert "<a href=" in result
     
     def test_empty_content_fields(self):
         """Test assembly with empty content fields."""

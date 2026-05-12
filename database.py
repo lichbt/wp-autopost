@@ -1,50 +1,44 @@
 import sqlite3
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from cryptography.fernet import Fernet
 from config import DB_FULL_PATH, ENCRYPTION_KEY, ensure_directories
 from logger import logger
 
-# Singleton connection for in-memory databases (for testing)
 _memory_conn = None
 
 
-# Encryption setup
+# ── Encryption ────────────────────────────────────────────────────────────────
+
 def _get_cipher() -> Fernet:
-    """Get Fernet cipher instance from environment key."""
     if not ENCRYPTION_KEY:
-        raise ValueError("ENCRYPTION_KEY not set in environment. Run: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"")
+        raise ValueError(
+            "ENCRYPTION_KEY not set. Run: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+        )
     return Fernet(ENCRYPTION_KEY.encode())
 
 
 def encrypt_password(password: str) -> str:
-    """Encrypt a password for storage."""
-    cipher = _get_cipher()
-    return cipher.encrypt(password.encode()).decode()
+    return _get_cipher().encrypt(password.encode()).decode()
 
 
 def decrypt_password(encrypted_password: str) -> str:
-    """Decrypt a stored password."""
-    cipher = _get_cipher()
-    return cipher.decrypt(encrypted_password.encode()).decode()
+    return _get_cipher().decrypt(encrypted_password.encode()).decode()
 
+
+# ── Connection ────────────────────────────────────────────────────────────────
 
 def get_db_connection() -> sqlite3.Connection:
-    """Get a database connection with Row factory for dict-like access."""
     global _memory_conn
-    
     db_path = str(DB_FULL_PATH)
-    
-    # For in-memory databases, reuse the same connection
     if db_path == ":memory:":
         if _memory_conn is None:
             _memory_conn = sqlite3.connect(":memory:")
             _memory_conn.row_factory = sqlite3.Row
             _memory_conn.execute("PRAGMA foreign_keys = ON")
         return _memory_conn
-    
     ensure_directories()
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -53,19 +47,19 @@ def get_db_connection() -> sqlite3.Connection:
 
 
 def reset_memory_db():
-    """Reset the in-memory database connection (for testing)."""
     global _memory_conn
     if _memory_conn:
         _memory_conn.close()
         _memory_conn = None
 
 
+# ── Schema ────────────────────────────────────────────────────────────────────
+
 def init_db():
-    """Initialize database tables if they don't exist."""
+    """Initialize all database tables."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Sites table
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS sites (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,11 +71,12 @@ def init_db():
             default_category INTEGER DEFAULT 1,
             default_author INTEGER DEFAULT 1,
             posts_per_day INTEGER DEFAULT 2,
+            gsc_url TEXT,
+            ga4_property_id TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
-    # Plans table
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS plans (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,8 +87,7 @@ def init_db():
             FOREIGN KEY (site_id) REFERENCES sites(id)
         )
     """)
-    
-    # Topics table
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS topics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,6 +108,9 @@ def init_db():
             generated_body TEXT,
             generated_faq TEXT,
             generated_meta_description TEXT,
+            generated_focus_keyword TEXT,
+            generated_seo_title TEXT,
+            generated_schema_type TEXT,
             final_html TEXT,
             attempts INTEGER DEFAULT 0,
             last_error TEXT,
@@ -123,8 +120,7 @@ def init_db():
             FOREIGN KEY (plan_id) REFERENCES plans(id)
         )
     """)
-    
-    # Post log table
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS post_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,13 +131,102 @@ def init_db():
             FOREIGN KEY (topic_id) REFERENCES topics(id)
         )
     """)
-    
+
+    # Google Search Console data
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS gsc_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            site_id INTEGER NOT NULL,
+            fetched_date DATE NOT NULL,
+            query TEXT NOT NULL,
+            page TEXT,
+            clicks INTEGER DEFAULT 0,
+            impressions INTEGER DEFAULT 0,
+            ctr REAL DEFAULT 0,
+            position REAL DEFAULT 0,
+            FOREIGN KEY (site_id) REFERENCES sites(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_gsc_site_date ON gsc_data(site_id, fetched_date)
+    """)
+
+    # Google Analytics 4 data
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ga4_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            site_id INTEGER NOT NULL,
+            fetched_date DATE NOT NULL,
+            page_path TEXT NOT NULL,
+            sessions INTEGER DEFAULT 0,
+            pageviews INTEGER DEFAULT 0,
+            bounce_rate REAL DEFAULT 0,
+            avg_session_duration REAL DEFAULT 0,
+            new_users INTEGER DEFAULT 0,
+            FOREIGN KEY (site_id) REFERENCES sites(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_ga4_site_date ON ga4_data(site_id, fetched_date)
+    """)
+
+    # GEO sightings — when your content appears in an AI answer
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS geo_sightings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            site_id INTEGER NOT NULL,
+            query TEXT NOT NULL,
+            url TEXT NOT NULL,
+            source TEXT NOT NULL CHECK(source IN ('chatgpt','perplexity','gemini','claude','copilot','other')),
+            spotted_at DATE NOT NULL,
+            notes TEXT,
+            pillar TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (site_id) REFERENCES sites(id)
+        )
+    """)
+
     conn.commit()
     conn.close()
+
+    # Run migrations to add new columns to existing tables
+    _run_migrations()
+
     logger.info("Database initialized successfully")
 
 
-# ==================== Sites CRUD ====================
+def _run_migrations():
+    """Add new columns to existing tables if they don't exist (safe for existing DBs)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    new_site_cols = [
+        ("gsc_url", "TEXT"),
+        ("ga4_property_id", "TEXT"),
+    ]
+    new_topic_cols = [
+        ("generated_focus_keyword", "TEXT"),
+        ("generated_seo_title", "TEXT"),
+        ("generated_schema_type", "TEXT"),
+    ]
+
+    for col, col_type in new_site_cols:
+        try:
+            cursor.execute(f"ALTER TABLE sites ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass  # column already exists
+
+    for col, col_type in new_topic_cols:
+        try:
+            cursor.execute(f"ALTER TABLE topics ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+    conn.close()
+
+
+# ── Sites CRUD ────────────────────────────────────────────────────────────────
 
 def add_site(
     name: str,
@@ -151,21 +236,19 @@ def add_site(
     blog_template: str,
     default_category: int = 1,
     default_author: int = 1,
-    posts_per_day: int = 2
+    posts_per_day: int = 2,
+    gsc_url: str = "",
+    ga4_property_id: str = "",
 ) -> int:
-    """Add a new site and return its ID. Encrypts the WP password."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     encrypted_pw = encrypt_password(wp_app_password)
-    
     cursor.execute("""
         INSERT INTO sites (name, wp_url, wp_username, wp_app_password, blog_template,
-                          default_category, default_author, posts_per_day)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                          default_category, default_author, posts_per_day, gsc_url, ga4_property_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (name, wp_url, wp_username, encrypted_pw, blog_template,
-          default_category, default_author, posts_per_day))
-    
+          default_category, default_author, posts_per_day, gsc_url, ga4_property_id))
     site_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -174,47 +257,49 @@ def add_site(
 
 
 def get_site(site_id: int) -> Optional[Dict]:
-    """Get site by ID with decrypted password."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM sites WHERE id = ?", (site_id,))
     row = cursor.fetchone()
     conn.close()
-    
     if row is None:
         return None
-    
     site = dict(row)
-    # Decrypt password for use
     site["wp_app_password"] = decrypt_password(site["wp_app_password"])
     return site
 
 
 def list_sites() -> List[Dict]:
-    """List all sites (without decrypted passwords)."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT id, name, wp_url, wp_username, default_category, posts_per_day FROM sites")
+    cursor.execute(
+        "SELECT id, name, wp_url, wp_username, default_category, posts_per_day, gsc_url, ga4_property_id FROM sites"
+    )
     rows = cursor.fetchall()
     conn.close()
-    
     return [dict(row) for row in rows]
 
 
-# ==================== Plans CRUD ====================
-
-def add_plan(site_id: int, raw_markdown: str, extracted_json: str = None) -> int:
-    """Add a new plan and return its ID."""
+def update_site_google_config(site_id: int, gsc_url: str, ga4_property_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute("""
-        INSERT INTO plans (site_id, raw_markdown, extracted_json)
-        VALUES (?, ?, ?)
-    """, (site_id, raw_markdown, extracted_json))
-    
+    cursor.execute(
+        "UPDATE sites SET gsc_url = ?, ga4_property_id = ? WHERE id = ?",
+        (gsc_url, ga4_property_id, site_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+# ── Plans CRUD ────────────────────────────────────────────────────────────────
+
+def add_plan(site_id: int, raw_markdown: str, extracted_json: str = None) -> int:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO plans (site_id, raw_markdown, extracted_json) VALUES (?, ?, ?)",
+        (site_id, raw_markdown, extracted_json),
+    )
     plan_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -223,71 +308,47 @@ def add_plan(site_id: int, raw_markdown: str, extracted_json: str = None) -> int
 
 
 def get_plan(plan_id: int) -> Optional[Dict]:
-    """Get plan by ID."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM plans WHERE id = ?", (plan_id,))
     row = cursor.fetchone()
     conn.close()
-    
     return dict(row) if row else None
 
 
 def get_plan_by_site(site_id: int) -> Optional[Dict]:
-    """Get the latest plan for a site."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT * FROM plans WHERE site_id = ? ORDER BY created_at DESC LIMIT 1", (site_id,))
+    cursor.execute(
+        "SELECT * FROM plans WHERE site_id = ? ORDER BY created_at DESC LIMIT 1",
+        (site_id,),
+    )
     row = cursor.fetchone()
     conn.close()
-    
     return dict(row) if row else None
 
 
-# ==================== Topics CRUD ====================
+# ── Topics CRUD ───────────────────────────────────────────────────────────────
 
 def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List[int]:
-    """
-    Bulk insert topics from parsed plan data.
-    
-    Args:
-        site_id: Site ID
-        plan_id: Plan ID
-        topics_list: List of topic dicts from plan parser
-    
-    Returns:
-        List of inserted topic IDs
-    """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     topic_ids = []
     for topic in topics_list:
-        # Convert lists to JSON strings for storage
         target_keywords = json.dumps(topic.get("target_keywords", []))
         internal_links = json.dumps(topic.get("internal_links", []))
-        
         cursor.execute("""
             INSERT INTO topics (site_id, plan_id, title, slug, pillar, priority, intent,
                               target_keywords, internal_links, special_instructions, scheduled_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            site_id,
-            plan_id,
-            topic.get("title"),
-            topic.get("slug"),
-            topic.get("pillar"),
-            topic.get("priority", "medium"),
-            topic.get("intent", "informational"),
-            target_keywords,
-            internal_links,
-            topic.get("special_instructions"),
-            topic.get("scheduled_date")
+            site_id, plan_id,
+            topic.get("title"), topic.get("slug"), topic.get("pillar"),
+            topic.get("priority", "medium"), topic.get("intent", "informational"),
+            target_keywords, internal_links,
+            topic.get("special_instructions"), topic.get("scheduled_date"),
         ))
         topic_ids.append(cursor.lastrowid)
-    
     conn.commit()
     conn.close()
     logger.info(f"Added {len(topic_ids)} topics for plan {plan_id}")
@@ -295,17 +356,11 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
 
 
 def get_pending_topics(site_id: int, limit: int = 10) -> List[Dict]:
-    """
-    Get pending topics that are due for processing.
-    
-    Ordered by priority (high first), then scheduled_date (NULL first).
-    Only returns topics where scheduled_date <= today or is NULL.
-    """
+    """Return pending topics due today, ordered by GEO-priority pillar then DB priority."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     today = date.today().isoformat()
-    
+    # GEO-high-value pillars (vs_comparison, best_of, buyer_guide) published first
     cursor.execute("""
         SELECT t.*, p.extracted_json as plan_json
         FROM topics t
@@ -313,84 +368,99 @@ def get_pending_topics(site_id: int, limit: int = 10) -> List[Dict]:
         WHERE t.site_id = ?
           AND t.status = 'pending'
           AND (t.scheduled_date IS NULL OR t.scheduled_date <= ?)
-        ORDER BY 
-            CASE t.priority 
-                WHEN 'high' THEN 1 
-                WHEN 'medium' THEN 2 
-                WHEN 'low' THEN 3 
+        ORDER BY
+            CASE t.pillar
+                WHEN 'vs_comparison'  THEN 1
+                WHEN 'best_of'        THEN 2
+                WHEN 'buyer_guide'    THEN 3
+                WHEN 'setup_tutorial' THEN 4
+                WHEN 'how_to'         THEN 4
+                WHEN 'feature_explainer' THEN 5
+                WHEN 'use_case'       THEN 6
+                ELSE 7
+            END,
+            CASE t.priority
+                WHEN 'high'   THEN 1
+                WHEN 'medium' THEN 2
+                WHEN 'low'    THEN 3
             END,
             t.scheduled_date IS NOT NULL,
             t.scheduled_date
         LIMIT ?
     """, (site_id, today, limit))
-    
     rows = cursor.fetchall()
     conn.close()
-    
     topics = []
     for row in rows:
         topic = dict(row)
-        # Parse JSON fields
         topic["target_keywords"] = json.loads(topic.get("target_keywords") or "[]")
         topic["internal_links"] = json.loads(topic.get("internal_links") or "[]")
-        # Parse plan context if available
-        if topic.get("plan_json"):
-            topic["plan_context"] = json.loads(topic["plan_json"])
-        else:
-            topic["plan_context"] = {}
+        topic["plan_context"] = json.loads(topic["plan_json"]) if topic.get("plan_json") else {}
         topics.append(topic)
-    
     return topics
 
 
-def update_topic_status(topic_id: int, status: str, **kwargs):
-    """
-    Update topic status and optional fields.
-    
-    Args:
-        topic_id: Topic ID
-        status: New status value
-        **kwargs: Additional fields to update (wp_post_id, final_html, generated_tldr, etc.)
-    """
+def get_stale_topics_for_refresh(site_id: int, days_old: int = 90) -> List[Dict]:
+    """Return published/draft topics older than days_old with avg GSC position > 20."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Build dynamic update query
+    cutoff = (date.today() - timedelta(days=days_old)).isoformat()
+    cursor.execute("""
+        SELECT t.*,
+               AVG(g.position) as avg_position,
+               SUM(g.impressions) as total_impressions
+        FROM topics t
+        LEFT JOIN gsc_data g ON g.site_id = t.site_id
+            AND g.page LIKE '%' || COALESCE(t.slug, '') || '%'
+        WHERE t.site_id = ?
+          AND t.status IN ('draft', 'published')
+          AND DATE(t.updated_at) <= ?
+        GROUP BY t.id
+        HAVING (avg_position IS NULL OR avg_position > 20)
+           AND (total_impressions IS NULL OR total_impressions > 0)
+        ORDER BY total_impressions DESC
+        LIMIT 5
+    """, (site_id, cutoff))
+    rows = cursor.fetchall()
+    conn.close()
+    result = []
+    for row in rows:
+        t = dict(row)
+        t["target_keywords"] = json.loads(t.get("target_keywords") or "[]")
+        t["internal_links"] = json.loads(t.get("internal_links") or "[]")
+        result.append(t)
+    return result
+
+
+def update_topic_status(topic_id: int, status: str, **kwargs):
+    conn = get_db_connection()
+    cursor = conn.cursor()
     allowed_fields = {
         "wp_post_id", "generated_tldr", "generated_body", "generated_faq",
-        "generated_meta_description", "final_html", "last_error", "attempts",
-        "slug"
+        "generated_meta_description", "generated_focus_keyword", "generated_seo_title",
+        "generated_schema_type", "final_html", "last_error", "attempts", "slug",
     }
-    
     updates = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
     params = [status]
-    
     for key, value in kwargs.items():
         if key in allowed_fields:
             updates.append(f"{key} = ?")
             params.append(value)
-    
-    query = f"UPDATE topics SET {', '.join(updates)} WHERE id = ?"
     params.append(topic_id)
-    
-    cursor.execute(query, params)
+    cursor.execute(f"UPDATE topics SET {', '.join(updates)} WHERE id = ?", params)
     conn.commit()
     conn.close()
     logger.info(f"Topic {topic_id} updated: status={status}")
 
 
 def get_topic(topic_id: int) -> Optional[Dict]:
-    """Get a single topic by ID."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM topics WHERE id = ?", (topic_id,))
     row = cursor.fetchone()
     conn.close()
-    
     if row is None:
         return None
-    
     topic = dict(row)
     topic["target_keywords"] = json.loads(topic.get("target_keywords") or "[]")
     topic["internal_links"] = json.loads(topic.get("internal_links") or "[]")
@@ -398,61 +468,228 @@ def get_topic(topic_id: int) -> Optional[Dict]:
 
 
 def get_topics_by_plan(plan_id: int) -> List[Dict]:
-    """Get all topics for a plan."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM topics WHERE plan_id = ? ORDER BY id", (plan_id,))
     rows = cursor.fetchall()
     conn.close()
-    
     return [dict(row) for row in rows]
 
 
-def count_published_today(site_id: int) -> int:
-    """Count how many topics were published today for a site."""
+def get_topics_summary(site_id: int) -> List[Dict]:
+    """Lightweight summary of all topics for context building."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    today = date.today().isoformat()
-    
     cursor.execute("""
-        SELECT COUNT(*) as count 
-        FROM topics 
-        WHERE site_id = ? 
-          AND status = 'published'
-          AND DATE(updated_at) = ?
+        SELECT title, pillar, status, intent, target_keywords, scheduled_date, created_at
+        FROM topics
+        WHERE site_id = ?
+        ORDER BY created_at DESC
+        LIMIT 200
+    """, (site_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    result = []
+    for row in rows:
+        t = dict(row)
+        t["target_keywords"] = json.loads(t.get("target_keywords") or "[]")
+        result.append(t)
+    return result
+
+
+def count_published_today(site_id: int) -> int:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    today = date.today().isoformat()
+    cursor.execute("""
+        SELECT COUNT(*) as count FROM topics
+        WHERE site_id = ? AND status IN ('draft','published') AND DATE(updated_at) = ?
     """, (site_id, today))
-    
     row = cursor.fetchone()
     conn.close()
-    
     return row["count"] if row else 0
 
 
-# ==================== Post Log CRUD ====================
+# ── Post Log ──────────────────────────────────────────────────────────────────
 
 def log_action(topic_id: int, action: str, details: str = None):
-    """Log an action for a topic."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute("""
-        INSERT INTO post_log (topic_id, action, details)
-        VALUES (?, ?, ?)
-    """, (topic_id, action, details))
-    
+    cursor.execute(
+        "INSERT INTO post_log (topic_id, action, details) VALUES (?, ?, ?)",
+        (topic_id, action, details),
+    )
     conn.commit()
     conn.close()
 
 
 def get_topic_logs(topic_id: int) -> List[Dict]:
-    """Get all log entries for a topic."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM post_log WHERE topic_id = ? ORDER BY created_at", (topic_id,))
     rows = cursor.fetchall()
     conn.close()
-    
     return [dict(row) for row in rows]
+
+
+# ── GSC / GA4 data ────────────────────────────────────────────────────────────
+
+def upsert_gsc_data(site_id: int, fetched_date: str, rows: List[Dict]):
+    """Replace GSC data for a given fetch date."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM gsc_data WHERE site_id = ? AND fetched_date = ?",
+        (site_id, fetched_date),
+    )
+    for row in rows:
+        cursor.execute("""
+            INSERT INTO gsc_data (site_id, fetched_date, query, page, clicks, impressions, ctr, position)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            site_id, fetched_date,
+            row.get("query", ""), row.get("page", ""),
+            row.get("clicks", 0), row.get("impressions", 0),
+            row.get("ctr", 0.0), row.get("position", 0.0),
+        ))
+    conn.commit()
+    conn.close()
+    logger.info(f"Stored {len(rows)} GSC rows for site {site_id} ({fetched_date})")
+
+
+def upsert_ga4_data(site_id: int, fetched_date: str, rows: List[Dict]):
+    """Replace GA4 data for a given fetch date."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM ga4_data WHERE site_id = ? AND fetched_date = ?",
+        (site_id, fetched_date),
+    )
+    for row in rows:
+        cursor.execute("""
+            INSERT INTO ga4_data (site_id, fetched_date, page_path, sessions, pageviews,
+                                  bounce_rate, avg_session_duration, new_users)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            site_id, fetched_date,
+            row.get("page_path", ""),
+            row.get("sessions", 0), row.get("pageviews", 0),
+            row.get("bounce_rate", 0.0), row.get("avg_session_duration", 0.0),
+            row.get("new_users", 0),
+        ))
+    conn.commit()
+    conn.close()
+    logger.info(f"Stored {len(rows)} GA4 rows for site {site_id} ({fetched_date})")
+
+
+def get_gsc_summary(site_id: int, days: int = 30) -> Dict:
+    """Return aggregated GSC data for the last N days."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+
+    cursor.execute("""
+        SELECT query, page,
+               SUM(clicks) as clicks, SUM(impressions) as impressions,
+               AVG(ctr) as avg_ctr, AVG(position) as avg_position
+        FROM gsc_data
+        WHERE site_id = ? AND fetched_date >= ?
+        GROUP BY query, page
+        ORDER BY impressions DESC
+        LIMIT 200
+    """, (site_id, cutoff))
+    rows = [dict(r) for r in cursor.fetchall()]
+
+    # Top queries, low-CTR opportunities, top pages
+    top_queries = rows[:20]
+    low_ctr = [r for r in rows if r["avg_ctr"] < 0.03 and r["impressions"] > 50][:10]
+
+    cursor.execute("""
+        SELECT page, SUM(clicks) as clicks, SUM(impressions) as impressions, AVG(position) as avg_position
+        FROM gsc_data
+        WHERE site_id = ? AND fetched_date >= ?
+        GROUP BY page
+        ORDER BY clicks DESC
+        LIMIT 20
+    """, (site_id, cutoff))
+    top_pages = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return {
+        "top_queries": top_queries,
+        "low_ctr_opportunities": low_ctr,
+        "top_pages": top_pages,
+        "total_rows": len(rows),
+    }
+
+
+def get_ga4_summary(site_id: int, days: int = 30) -> Dict:
+    """Return aggregated GA4 data for the last N days."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    cursor.execute("""
+        SELECT page_path,
+               SUM(sessions) as sessions, SUM(pageviews) as pageviews,
+               AVG(bounce_rate) as avg_bounce_rate,
+               AVG(avg_session_duration) as avg_duration,
+               SUM(new_users) as new_users
+        FROM ga4_data
+        WHERE site_id = ? AND fetched_date >= ?
+        GROUP BY page_path
+        ORDER BY sessions DESC
+        LIMIT 30
+    """, (site_id, cutoff))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return {"top_pages": rows}
+
+
+# ── GEO Sightings ─────────────────────────────────────────────────────────────
+
+def add_geo_sighting(
+    site_id: int, query: str, url: str, source: str,
+    spotted_at: str, notes: str = "", pillar: str = ""
+) -> int:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO geo_sightings (site_id, query, url, source, spotted_at, notes, pillar)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (site_id, query, url, source, spotted_at, notes, pillar))
+    sighting_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    logger.info(f"GEO sighting logged: {source} cited {url}")
+    return sighting_id
+
+
+def get_geo_sightings(site_id: int) -> List[Dict]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * FROM geo_sightings WHERE site_id = ? ORDER BY spotted_at DESC
+    """, (site_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_geo_stats(site_id: int) -> Dict:
+    """Aggregate GEO sightings by source and pillar."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT source, COUNT(*) as count FROM geo_sightings
+        WHERE site_id = ? GROUP BY source ORDER BY count DESC
+    """, (site_id,))
+    by_source = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT pillar, COUNT(*) as count FROM geo_sightings
+        WHERE site_id = ? AND pillar != '' GROUP BY pillar ORDER BY count DESC
+    """, (site_id,))
+    by_pillar = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return {"by_source": by_source, "by_pillar": by_pillar}
