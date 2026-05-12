@@ -27,6 +27,10 @@ LLM_MODEL = os.getenv("LLM_MODEL", "") or os.getenv("OPENROUTER_MODEL", "") or "
 DRY_RUN = os.getenv("DRY_RUN", "false").lower() == "true" or (not ANTHROPIC_API_KEY and not LLM_API_KEY)
 
 # ── Google APIs ───────────────────────────────────────────────────────────────
+# Option A (recommended): OAuth — authenticates as your own Google account
+GOOGLE_OAUTH_CLIENT = os.getenv("GOOGLE_OAUTH_CLIENT", "credentials/oauth_client.json")
+GOOGLE_TOKEN_FILE = os.getenv("GOOGLE_TOKEN_FILE", "credentials/google_token.json")
+# Option B: Service account (requires adding email to GSC/GA4 as user — often blocked)
 GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 GSC_DAYS_LOOKBACK = int(os.getenv("GSC_DAYS_LOOKBACK", "90"))
 

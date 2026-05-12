@@ -1023,3 +1023,105 @@
 [2026-05-12 09:20:32] INFO: Assembled HTML (8 chars)
 [2026-05-12 09:20:32] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
 [2026-05-12 09:20:32] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Compare Apps
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Build App
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Test Topic
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Custom Topic
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Site added: Test Blog (ID: 106)
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Site added: My Blog (ID: 107)
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Site added: Site A (ID: 108)
+[2026-05-12 15:03:41] INFO: Site added: Site B (ID: 109)
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Plan added for site 110 (ID: 78)
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Plan added for site 111 (ID: 79)
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 80
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Plan added for site 113 (ID: 81)
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 81
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 82
+[2026-05-12 15:03:41] INFO: Topic 131 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 83
+[2026-05-12 15:03:41] INFO: Topic 133 updated: status=published
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 84
+[2026-05-12 15:03:41] INFO: [DRY RUN] Returning mock parsed plan
+[2026-05-12 15:03:41] INFO: [DRY RUN] Returning mock parsed plan
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 85
+[2026-05-12 15:03:41] INFO: Site 117: 2 slot(s) remaining today
+[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
+[2026-05-12 15:03:41] INFO: Processing topic 137: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 137 updated: status=pending
+[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 137 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
+[2026-05-12 15:03:41] INFO: Topic 137 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
+[2026-05-12 15:03:41] INFO: Topic 137 updated: status=draft
+[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 86
+[2026-05-12 15:03:41] INFO: Site 118: 2 slot(s) remaining today
+[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
+[2026-05-12 15:03:41] INFO: Processing topic 139: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 139 updated: status=pending
+[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 139 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
+[2026-05-12 15:03:41] INFO: Topic 139 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
+[2026-05-12 15:03:41] INFO: Topic 139 updated: status=draft
+[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
+[2026-05-12 15:03:41] INFO: Site 118: 1 slot(s) remaining today
+[2026-05-12 15:03:41] INFO: No pending topics due for site 118
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 87
+[2026-05-12 15:03:41] INFO: Site 119: 2 slot(s) remaining today
+[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
+[2026-05-12 15:03:41] INFO: Processing topic 141: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 141 updated: status=pending
+[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 141 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
+[2026-05-12 15:03:41] INFO: Topic 141 updated: status=content_generated
+[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
+[2026-05-12 15:03:41] INFO: Topic 141 updated: status=draft
+[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
+[2026-05-12 15:03:41] INFO: Database initialized successfully
+[2026-05-12 15:03:41] INFO: Added 2 topics for plan 88
+[2026-05-12 15:03:41] INFO: Site 120: 2 slot(s) remaining today
+[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
+[2026-05-12 15:03:41] INFO: Processing topic 143: Best Dating Apps in 2026
+[2026-05-12 15:03:41] INFO: Topic 143 updated: status=pending
+[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
+[2026-05-12 15:03:41] ERROR: Topic 143 failed: LLM API Error
+[2026-05-12 15:03:41] INFO: Topic 143 updated: status=pending
+[2026-05-12 15:03:41] INFO: Cycle complete: 0/1 topics processed
+[2026-05-12 15:03:41] INFO: Assembled HTML (196 chars)
+[2026-05-12 15:03:41] INFO: Assembled HTML (65 chars)
+[2026-05-12 15:03:41] WARNING: Site has no blog template — using minimal default
+[2026-05-12 15:03:41] INFO: Assembled HTML (229 chars)
+[2026-05-12 15:03:41] INFO: Assembled HTML (26 chars)
+[2026-05-12 15:03:41] INFO: Assembled HTML (8 chars)
+[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
+[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
