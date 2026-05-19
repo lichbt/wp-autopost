@@ -43,16 +43,15 @@ def _parse_faq_items(faq_html: str) -> list:
 
 def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html: str) -> str:
     """
-    Build JSON-LD structured data block(s) for GEO + rich results.
+    Build JSON-LD structured data block for GEO + rich results.
 
     Wrapped in Gutenberg <!-- wp:html --> block so WordPress does NOT apply
     wptexturize / wpautop filters that would mangle the JSON (converting " to
     curly quotes or wrapping in <p> tags, both of which break JSON parsing).
 
-    Always outputs an Article (or HowTo/FAQPage) block.
-    When the post has FAQ content AND is not already FAQPage type, also
-    outputs a separate FAQPage block — this gives Google FAQ rich results
-    even if Yoast's global schema type is misconfigured.
+    Emits ONE schema block only (Article, TechArticle, or HowTo).
+    FAQPage schema is handled exclusively by template_assembler.py via the
+    {{faq_schema}} placeholder — do NOT emit it here to avoid duplicates.
     """
     today = __import__("datetime").date.today().isoformat()
     clean_title = _strip_html_entities(title)
@@ -60,16 +59,7 @@ def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html
 
     blocks = []
 
-    if schema_type in ("FAQPage", "faq"):
-        entities = _parse_faq_items(faq_html)
-        schema = {
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": entities,
-        }
-        blocks.append(schema)
-
-    elif schema_type == "HowTo":
+    if schema_type == "HowTo":
         schema = {
             "@context": "https://schema.org",
             "@type": "HowTo",
@@ -80,7 +70,8 @@ def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html
         blocks.append(schema)
 
     else:
-        # Article or TechArticle — always the primary schema
+        # Article or TechArticle — the primary schema
+        # FAQPage is emitted separately by template_assembler; skip it here.
         article_type = "TechArticle" if schema_type == "TechArticle" else "Article"
         schema = {
             "@context": "https://schema.org",
@@ -91,17 +82,6 @@ def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html
             "dateModified": today,
         }
         blocks.append(schema)
-
-        # Also emit a valid FAQPage block if FAQ content exists.
-        # Gives Google FAQ rich results in SERPs (expandable Q&A in search).
-        faq_entities = _parse_faq_items(faq_html)
-        if faq_entities:
-            faq_schema = {
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
-                "mainEntity": faq_entities,
-            }
-            blocks.append(faq_schema)
 
     def _wrap(schema: dict) -> str:
         json_str = json.dumps(schema, indent=2, ensure_ascii=False)
