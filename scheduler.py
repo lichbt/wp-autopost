@@ -121,6 +121,23 @@ def run_automation_cycle(site_id: int) -> int:
             
             update_topic_status(topic_id, "content_generated", final_html=final_html)
             
+            # Map pillar → schema type
+            _PILLAR_SCHEMA = {
+                "how_to": "HowTo",
+                "how-to": "HowTo",
+                "setup_tutorial": "HowTo",
+                "definition": "Article",
+                "definitions": "Article",
+                "vs_comparison": "Article",
+                "best_of": "Article",
+                "buyer_guide": "Article",
+                "feature_explainer": "TechArticle",
+                "cost_roi": "Article",
+                "use_case": "Article",
+            }
+            pillar = topic.get("pillar", "")
+            schema_type = _PILLAR_SCHEMA.get(pillar, "Article")
+
             # Publish to WordPress
             logger.info(f"Publishing '{title}' to WordPress...")
             wp_post_id = publish_post(
@@ -130,7 +147,11 @@ def run_automation_cycle(site_id: int) -> int:
                 status="draft",
                 category=site.get("default_category"),
                 slug=topic.get("slug"),
-                meta_description=content.get("meta_description")
+                meta_description=content.get("meta_description"),
+                focus_keyword=content.get("focus_keyword") or topic.get("generated_focus_keyword", ""),
+                seo_title=content.get("meta_title") or title,
+                schema_type=schema_type,
+                faq_html=content.get("faq", ""),
             )
             
             # Update topic with WP post ID
