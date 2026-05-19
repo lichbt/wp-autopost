@@ -1,0 +1,75 @@
+# Site intake for MooDateScript
+# Used by: python main.py --site 1 --generate-plan
+# Edit this file to keep Claude's context current.
+
+site_id: 1  # Must match the DB site ID (check with --list-sites)
+
+name: MooDateScript
+url: https://moodatingscript.com
+niche: dating software / PHP script
+product_name: MooDateScript
+
+target_audience:
+  - entrepreneurs wanting to launch a dating website or app quickly
+  - developers building dating platforms for clients
+  - agencies managing multiple dating site brands
+  - non-technical founders with a $500–$5,000 budget
+
+main_cta: https://moodatingscript.com/pricing
+demo_url: https://moodatingscript.com/demo
+
+competitors:
+  - name: SkaDate
+    url: https://skadate.com
+    notes: established player, higher price point, strong feature set
+  - name: WPDating
+    url: https://wpdating.com
+    notes: WordPress plugin approach, lower customization ceiling
+  - name: Dating Pro
+    url: https://www.datingpro.org
+    notes: full-featured, similar price tier, strong in Eastern Europe
+  - name: Chameleon Social Software
+    url: https://www.chameleon.social
+    notes: older platform, broader social focus
+  - name: vldPersonals
+    url: https://www.vldpersonals.com
+    notes: budget option, open source base
+
+content_pillars:
+  - vs_comparison        # [GEO ★★★] MooDateScript vs each competitor
+  - best_of              # [GEO ★★★] Best dating scripts, best dating software lists
+  - buyer_guide          # [GEO ★★] How to choose a dating script, buying guide
+  - setup_tutorial       # [GEO ★★] Installation, configuration, launch tutorials
+  - feature_explainer    # [GEO ★★] Explain specific features (matching algo, monetization, etc.)
+  - use_case             # [GEO ★] Niche dating apps (seniors, LGBTQ+, religious, professionals)
+  - cost_roi             # Cost of building a dating app, ROI analysis
+
+tone: professional, direct, conversion-focused — audience is technical-capable entrepreneurs
+
+# Content themes to prioritize (Claude will use these to generate topics)
+priority_topics:
+  - MooDateScript vs SkaDate comparison
+  - MooDateScript vs Dating Pro comparison
+  - MooDateScript vs WPDating comparison
+  - Best dating scripts in 2026
+  - How to start a dating website with a script
+  - Dating script monetization strategies
+  - Niche dating site ideas (and which scripts fit)
+  - How to install MooDateScript (setup tutorial)
+  - Dating app features buyers must have
+  - Cost of building a dating site with and without a script
+
+# Queries you're ALREADY ranking for (pull from GSC — update this list regularly)
+ranking_queries:
+  - dating script
+  - moodating
+  - dating software
+
+# Competitor content gaps — topics where competitors rank but you don't
+competitor_gaps:
+  - white label dating platform
+  - dating app clone script
+  - tinder clone script
+
+posts_per_day: 2
+geo_focus: global (English-speaking markets)

@@ -1,0 +1,78 @@
+# Site intake for ShaunSocial
+# Used by: python main.py --site 2 --generate-plan
+# Edit this file to keep Claude's context current.
+
+site_id: 2  # Must match the DB site ID (check with --list-sites)
+
+name: ShaunSocial
+url: https://shaunsocial.com
+niche: social network software / community platform script
+product_name: ShaunSocial
+
+target_audience:
+  - entrepreneurs building niche community platforms
+  - businesses wanting an internal social network (intranet)
+  - developers building social platforms for clients
+  - non-profits and associations wanting member portals
+  - founders building Facebook/Instagram alternatives for specific verticals
+
+main_cta: https://shaunsocial.com/pricing
+demo_url: https://shaunsocial.com/demo
+
+competitors:
+  - name: phpFox
+    url: https://www.phpfox.com
+    notes: established market leader in self-hosted social networks, feature-rich, higher price
+  - name: SocialEngine
+    url: https://www.socialengine.com
+    notes: long-established, plugin ecosystem, PHP-based, aging UI
+  - name: Wowonder
+    url: https://wowonder.com
+    notes: modern UI, PHP, popular budget option, active development
+  - name: Dolphin Pro
+    url: https://www.boonex.com/dolphin
+    notes: open-source heritage, older codebase
+  - name: HumHub
+    url: https://www.humhub.com
+    notes: open-source, enterprise-focused, strong for intranets
+
+content_pillars:
+  - vs_comparison        # [GEO ★★★] ShaunSocial vs each competitor
+  - best_of              # [GEO ★★★] Best social network software, best community platforms
+  - buyer_guide          # [GEO ★★] How to choose a social network platform
+  - setup_tutorial       # [GEO ★★] Installation, configuration, launch tutorials
+  - feature_explainer    # [GEO ★★] Social features explained (news feed, groups, monetization)
+  - use_case             # [GEO ★] Niche communities (fitness, gaming, professional, local)
+  - cost_roi             # Cost of building a social network, build vs buy analysis
+
+tone: professional, clear, slightly technical — audience includes both technical and non-technical founders
+
+# Content themes to prioritize
+priority_topics:
+  - ShaunSocial vs phpFox comparison
+  - ShaunSocial vs SocialEngine comparison
+  - ShaunSocial vs Wowonder comparison
+  - Best social network software in 2026
+  - How to build a social network website without coding
+  - Social network platform monetization strategies
+  - Niche social network ideas (and which platforms support them)
+  - How to install ShaunSocial (setup tutorial)
+  - Must-have features for a community platform
+  - Cost of building a social network from scratch vs using a script
+  - phpFox alternatives in 2026
+  - SocialEngine alternatives in 2026
+
+# Queries you're ALREADY ranking for (pull from GSC — update this list regularly)
+ranking_queries:
+  - social network software
+  - community platform script
+
+# Competitor content gaps — topics where competitors rank but you don't
+competitor_gaps:
+  - white label social network
+  - facebook clone script
+  - social network platform for business
+  - internal social network for companies
+
+posts_per_day: 2
+geo_focus: global (English-speaking markets)

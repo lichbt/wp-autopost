@@ -52,17 +52,20 @@ def sync_sites_from_env() -> list:
             site_id = existing["id"]
             from database import encrypt_password
             encrypted_pw = encrypt_password(site_config["wp_app_password"])
-            
+
             cursor.execute("""
-                UPDATE sites 
-                SET name = ?, wp_username = ?, wp_app_password = ?, posts_per_day = ?
+                UPDATE sites
+                SET name = ?, wp_username = ?, wp_app_password = ?,
+                    posts_per_day = ?, gsc_url = ?, ga4_property_id = ?
                 WHERE id = ?
             """, (
                 site_config["name"],
                 site_config["wp_username"],
                 encrypted_pw,
                 site_config["posts_per_day"],
-                site_id
+                site_config.get("gsc_url", ""),
+                site_config.get("ga4_property_id", ""),
+                site_id,
             ))
             logger.info(f"Updated site from env: {site_config['name']} (ID: {site_id})")
         else:
@@ -73,7 +76,9 @@ def sync_sites_from_env() -> list:
                 wp_username=site_config["wp_username"],
                 wp_app_password=site_config["wp_app_password"],
                 blog_template=DEFAULT_TEMPLATE,
-                posts_per_day=site_config["posts_per_day"]
+                posts_per_day=site_config["posts_per_day"],
+                gsc_url=site_config.get("gsc_url", ""),
+                ga4_property_id=site_config.get("ga4_property_id", ""),
             )
             logger.info(f"Created site from env: {site_config['name']} (ID: {site_id})")
         
@@ -143,7 +148,10 @@ def create_site_interactively():
         posts_per_day = int(input("Posts per day [2]: ").strip() or "2")
     except ValueError:
         posts_per_day = 2
-    
+
+    gsc_url = input(f"GSC Site URL (e.g. https://example.com/) [optional]: ").strip()
+    ga4_property_id = input("GA4 Property ID (numeric, e.g. 123456789) [optional]: ").strip()
+
     # Add to database
     site_id = add_site(
         name=name,
@@ -153,7 +161,9 @@ def create_site_interactively():
         blog_template=blog_template,
         default_category=default_category,
         default_author=default_author,
-        posts_per_day=posts_per_day
+        posts_per_day=posts_per_day,
+        gsc_url=gsc_url,
+        ga4_property_id=ga4_property_id,
     )
     
     print(f"\nSite added successfully! ID: {site_id}")
@@ -169,12 +179,17 @@ def list_all_sites():
         return
     
     print("\n=== Configured Sites ===\n")
-    print(f"{'ID':<5} {'Name':<20} {'URL':<35} {'User':<15} {'Posts/Day':<10}")
-    print("-" * 85)
-    
+    print(f"{'ID':<5} {'Name':<20} {'URL':<35} {'P/Day':<7} {'GSC':<5} {'GA4':<5}")
+    print("-" * 80)
+
     for site in sites:
-        print(f"{site['id']:<5} {site['name']:<20} {site['wp_url']:<35} {site['wp_username']:<15} {site['posts_per_day']:<10}")
-    
+        gsc = "✓" if site.get("gsc_url") else "–"
+        ga4 = "✓" if site.get("ga4_property_id") else "–"
+        print(
+            f"{site['id']:<5} {site['name']:<20} {site['wp_url']:<35} "
+            f"{site['posts_per_day']:<7} {gsc:<5} {ga4:<5}"
+        )
+
     print()
 
 
