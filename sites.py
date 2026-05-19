@@ -3,7 +3,11 @@ from config import get_wp_sites_from_env
 from logger import logger
 
 # Default blog template
-DEFAULT_TEMPLATE = """<article>
+DEFAULT_TEMPLATE = """<head>
+<title>{{meta_title}}</title>
+<meta name="description" content="{{meta_description}}">
+</head>
+<article>
 <h1>{{title}}</h1>
 <p><strong>TL;DR:</strong> {{tldr}}</p>
 <div class="post-content">
@@ -13,6 +17,7 @@ DEFAULT_TEMPLATE = """<article>
 <h2>Frequently Asked Questions</h2>
 {{faq}}
 </div>
+{{faq_schema}}
 <div class="cta">
 <p><a href="{{cta_link}}">{{cta_text}}</a></p>
 </div>

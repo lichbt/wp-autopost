@@ -712,416 +712,305 @@
 [2026-05-08 12:28:50] INFO: ✓ Successfully processed: Best White-Label Fantasy Sports Software in 2026: Full Comparison
 [2026-05-08 12:28:50] INFO: Cycle complete: 1/1 topics processed
 [2026-05-08 12:28:50] INFO: Cycle complete. 1 topics processed.
-[2026-05-11 15:08:48] INFO: Database initialized successfully
-[2026-05-11 15:08:48] INFO: Loaded intake from moodatingscript.yaml
-[2026-05-12 09:05:33] INFO: [DRY RUN] Mock content for: Best Dating Apps
-[2026-05-12 09:05:33] INFO: [DRY RUN] Mock content for: Compare Apps
-[2026-05-12 09:05:33] INFO: [DRY RUN] Mock content for: Build App
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Best Dating Apps
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Compare Apps
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Build App
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Test Topic
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Custom Topic
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Site added: Test Blog (ID: 61)
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Site added: My Blog (ID: 62)
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Site added: Site A (ID: 63)
-[2026-05-12 09:19:11] INFO: Site added: Site B (ID: 64)
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Plan added for site 65 (ID: 45)
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Plan added for site 66 (ID: 46)
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 47
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Plan added for site 68 (ID: 48)
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 48
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 49
-[2026-05-12 09:19:11] INFO: Topic 77 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 50
-[2026-05-12 09:19:11] INFO: Topic 79 updated: status=published
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 51
-[2026-05-12 09:19:11] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:19:11] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 52
-[2026-05-12 09:19:11] INFO: Site 72: 2 slot(s) remaining today
-[2026-05-12 09:19:11] INFO: Processing 1 topic(s)
-[2026-05-12 09:19:11] INFO: Processing topic 83: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 83 updated: status=pending
-[2026-05-12 09:19:11] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 83 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Assembled final HTML (134 chars)
-[2026-05-12 09:19:11] INFO: Topic 83 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:19:11] INFO: Topic 83 updated: status=draft
-[2026-05-12 09:19:11] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 53
-[2026-05-12 09:19:11] INFO: Site 73: 2 slot(s) remaining today
-[2026-05-12 09:19:11] INFO: Processing 1 topic(s)
-[2026-05-12 09:19:11] INFO: Processing topic 85: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 85 updated: status=pending
-[2026-05-12 09:19:11] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 85 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Assembled final HTML (134 chars)
-[2026-05-12 09:19:11] INFO: Topic 85 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:19:11] INFO: Topic 85 updated: status=draft
-[2026-05-12 09:19:11] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:19:11] INFO: Site 73: 1 slot(s) remaining today
-[2026-05-12 09:19:11] INFO: No pending topics due for site 73
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 54
-[2026-05-12 09:19:11] INFO: Site 74: 2 slot(s) remaining today
-[2026-05-12 09:19:11] INFO: Processing 1 topic(s)
-[2026-05-12 09:19:11] INFO: Processing topic 87: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 87 updated: status=pending
-[2026-05-12 09:19:11] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 87 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Assembled final HTML (134 chars)
-[2026-05-12 09:19:11] INFO: Topic 87 updated: status=content_generated
-[2026-05-12 09:19:11] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:19:11] INFO: Topic 87 updated: status=draft
-[2026-05-12 09:19:11] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:19:11] INFO: Database initialized successfully
-[2026-05-12 09:19:11] INFO: Added 2 topics for plan 55
-[2026-05-12 09:19:11] INFO: Site 75: 2 slot(s) remaining today
-[2026-05-12 09:19:11] INFO: Processing 1 topic(s)
-[2026-05-12 09:19:11] INFO: Processing topic 89: Best Dating Apps in 2026
-[2026-05-12 09:19:11] INFO: Topic 89 updated: status=pending
-[2026-05-12 09:19:11] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:19:11] ERROR: Topic 89 failed: LLM API Error
-[2026-05-12 09:19:11] INFO: Topic 89 updated: status=pending
-[2026-05-12 09:19:11] INFO: Cycle complete: 0/1 topics processed
-[2026-05-12 09:19:11] INFO: Assembled final HTML (196 chars)
-[2026-05-12 09:19:11] INFO: Assembled final HTML (65 chars)
-[2026-05-12 09:19:11] WARNING: Site has no blog template, using minimal default
-[2026-05-12 09:19:11] INFO: Assembled final HTML (137 chars)
-[2026-05-12 09:19:11] INFO: Assembled final HTML (28 chars)
-[2026-05-12 09:19:11] INFO: Assembled final HTML (8 chars)
-[2026-05-12 09:19:11] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
-[2026-05-12 09:19:11] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Best Dating Apps
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Compare Apps
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Build App
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Test Topic
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Custom Topic
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Site added: Test Blog (ID: 76)
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Site added: My Blog (ID: 77)
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Site added: Site A (ID: 78)
-[2026-05-12 09:20:16] INFO: Site added: Site B (ID: 79)
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Plan added for site 80 (ID: 56)
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Plan added for site 81 (ID: 57)
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 58
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Plan added for site 83 (ID: 59)
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 59
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 60
-[2026-05-12 09:20:16] INFO: Topic 95 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 61
-[2026-05-12 09:20:16] INFO: Topic 97 updated: status=published
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 62
-[2026-05-12 09:20:16] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:20:16] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 63
-[2026-05-12 09:20:16] INFO: Site 87: 2 slot(s) remaining today
-[2026-05-12 09:20:16] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:16] INFO: Processing topic 101: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 101 updated: status=pending
-[2026-05-12 09:20:16] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 101 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:16] INFO: Topic 101 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:16] INFO: Topic 101 updated: status=draft
-[2026-05-12 09:20:16] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 64
-[2026-05-12 09:20:16] INFO: Site 88: 2 slot(s) remaining today
-[2026-05-12 09:20:16] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:16] INFO: Processing topic 103: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 103 updated: status=pending
-[2026-05-12 09:20:16] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 103 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:16] INFO: Topic 103 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:16] INFO: Topic 103 updated: status=draft
-[2026-05-12 09:20:16] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:16] INFO: Site 88: 1 slot(s) remaining today
-[2026-05-12 09:20:16] INFO: No pending topics due for site 88
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 65
-[2026-05-12 09:20:16] INFO: Site 89: 2 slot(s) remaining today
-[2026-05-12 09:20:16] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:16] INFO: Processing topic 105: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 105 updated: status=pending
-[2026-05-12 09:20:16] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 105 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:16] INFO: Topic 105 updated: status=content_generated
-[2026-05-12 09:20:16] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:16] INFO: Topic 105 updated: status=draft
-[2026-05-12 09:20:16] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:16] INFO: Database initialized successfully
-[2026-05-12 09:20:16] INFO: Added 2 topics for plan 66
-[2026-05-12 09:20:16] INFO: Site 90: 2 slot(s) remaining today
-[2026-05-12 09:20:16] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:16] INFO: Processing topic 107: Best Dating Apps in 2026
-[2026-05-12 09:20:16] INFO: Topic 107 updated: status=pending
-[2026-05-12 09:20:16] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:16] ERROR: Topic 107 failed: LLM API Error
-[2026-05-12 09:20:16] INFO: Topic 107 updated: status=pending
-[2026-05-12 09:20:16] INFO: Cycle complete: 0/1 topics processed
-[2026-05-12 09:20:16] INFO: Assembled HTML (196 chars)
-[2026-05-12 09:20:16] INFO: Assembled HTML (65 chars)
-[2026-05-12 09:20:16] WARNING: Site has no blog template — using minimal default
-[2026-05-12 09:20:16] INFO: Assembled HTML (229 chars)
-[2026-05-12 09:20:16] INFO: Assembled HTML (26 chars)
-[2026-05-12 09:20:16] INFO: Assembled HTML (8 chars)
-[2026-05-12 09:20:16] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
-[2026-05-12 09:20:16] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Best Dating Apps
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Compare Apps
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Build App
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Test Topic
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Custom Topic
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Site added: Test Blog (ID: 91)
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Site added: My Blog (ID: 92)
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Site added: Site A (ID: 93)
-[2026-05-12 09:20:31] INFO: Site added: Site B (ID: 94)
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Plan added for site 95 (ID: 67)
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Plan added for site 96 (ID: 68)
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 69
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Plan added for site 98 (ID: 70)
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 70
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 71
-[2026-05-12 09:20:31] INFO: Topic 113 updated: status=content_generated
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 72
-[2026-05-12 09:20:31] INFO: Topic 115 updated: status=published
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 73
-[2026-05-12 09:20:31] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:20:31] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 74
-[2026-05-12 09:20:31] INFO: Site 102: 2 slot(s) remaining today
-[2026-05-12 09:20:31] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:31] INFO: Processing topic 119: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Topic 119 updated: status=pending
-[2026-05-12 09:20:31] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Topic 119 updated: status=content_generated
-[2026-05-12 09:20:31] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:31] INFO: Topic 119 updated: status=content_generated
-[2026-05-12 09:20:31] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:31] INFO: Topic 119 updated: status=draft
-[2026-05-12 09:20:31] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:31] INFO: Added 2 topics for plan 75
-[2026-05-12 09:20:31] INFO: Site 103: 2 slot(s) remaining today
-[2026-05-12 09:20:31] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:31] INFO: Processing topic 121: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Topic 121 updated: status=pending
-[2026-05-12 09:20:31] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Topic 121 updated: status=content_generated
-[2026-05-12 09:20:31] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:31] INFO: Topic 121 updated: status=content_generated
-[2026-05-12 09:20:31] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:31] INFO: Topic 121 updated: status=draft
-[2026-05-12 09:20:31] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:31] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:31] INFO: Site 103: 1 slot(s) remaining today
-[2026-05-12 09:20:31] INFO: No pending topics due for site 103
-[2026-05-12 09:20:31] INFO: Database initialized successfully
-[2026-05-12 09:20:32] INFO: Added 2 topics for plan 76
-[2026-05-12 09:20:32] INFO: Site 104: 2 slot(s) remaining today
-[2026-05-12 09:20:32] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:32] INFO: Processing topic 123: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: Topic 123 updated: status=pending
-[2026-05-12 09:20:32] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: Topic 123 updated: status=content_generated
-[2026-05-12 09:20:32] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: Assembled HTML (134 chars)
-[2026-05-12 09:20:32] INFO: Topic 123 updated: status=content_generated
-[2026-05-12 09:20:32] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 09:20:32] INFO: Topic 123 updated: status=draft
-[2026-05-12 09:20:32] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 09:20:32] INFO: Database initialized successfully
-[2026-05-12 09:20:32] INFO: Added 2 topics for plan 77
-[2026-05-12 09:20:32] INFO: Site 105: 2 slot(s) remaining today
-[2026-05-12 09:20:32] INFO: Processing 1 topic(s)
-[2026-05-12 09:20:32] INFO: Processing topic 125: Best Dating Apps in 2026
-[2026-05-12 09:20:32] INFO: Topic 125 updated: status=pending
-[2026-05-12 09:20:32] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 09:20:32] ERROR: Topic 125 failed: LLM API Error
-[2026-05-12 09:20:32] INFO: Topic 125 updated: status=pending
-[2026-05-12 09:20:32] INFO: Cycle complete: 0/1 topics processed
-[2026-05-12 09:20:32] INFO: Assembled HTML (196 chars)
-[2026-05-12 09:20:32] INFO: Assembled HTML (65 chars)
-[2026-05-12 09:20:32] WARNING: Site has no blog template — using minimal default
-[2026-05-12 09:20:32] INFO: Assembled HTML (229 chars)
-[2026-05-12 09:20:32] INFO: Assembled HTML (26 chars)
-[2026-05-12 09:20:32] INFO: Assembled HTML (8 chars)
-[2026-05-12 09:20:32] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
-[2026-05-12 09:20:32] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Compare Apps
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Build App
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Test Topic
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Custom Topic
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Site added: Test Blog (ID: 106)
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Site added: My Blog (ID: 107)
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Site added: Site A (ID: 108)
-[2026-05-12 15:03:41] INFO: Site added: Site B (ID: 109)
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Plan added for site 110 (ID: 78)
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Plan added for site 111 (ID: 79)
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 80
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Plan added for site 113 (ID: 81)
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 81
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 82
-[2026-05-12 15:03:41] INFO: Topic 131 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 83
-[2026-05-12 15:03:41] INFO: Topic 133 updated: status=published
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 84
-[2026-05-12 15:03:41] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 15:03:41] INFO: [DRY RUN] Returning mock parsed plan
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 85
-[2026-05-12 15:03:41] INFO: Site 117: 2 slot(s) remaining today
-[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
-[2026-05-12 15:03:41] INFO: Processing topic 137: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 137 updated: status=pending
-[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 137 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
-[2026-05-12 15:03:41] INFO: Topic 137 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 15:03:41] INFO: Topic 137 updated: status=draft
-[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 86
-[2026-05-12 15:03:41] INFO: Site 118: 2 slot(s) remaining today
-[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
-[2026-05-12 15:03:41] INFO: Processing topic 139: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 139 updated: status=pending
-[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 139 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
-[2026-05-12 15:03:41] INFO: Topic 139 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 15:03:41] INFO: Topic 139 updated: status=draft
-[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 15:03:41] INFO: Site 118: 1 slot(s) remaining today
-[2026-05-12 15:03:41] INFO: No pending topics due for site 118
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 87
-[2026-05-12 15:03:41] INFO: Site 119: 2 slot(s) remaining today
-[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
-[2026-05-12 15:03:41] INFO: Processing topic 141: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 141 updated: status=pending
-[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Mock content for: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 141 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Assembling HTML: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Assembled HTML (134 chars)
-[2026-05-12 15:03:41] INFO: Topic 141 updated: status=content_generated
-[2026-05-12 15:03:41] INFO: Publishing: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Best Dating Apps in 2026' to https://test.example.com
-[2026-05-12 15:03:41] INFO: Topic 141 updated: status=draft
-[2026-05-12 15:03:41] INFO: ✓ Done: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Cycle complete: 1/1 topics processed
-[2026-05-12 15:03:41] INFO: Database initialized successfully
-[2026-05-12 15:03:41] INFO: Added 2 topics for plan 88
-[2026-05-12 15:03:41] INFO: Site 120: 2 slot(s) remaining today
-[2026-05-12 15:03:41] INFO: Processing 1 topic(s)
-[2026-05-12 15:03:41] INFO: Processing topic 143: Best Dating Apps in 2026
-[2026-05-12 15:03:41] INFO: Topic 143 updated: status=pending
-[2026-05-12 15:03:41] INFO: Generating content: Best Dating Apps in 2026
-[2026-05-12 15:03:41] ERROR: Topic 143 failed: LLM API Error
-[2026-05-12 15:03:41] INFO: Topic 143 updated: status=pending
-[2026-05-12 15:03:41] INFO: Cycle complete: 0/1 topics processed
-[2026-05-12 15:03:41] INFO: Assembled HTML (196 chars)
-[2026-05-12 15:03:41] INFO: Assembled HTML (65 chars)
-[2026-05-12 15:03:41] WARNING: Site has no blog template — using minimal default
-[2026-05-12 15:03:41] INFO: Assembled HTML (229 chars)
-[2026-05-12 15:03:41] INFO: Assembled HTML (26 chars)
-[2026-05-12 15:03:41] INFO: Assembled HTML (8 chars)
-[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'Test Title' to https://test.com
-[2026-05-12 15:03:41] INFO: [DRY RUN] Would publish 'My Post' to https://test.com
+[2026-05-08 13:51:27] INFO: Database initialized successfully
+[2026-05-08 13:51:27] INFO: Database initialized
+[2026-05-08 13:51:27] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 13:51:27] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 13:51:27] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 13:56:00] INFO: Database initialized successfully
+[2026-05-08 13:56:00] INFO: Database initialized
+[2026-05-08 13:56:00] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 13:56:00] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 13:56:00] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 13:56:00] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 13:56:00] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 13:56:00] INFO: Using LLM at: http://localhost:20128/v1 with model: claude
+[2026-05-08 13:56:00] INFO: Calling LLM to parse strategy document...
+[2026-05-08 13:56:49] ERROR: Plan extraction failed: Error code: 400 - {'error': {'message': '[cursor/claude-4.5-sonnet] [400]: {"error":{"message":"Unauthorized request.","type":"api_error","code":"ERROR_UNAUTHORIZED"}} (reset after 26s)'}}
+[2026-05-08 13:57:45] INFO: Database initialized successfully
+[2026-05-08 13:57:45] INFO: Database initialized
+[2026-05-08 13:57:45] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 13:57:45] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 13:57:45] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 13:57:45] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 13:57:45] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 13:57:45] INFO: Using LLM at: http://localhost:20128/v1 with model: cursor/claude-4.5-sonnet
+[2026-05-08 13:57:45] INFO: Calling LLM to parse strategy document...
+[2026-05-08 13:57:47] ERROR: Plan extraction failed: Error code: 400 - {'error': {'message': '[cursor/claude-4.5-sonnet] [400]: {"error":{"message":"Unauthorized request.","type":"api_error","code":"ERROR_UNAUTHORIZED"}} (reset after 30s)'}}
+[2026-05-08 14:00:21] INFO: Database initialized successfully
+[2026-05-08 14:00:21] INFO: Database initialized
+[2026-05-08 14:00:21] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:00:21] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:00:21] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:00:21] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 14:00:21] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 14:00:21] INFO: Using LLM at: http://localhost:20128/v1 with model: poolside/laguna-m.1:free
+[2026-05-08 14:00:21] INFO: Calling LLM to parse strategy document...
+[2026-05-08 14:00:21] ERROR: Plan extraction failed: Error code: 404 - {'error': {'message': 'No active credentials for provider: poolside', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
+[2026-05-08 14:01:33] INFO: Database initialized successfully
+[2026-05-08 14:01:33] INFO: Database initialized
+[2026-05-08 14:01:33] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:01:33] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:01:33] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:01:33] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 14:01:33] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 14:01:33] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 14:01:33] INFO: Calling LLM to parse strategy document...
+[2026-05-08 14:04:22] ERROR: Failed to parse LLM response as JSON: Expecting ',' delimiter: line 233 column 6 (char 11972)
+[2026-05-08 14:06:47] INFO: Topic 1 updated: status=pending
+[2026-05-08 14:07:04] INFO: Database initialized successfully
+[2026-05-08 14:07:04] INFO: Database initialized
+[2026-05-08 14:07:04] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:07:04] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:07:04] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:07:04] INFO: Running automation cycle for site 2...
+[2026-05-08 14:07:04] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 14:07:04] INFO: No pending topics due for site 2
+[2026-05-08 14:07:04] INFO: Cycle complete. 0 topics processed.
+[2026-05-08 14:07:51] INFO: Database initialized successfully
+[2026-05-08 14:07:51] INFO: Database initialized
+[2026-05-08 14:07:51] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:07:51] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:07:51] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:07:51] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 14:07:51] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 14:07:52] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 14:07:52] INFO: Calling LLM to parse strategy document...
+[2026-05-08 14:09:38] ERROR: Failed to parse LLM response as JSON: Expecting ',' delimiter: line 212 column 6 (char 12212)
+[2026-05-08 14:12:48] INFO: Database initialized successfully
+[2026-05-08 14:12:48] INFO: Database initialized
+[2026-05-08 14:12:48] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:12:48] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:12:48] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:12:48] INFO: Reading text file: moodating_geo_content_strategy.md
+[2026-05-08 14:12:48] INFO: Importing plan from moodating_geo_content_strategy.md...
+[2026-05-08 14:12:48] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 14:12:48] INFO: Calling LLM to parse strategy document...
+[2026-05-08 14:13:51] INFO: Successfully parsed 50 topics from plan
+[2026-05-08 14:13:51] INFO: Plan added for site 2 (ID: 6)
+[2026-05-08 14:13:51] INFO: Added 50 topics for plan 6
+[2026-05-08 14:13:51] INFO: Imported 50 topics for site 2
+[2026-05-08 14:13:51] INFO: Plan imported successfully! Plan ID: 6
+[2026-05-08 14:14:36] INFO: Database initialized successfully
+[2026-05-08 14:14:36] INFO: Database initialized
+[2026-05-08 14:14:36] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 14:14:36] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 14:14:36] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 14:14:36] INFO: Running automation cycle for site 2...
+[2026-05-08 14:14:36] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 14:14:36] INFO: Found 2 topics to process
+[2026-05-08 14:14:36] INFO: Processing topic 28: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 14:14:36] INFO: Topic 28 updated: status=pending
+[2026-05-08 14:14:36] INFO: Generating content for: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 14:14:36] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 14:14:36] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 14:14:36] INFO: Generating content for: mooDating vs SkaDate: Full Comparison 2026 (attempt 1/3)
+[2026-05-08 14:16:13] INFO: Successfully generated content for: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 14:16:13] INFO: Topic 28 updated: status=content_generated
+[2026-05-08 14:16:13] INFO: Assembling HTML for: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 14:16:13] INFO: Assembled final HTML (15911 chars)
+[2026-05-08 14:16:13] INFO: Topic 28 updated: status=content_generated
+[2026-05-08 14:16:13] INFO: Publishing 'mooDating vs SkaDate: Full Comparison 2026' to WordPress...
+[2026-05-08 14:16:13] INFO: Publishing 'mooDating vs SkaDate: Full Comparison 2026' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 14:16:15] INFO: Successfully published 'mooDating vs SkaDate: Full Comparison 2026' - WP Post ID: 448
+[2026-05-08 14:16:15] INFO: Topic 28 updated: status=draft
+[2026-05-08 14:16:15] INFO: ✓ Successfully processed: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 14:16:15] INFO: Processing topic 29: mooDating vs Chameleon Dating Software
+[2026-05-08 14:16:15] INFO: Topic 29 updated: status=pending
+[2026-05-08 14:16:15] INFO: Generating content for: mooDating vs Chameleon Dating Software
+[2026-05-08 14:16:15] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 14:16:15] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 14:16:15] INFO: Generating content for: mooDating vs Chameleon Dating Software (attempt 1/3)
+[2026-05-08 14:17:22] INFO: Successfully generated content for: mooDating vs Chameleon Dating Software
+[2026-05-08 14:17:22] INFO: Topic 29 updated: status=content_generated
+[2026-05-08 14:17:22] INFO: Assembling HTML for: mooDating vs Chameleon Dating Software
+[2026-05-08 14:17:22] INFO: Assembled final HTML (14339 chars)
+[2026-05-08 14:17:22] INFO: Topic 29 updated: status=content_generated
+[2026-05-08 14:17:22] INFO: Publishing 'mooDating vs Chameleon Dating Software' to WordPress...
+[2026-05-08 14:17:22] INFO: Publishing 'mooDating vs Chameleon Dating Software' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 14:17:24] INFO: Successfully published 'mooDating vs Chameleon Dating Software' - WP Post ID: 449
+[2026-05-08 14:17:24] INFO: Topic 29 updated: status=draft
+[2026-05-08 14:17:24] INFO: ✓ Successfully processed: mooDating vs Chameleon Dating Software
+[2026-05-08 14:17:24] INFO: Cycle complete: 2/2 topics processed
+[2026-05-08 14:17:24] INFO: Cycle complete. 2 topics processed.
+[2026-05-08 15:14:24] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:14:24] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:14:24] INFO: Generating content for: mooDating vs SkaDate: Full Comparison 2026 (attempt 1/3)
+[2026-05-08 15:14:47] WARNING: Content generation attempt 1 failed: Could not extract JSON from LLM response
+[2026-05-08 15:14:47] INFO: Retrying in 10 seconds...
+[2026-05-08 15:14:57] INFO: Generating content for: mooDating vs SkaDate: Full Comparison 2026 (attempt 2/3)
+[2026-05-08 15:15:11] INFO: Successfully generated content for: mooDating vs SkaDate: Full Comparison 2026
+[2026-05-08 15:19:43] INFO: Topic 28 updated: status=pending
+[2026-05-08 15:20:02] INFO: Database initialized successfully
+[2026-05-08 15:20:02] INFO: Database initialized
+[2026-05-08 15:20:02] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 15:20:02] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 15:20:02] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 15:20:02] INFO: Running automation cycle for site 2...
+[2026-05-08 15:20:02] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 15:20:02] INFO: Found 2 topics to process
+[2026-05-08 15:20:02] INFO: Processing topic 30: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:20:02] INFO: Topic 30 updated: status=pending
+[2026-05-08 15:20:02] INFO: Generating content for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:20:02] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:20:02] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:20:02] INFO: Generating content for: mooDating vs Dating Pro: Which Should You Choose? (attempt 1/3)
+[2026-05-08 15:20:17] INFO: Successfully generated content for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:20:17] ERROR: Failed to process topic 30: local variable 'final_html' referenced before assignment
+[2026-05-08 15:20:17] INFO: Topic 30 updated: status=pending
+[2026-05-08 15:20:17] INFO: Processing topic 31: SkaDate Alternatives for 2026
+[2026-05-08 15:20:17] INFO: Topic 31 updated: status=pending
+[2026-05-08 15:20:17] INFO: Generating content for: SkaDate Alternatives for 2026
+[2026-05-08 15:20:17] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:20:17] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:20:17] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 1/3)
+[2026-05-08 15:22:22] WARNING: Content generation attempt 1 failed: Could not extract JSON from LLM response
+[2026-05-08 15:22:22] INFO: Retrying in 10 seconds...
+[2026-05-08 15:22:32] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 2/3)
+[2026-05-08 15:24:04] INFO: Successfully generated content for: SkaDate Alternatives for 2026
+[2026-05-08 15:24:04] ERROR: Failed to process topic 31: local variable 'final_html' referenced before assignment
+[2026-05-08 15:24:04] INFO: Topic 31 updated: status=pending
+[2026-05-08 15:24:04] INFO: Cycle complete: 0/2 topics processed
+[2026-05-08 15:24:04] INFO: Cycle complete. 0 topics processed.
+[2026-05-08 15:25:08] INFO: Database initialized successfully
+[2026-05-08 15:25:08] INFO: Database initialized
+[2026-05-08 15:25:08] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 15:25:08] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 15:25:08] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 15:25:08] INFO: Running automation cycle for site 2...
+[2026-05-08 15:25:08] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 15:25:08] INFO: Found 2 topics to process
+[2026-05-08 15:25:08] INFO: Processing topic 30: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:25:08] INFO: Topic 30 updated: status=pending
+[2026-05-08 15:25:08] INFO: Generating content for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:25:08] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:25:08] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:25:08] INFO: Generating content for: mooDating vs Dating Pro: Which Should You Choose? (attempt 1/3)
+[2026-05-08 15:27:29] INFO: Successfully generated content for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:27:29] INFO: Topic 30 updated: status=content_generated
+[2026-05-08 15:27:29] INFO: Assembling HTML for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:27:29] INFO: Assembled final HTML (15181 chars)
+[2026-05-08 15:27:29] INFO: Topic 30 updated: status=content_generated
+[2026-05-08 15:27:29] INFO: Publishing 'mooDating vs Dating Pro: Which Should You Choose?' to WordPress...
+[2026-05-08 15:27:29] INFO: Publishing 'mooDating vs Dating Pro: Which Should You Choose?' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 15:27:31] INFO: Successfully published 'mooDating vs Dating Pro: Which Should You Choose?' - WP Post ID: 456
+[2026-05-08 15:27:31] INFO: Topic 30 updated: status=draft
+[2026-05-08 15:27:31] INFO: ✓ Successfully processed: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:27:31] INFO: Processing topic 31: SkaDate Alternatives for 2026
+[2026-05-08 15:27:31] INFO: Topic 31 updated: status=pending
+[2026-05-08 15:27:31] INFO: Generating content for: SkaDate Alternatives for 2026
+[2026-05-08 15:27:31] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:27:31] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:27:31] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 1/3)
+[2026-05-08 15:27:56] WARNING: Content generation attempt 1 failed: LLM response missing required key: faq
+[2026-05-08 15:27:56] INFO: Retrying in 10 seconds...
+[2026-05-08 15:28:06] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 2/3)
+[2026-05-08 15:29:17] WARNING: Content generation attempt 2 failed: Could not extract JSON from LLM response
+[2026-05-08 15:29:17] INFO: Retrying in 30 seconds...
+[2026-05-08 15:29:47] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 3/3)
+[2026-05-08 15:39:00] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:39:00] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:39:00] INFO: Generating content for: mooDating vs Dating Pro: Which Should You Choose? (attempt 1/3)
+[2026-05-08 15:40:03] INFO: Successfully generated content for: mooDating vs Dating Pro: Which Should You Choose?
+[2026-05-08 15:46:45] INFO: Database initialized successfully
+[2026-05-08 15:46:45] INFO: Database initialized
+[2026-05-08 15:46:45] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 15:46:45] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 15:46:45] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 15:46:46] INFO: Running automation cycle for site 2...
+[2026-05-08 15:46:46] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 15:46:46] INFO: Found 2 topics to process
+[2026-05-08 15:46:46] INFO: Processing topic 31: SkaDate Alternatives for 2026
+[2026-05-08 15:46:46] INFO: Topic 31 updated: status=pending
+[2026-05-08 15:46:46] INFO: Generating content for: SkaDate Alternatives for 2026
+[2026-05-08 15:46:46] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 15:46:46] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 15:46:46] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 1/3)
+[2026-05-08 15:47:07] WARNING: Content generation attempt 1 failed: LLM response missing required key: faq
+[2026-05-08 15:47:07] INFO: Retrying in 10 seconds...
+[2026-05-08 15:47:17] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 2/3)
+[2026-05-08 16:00:53] INFO: Topic 30 updated: status=pending
+[2026-05-08 16:01:57] INFO: Database initialized successfully
+[2026-05-08 16:01:57] INFO: Database initialized
+[2026-05-08 16:01:57] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 16:01:57] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 16:01:57] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 16:01:58] INFO: Running automation cycle for site 2...
+[2026-05-08 16:01:58] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 16:01:58] INFO: Found 2 topics to process
+[2026-05-08 16:01:58] INFO: Processing topic 31: SkaDate Alternatives for 2026
+[2026-05-08 16:01:58] INFO: Topic 31 updated: status=pending
+[2026-05-08 16:01:58] INFO: Generating content for: SkaDate Alternatives for 2026
+[2026-05-08 16:01:58] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 16:01:58] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 16:01:58] INFO: Generating content for: SkaDate Alternatives for 2026 (attempt 1/3)
+[2026-05-08 16:02:41] INFO: Successfully generated content for: SkaDate Alternatives for 2026
+[2026-05-08 16:02:41] INFO: Topic 31 updated: status=content_generated
+[2026-05-08 16:02:41] INFO: Assembling HTML for: SkaDate Alternatives for 2026
+[2026-05-08 16:02:41] INFO: Assembled final HTML (12119 chars)
+[2026-05-08 16:02:41] INFO: Topic 31 updated: status=content_generated
+[2026-05-08 16:02:41] INFO: Publishing 'SkaDate Alternatives for 2026' to WordPress...
+[2026-05-08 16:02:41] INFO: Publishing 'SkaDate Alternatives for 2026' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 16:02:42] INFO: Successfully published 'SkaDate Alternatives for 2026' - WP Post ID: 457
+[2026-05-08 16:02:42] INFO: Topic 31 updated: status=draft
+[2026-05-08 16:02:42] INFO: ✓ Successfully processed: SkaDate Alternatives for 2026
+[2026-05-08 16:02:42] INFO: Processing topic 32: PHP vs SaaS Dating Platform: Pros & Cons
+[2026-05-08 16:02:42] INFO: Topic 32 updated: status=pending
+[2026-05-08 16:02:42] INFO: Generating content for: PHP vs SaaS Dating Platform: Pros & Cons
+[2026-05-08 16:02:42] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 16:02:42] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 16:02:42] INFO: Generating content for: PHP vs SaaS Dating Platform: Pros & Cons (attempt 1/3)
+[2026-05-08 16:03:55] WARNING: Content generation attempt 1 failed: Could not extract JSON from LLM response
+[2026-05-08 16:03:55] INFO: Retrying in 10 seconds...
+[2026-05-08 16:04:05] INFO: Generating content for: PHP vs SaaS Dating Platform: Pros & Cons (attempt 2/3)
+[2026-05-08 16:06:14] WARNING: Content generation attempt 2 failed: Could not extract JSON from LLM response
+[2026-05-08 16:06:14] INFO: Retrying in 30 seconds...
+[2026-05-08 16:06:44] INFO: Generating content for: PHP vs SaaS Dating Platform: Pros & Cons (attempt 3/3)
+[2026-05-08 16:14:59] INFO: Topic 32 updated: status=pending
+[2026-05-08 16:15:25] INFO: Database initialized successfully
+[2026-05-08 16:15:25] INFO: Database initialized
+[2026-05-08 16:15:25] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 16:15:25] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 16:15:25] INFO: Synced 2 site(s) from environment variables
+[2026-05-08 16:15:26] INFO: Running automation cycle for site 2...
+[2026-05-08 16:15:26] INFO: Site 2: 2 slots remaining for today
+[2026-05-08 16:15:26] INFO: Found 2 topics to process
+[2026-05-08 16:15:26] INFO: Processing topic 33: Best Tinder Clone Scripts in 2026
+[2026-05-08 16:15:26] INFO: Topic 33 updated: status=pending
+[2026-05-08 16:15:26] INFO: Generating content for: Best Tinder Clone Scripts in 2026
+[2026-05-08 16:15:26] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 16:15:26] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 16:15:26] INFO: Generating content for: Best Tinder Clone Scripts in 2026 (attempt 1/3)
+[2026-05-08 16:16:30] INFO: Successfully generated content for: Best Tinder Clone Scripts in 2026
+[2026-05-08 16:16:31] INFO: Topic 33 updated: status=content_generated
+[2026-05-08 16:16:31] INFO: Assembling HTML for: Best Tinder Clone Scripts in 2026
+[2026-05-08 16:16:31] INFO: Assembled final HTML (15898 chars)
+[2026-05-08 16:16:31] INFO: Topic 33 updated: status=content_generated
+[2026-05-08 16:16:31] INFO: Publishing 'Best Tinder Clone Scripts in 2026' to WordPress...
+[2026-05-08 16:16:31] INFO: Publishing 'Best Tinder Clone Scripts in 2026' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 16:16:33] INFO: Successfully published 'Best Tinder Clone Scripts in 2026' - WP Post ID: 458
+[2026-05-08 16:16:33] INFO: Topic 33 updated: status=draft
+[2026-05-08 16:16:33] INFO: ✓ Successfully processed: Best Tinder Clone Scripts in 2026
+[2026-05-08 16:16:33] INFO: Processing topic 36: Best White-Label Dating Software in 2026
+[2026-05-08 16:16:33] INFO: Topic 36 updated: status=pending
+[2026-05-08 16:16:33] INFO: Generating content for: Best White-Label Dating Software in 2026
+[2026-05-08 16:16:33] INFO: Loaded template for pillar: Comparisons
+[2026-05-08 16:16:33] INFO: Using LLM at: http://localhost:20128/v1 with model: openclaw-combo
+[2026-05-08 16:16:33] INFO: Generating content for: Best White-Label Dating Software in 2026 (attempt 1/3)
+[2026-05-08 16:16:49] INFO: Successfully generated content for: Best White-Label Dating Software in 2026
+[2026-05-08 16:16:49] INFO: Topic 36 updated: status=content_generated
+[2026-05-08 16:16:49] INFO: Assembling HTML for: Best White-Label Dating Software in 2026
+[2026-05-08 16:16:49] INFO: Assembled final HTML (15866 chars)
+[2026-05-08 16:16:49] INFO: Topic 36 updated: status=content_generated
+[2026-05-08 16:16:49] INFO: Publishing 'Best White-Label Dating Software in 2026' to WordPress...
+[2026-05-08 16:16:49] INFO: Publishing 'Best White-Label Dating Software in 2026' to https://moodatingscript.com (attempt 1/3)
+[2026-05-08 16:16:51] INFO: Successfully published 'Best White-Label Dating Software in 2026' - WP Post ID: 459
+[2026-05-08 16:16:51] INFO: Topic 36 updated: status=draft
+[2026-05-08 16:16:51] INFO: ✓ Successfully processed: Best White-Label Dating Software in 2026
+[2026-05-08 16:16:51] INFO: Cycle complete: 2/2 topics processed
+[2026-05-08 16:16:51] INFO: Cycle complete. 2 topics processed.
+[2026-05-08 16:17:58] INFO: Database initialized successfully
+[2026-05-08 16:17:58] INFO: Database initialized
+[2026-05-08 16:17:58] INFO: Updated site from env: Site 1 (ID: 3)
+[2026-05-08 16:17:58] INFO: Updated site from env: Site 2 (ID: 2)
+[2026-05-08 16:17:58] INFO: Synced 2 site(s) from environment variables

@@ -61,3 +61,17 @@ Use natural language questions people would ask:
 - Use keyword variations naturally
 - Internal link to related content
 - External link to authoritative sources when relevant
+
+---
+
+## Internal Linking (Required)
+
+Insert **3–5 contextual internal links** within the body content using real `<a href="URL">anchor text</a>` HTML tags.
+
+Rules:
+- Use only URLs from the **INTERNAL LINK OPPORTUNITIES** list provided in the prompt
+- Place links naturally inside sentences where the linked topic is directly relevant
+- Use descriptive anchor text matching the target page (e.g. `<a href="...">how to monetise a dating app</a>`, not "click here")
+- Spread links across different sections — do not cluster them all in one paragraph
+- Never repeat the same URL twice
+- Do NOT add links in the tldr, faq, or meta fields — only in the `content` field

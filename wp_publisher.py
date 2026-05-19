@@ -113,6 +113,75 @@ def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html
     return "\n".join(_wrap(b) for b in blocks)
 
 
+def _xmlrpc_set_yoast_meta(
+    wp_url: str,
+    username: str,
+    app_password: str,
+    post_id: int,
+    fields: dict,
+) -> bool:
+    """
+    Set Yoast SEO meta fields via XML-RPC.
+
+    Yoast's _yoast_wpseo_metadesc and _yoast_wpseo_focuskw are NOT registered
+    for the WP REST API, so REST meta writes silently do nothing for those
+    fields. XML-RPC's wp.editPost with custom_fields bypasses that restriction.
+
+    Args:
+        fields: dict of {meta_key: meta_value} to set, e.g.
+                {"_yoast_wpseo_metadesc": "...", "_yoast_wpseo_title": "..."}
+    Returns True if all fields were set successfully.
+    """
+    import html as _html
+
+    # Build one custom_fields array with all keys
+    cf_items = ""
+    for key, value in fields.items():
+        safe_key   = _html.escape(str(key))
+        safe_value = _html.escape(str(value))
+        cf_items += f"""
+          <value><struct>
+            <member><name>key</name><value><string>{safe_key}</string></value></member>
+            <member><name>value</name><value><string>{safe_value}</string></value></member>
+          </struct></value>"""
+
+    # Strip spaces from app password (WP stores them without spaces)
+    pwd = app_password.replace(" ", "")
+
+    payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+  <methodName>wp.editPost</methodName>
+  <params>
+    <param><value><int>1</int></value></param>
+    <param><value><string>{_html.escape(username)}</string></value></param>
+    <param><value><string>{_html.escape(pwd)}</string></value></param>
+    <param><value><int>{post_id}</int></value></param>
+    <param><value><struct>
+      <member>
+        <name>custom_fields</name>
+        <value><array><data>{cf_items}
+        </data></array></value>
+      </member>
+    </struct></value></param>
+  </params>
+</methodCall>"""
+
+    try:
+        resp = requests.post(
+            f"{wp_url.rstrip('/')}/xmlrpc.php",
+            data=payload.encode("utf-8"),
+            headers={"Content-Type": "text/xml"},
+            timeout=15,
+        )
+        success = "<boolean>1</boolean>" in resp.text
+        if not success:
+            logger.warning(f"XML-RPC Yoast meta update failed: {resp.text[:200]}")
+        return success
+    except Exception as e:
+        logger.warning(f"XML-RPC Yoast meta update error: {e}")
+        return False
+
+
 def publish_post(
     site: dict,
     title: str,
@@ -129,6 +198,10 @@ def publish_post(
 ) -> Optional[int]:
     """
     Publish a post to WordPress via REST API with full Yoast SEO + JSON-LD.
+
+    Yoast meta (title, description, focus keyword) are written via XML-RPC
+    after the REST publish, because Yoast does not register _yoast_wpseo_metadesc
+    / _yoast_wpseo_focuskw for the WP REST API meta endpoint.
 
     Returns WordPress post ID on success.
     """
@@ -149,31 +222,12 @@ def publish_post(
     json_ld = _build_json_ld(title, schema_type or "Article", meta_description or "", faq_html)
     full_content = json_ld + "\n" + content_html
 
-    # Yoast meta fields
-    # These use Yoast's REST API integration (requires Yoast SEO plugin)
-    meta = {}
-    if meta_description:
-        meta["_yoast_wpseo_metadesc"] = meta_description[:155]
-    if focus_keyword:
-        meta["_yoast_wpseo_focuskw"] = focus_keyword
-    if seo_title:
-        meta["_yoast_wpseo_title"] = seo_title[:60]
-    # Map schema_type to Yoast article type
-    schema_map = {
-        "Article": "Article",
-        "TechArticle": "TechArticle",
-        "HowTo": "HowTo",
-        "FAQPage": "Article",  # Yoast doesn't have FAQPage article type
-    }
-    meta["_yoast_wpseo_schema_article_type"] = schema_map.get(schema_type, "Article")
-
     payload = {
         "title": title,
         "content": full_content,
         "status": status,
         "categories": [category],
         "slug": slug,
-        "meta": meta,
     }
     if featured_media_id:
         payload["featured_media"] = featured_media_id
@@ -193,6 +247,40 @@ def publish_post(
             if response.status_code in (200, 201):
                 post_id = response.json().get("id")
                 logger.info(f"Published '{title}' — WP post ID: {post_id}")
+
+                # ── Set Yoast SEO meta via XML-RPC ────────────────────────────
+                # REST API silently ignores _yoast_wpseo_metadesc and focuskw;
+                # XML-RPC writes them correctly via custom_fields.
+                schema_map = {
+                    "Article": "Article",
+                    "TechArticle": "TechArticle",
+                    "HowTo": "HowTo",
+                    "FAQPage": "Article",
+                }
+                yoast_fields = {
+                    "_yoast_wpseo_schema_article_type": schema_map.get(schema_type, "Article"),
+                }
+                if meta_description:
+                    yoast_fields["_yoast_wpseo_metadesc"] = meta_description[:155]
+                if focus_keyword:
+                    yoast_fields["_yoast_wpseo_focuskw"] = focus_keyword
+                if seo_title:
+                    # Append Yoast separator + site name template
+                    yoast_fields["_yoast_wpseo_title"] = seo_title[:60] + " %%sep%% %%sitename%%"
+
+                if yoast_fields:
+                    ok = _xmlrpc_set_yoast_meta(
+                        wp_url,
+                        site["wp_username"],
+                        site["wp_app_password"],
+                        post_id,
+                        yoast_fields,
+                    )
+                    if ok:
+                        logger.info(f"Yoast meta set for post {post_id}")
+                    else:
+                        logger.warning(f"Yoast meta partially failed for post {post_id} — continuing")
+
                 return post_id
 
             if response.status_code in (401, 403):

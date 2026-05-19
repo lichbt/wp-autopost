@@ -368,6 +368,12 @@ def get_pending_topics(site_id: int, limit: int = 10) -> List[Dict]:
         WHERE t.site_id = ?
           AND t.status = 'pending'
           AND (t.scheduled_date IS NULL OR t.scheduled_date <= ?)
+          AND LOWER(TRIM(t.title)) NOT IN (
+              SELECT LOWER(TRIM(title)) FROM topics
+              WHERE site_id = t.site_id
+                AND status IN ('published', 'draft', 'content_generated')
+                AND id != t.id
+          )
         ORDER BY
             CASE t.pillar
                 WHEN 'vs_comparison'  THEN 1
