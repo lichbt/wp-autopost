@@ -14,8 +14,8 @@ LOG_FULL_PATH = PROJECT_ROOT / LOG_FILE
 
 # ── Claude (primary) ──────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_CONTENT_MODEL = os.getenv("CLAUDE_CONTENT_MODEL", "claude-sonnet-4-6")
-CLAUDE_ANALYSIS_MODEL = os.getenv("CLAUDE_ANALYSIS_MODEL", "claude-sonnet-4-6")
+CLAUDE_CONTENT_MODEL = os.getenv("CLAUDE_CONTENT_MODEL", "sonnet")
+CLAUDE_ANALYSIS_MODEL = os.getenv("CLAUDE_ANALYSIS_MODEL", "sonnet")
 
 # ── Legacy OpenAI / OpenRouter (fallback) ─────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -23,8 +23,12 @@ LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("OPENROUTER_API_KEY", ""
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "") or os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 LLM_MODEL = os.getenv("LLM_MODEL", "") or os.getenv("OPENROUTER_MODEL", "") or "gpt-4o"
 
-# Dry-run: no API key at all
-DRY_RUN = os.getenv("DRY_RUN", "false").lower() == "true" or (not ANTHROPIC_API_KEY and not LLM_API_KEY)
+# Dry-run: explicit env var takes priority; auto-enable only when no API key AND not explicitly disabled
+_dry_run_env = os.getenv("DRY_RUN", "").lower()
+if _dry_run_env in ("true", "false"):
+    DRY_RUN = _dry_run_env == "true"
+else:
+    DRY_RUN = not ANTHROPIC_API_KEY and not LLM_API_KEY
 
 # ── Google APIs ───────────────────────────────────────────────────────────────
 # Option A (recommended): OAuth — authenticates as your own Google account
@@ -36,6 +40,9 @@ GSC_DAYS_LOOKBACK = int(os.getenv("GSC_DAYS_LOOKBACK", "90"))
 
 # ── Perplexity (optional – GEO probing) ──────────────────────────────────────
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "")
+
+# ── Pixabay (featured image auto-fetch) ───────────────────────────────────────
+PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY", "")
 
 # ── Encryption ────────────────────────────────────────────────────────────────
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "")

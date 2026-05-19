@@ -14,57 +14,103 @@ def generate_slug(title: str) -> str:
     return slug
 
 
+def _strip_html_entities(text: str) -> str:
+    """Decode HTML entities so JSON-LD values are plain text, not HTML-encoded."""
+    import html
+    return html.unescape(re.sub(r"<[^>]+>", "", text)).strip()
+
+
+def _parse_faq_items(faq_html: str) -> list:
+    """Extract FAQ question/answer pairs from HTML as schema.org Question entities."""
+    faq_items = re.findall(
+        r"<h3[^>]*>(.*?)</h3>\s*<p[^>]*>(.*?)</p>",
+        faq_html or "",
+        re.DOTALL | re.IGNORECASE,
+    )
+    return [
+        {
+            "@type": "Question",
+            "name": _strip_html_entities(q),
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": _strip_html_entities(a),
+            },
+        }
+        for q, a in faq_items
+        if q.strip() and a.strip()  # skip empty items
+    ]
+
+
 def _build_json_ld(title: str, schema_type: str, meta_description: str, faq_html: str) -> str:
     """
-    Build JSON-LD structured data block for GEO + rich results.
+    Build JSON-LD structured data block(s) for GEO + rich results.
 
-    Supports: Article, TechArticle, HowTo, FAQPage.
+    Wrapped in Gutenberg <!-- wp:html --> block so WordPress does NOT apply
+    wptexturize / wpautop filters that would mangle the JSON (converting " to
+    curly quotes or wrapping in <p> tags, both of which break JSON parsing).
+
+    Always outputs an Article (or HowTo/FAQPage) block.
+    When the post has FAQ content AND is not already FAQPage type, also
+    outputs a separate FAQPage block — this gives Google FAQ rich results
+    even if Yoast's global schema type is misconfigured.
     """
     today = __import__("datetime").date.today().isoformat()
+    clean_title = _strip_html_entities(title)
+    clean_desc = _strip_html_entities(meta_description)
+
+    blocks = []
 
     if schema_type in ("FAQPage", "faq"):
-        # Parse FAQ items from HTML
-        faq_items = re.findall(
-            r"<h3>(.*?)</h3>\s*<p>(.*?)</p>",
-            faq_html or "",
-            re.DOTALL | re.IGNORECASE,
-        )
-        entities = [
-            {
-                "@type": "Question",
-                "name": q.strip(),
-                "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", a).strip()},
-            }
-            for q, a in faq_items
-        ]
+        entities = _parse_faq_items(faq_html)
         schema = {
             "@context": "https://schema.org",
             "@type": "FAQPage",
             "mainEntity": entities,
         }
+        blocks.append(schema)
 
     elif schema_type == "HowTo":
         schema = {
             "@context": "https://schema.org",
             "@type": "HowTo",
-            "name": title,
-            "description": meta_description,
-            "datePublished": today,
+            "name": clean_title,
+            "description": clean_desc,
+            "step": [],
         }
+        blocks.append(schema)
 
     else:
-        # Article or TechArticle
+        # Article or TechArticle — always the primary schema
         article_type = "TechArticle" if schema_type == "TechArticle" else "Article"
         schema = {
             "@context": "https://schema.org",
             "@type": article_type,
-            "headline": title,
-            "description": meta_description,
+            "headline": clean_title[:110],  # Google enforces ≤110 chars
+            "description": clean_desc,
             "datePublished": today,
             "dateModified": today,
         }
+        blocks.append(schema)
 
-    return f'<script type="application/ld+json">\n{json.dumps(schema, indent=2)}\n</script>'
+        # Also emit a valid FAQPage block if FAQ content exists.
+        # Gives Google FAQ rich results in SERPs (expandable Q&A in search).
+        faq_entities = _parse_faq_items(faq_html)
+        if faq_entities:
+            faq_schema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faq_entities,
+            }
+            blocks.append(faq_schema)
+
+    def _wrap(schema: dict) -> str:
+        json_str = json.dumps(schema, indent=2, ensure_ascii=False)
+        script_tag = f'<script type="application/ld+json">\n{json_str}\n</script>'
+        # Gutenberg raw HTML block prevents WordPress from running wptexturize /
+        # wpautop filters on the script content (which would corrupt the JSON).
+        return f'<!-- wp:html -->\n{script_tag}\n<!-- /wp:html -->'
+
+    return "\n".join(_wrap(b) for b in blocks)
 
 
 def publish_post(
@@ -79,6 +125,7 @@ def publish_post(
     seo_title: str = None,
     schema_type: str = "Article",
     faq_html: str = "",
+    featured_media_id: int = None,
 ) -> Optional[int]:
     """
     Publish a post to WordPress via REST API with full Yoast SEO + JSON-LD.
@@ -128,6 +175,8 @@ def publish_post(
         "slug": slug,
         "meta": meta,
     }
+    if featured_media_id:
+        payload["featured_media"] = featured_media_id
 
     last_error = None
     for attempt in range(MAX_RETRIES):

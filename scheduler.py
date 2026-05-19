@@ -1,4 +1,6 @@
 import json
+import os
+import tempfile
 from datetime import date
 from typing import Optional
 
@@ -10,6 +12,7 @@ from database import (
 from content_generator import generate_post_content
 from template_assembler import assemble_final_html
 from wp_publisher import publish_post
+from image_handler import fetch_and_upload_image
 from logger import logger
 
 
@@ -68,6 +71,24 @@ def run_automation_cycle(site_id: int, check_refresh: bool = True) -> int:
     Returns:
         Number of topics processed
     """
+    # Per-site lock file — prevents two concurrent runs from duplicating posts
+    lock_path = os.path.join(tempfile.gettempdir(), f"content_automation_site{site_id}.lock")
+    if os.path.exists(lock_path):
+        pid = open(lock_path).read().strip()
+        try:
+            os.kill(int(pid), 0)  # check if PID still alive
+            logger.warning(f"Site {site_id} already running (PID {pid}) — skipping")
+            return 0
+        except (ProcessLookupError, ValueError):
+            pass  # stale lock, proceed
+    open(lock_path, "w").write(str(os.getpid()))
+    try:
+        return _run_automation_cycle_locked(site_id, check_refresh)
+    finally:
+        os.unlink(lock_path)
+
+
+def _run_automation_cycle_locked(site_id: int, check_refresh: bool = True) -> int:
     site = get_site(site_id)
     if not site:
         logger.error(f"Site {site_id} not found")
@@ -137,6 +158,15 @@ def run_automation_cycle(site_id: int, check_refresh: bool = True) -> int:
             )
             log_action(topic_id, "content_generated", "Content generated")
 
+            # Fetch & upload featured image (non-blocking)
+            logger.info(f"Fetching featured image: {title}")
+            topic_with_keywords = {**topic, "generated_focus_keyword": content.get("focus_keyword", "")}
+            featured_image_id = fetch_and_upload_image(topic_with_keywords, site)
+            if featured_image_id:
+                logger.info(f"Featured image ready: WP media #{featured_image_id}")
+            else:
+                logger.info(f"No featured image — post will publish without one")
+
             # Assemble HTML
             logger.info(f"Assembling HTML: {title}")
             final_html = assemble_final_html(
@@ -163,6 +193,7 @@ def run_automation_cycle(site_id: int, check_refresh: bool = True) -> int:
                 seo_title=content.get("seo_title"),
                 schema_type=content.get("schema_type", "Article"),
                 faq_html=content.get("faq", ""),
+                featured_media_id=featured_image_id,
             )
 
             update_topic_status(topic_id, "draft", wp_post_id=wp_post_id)
