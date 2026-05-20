@@ -133,13 +133,14 @@ Special Instructions: {special_instructions}
 {link_context}
 
 === OUTPUT FORMAT ===
-Return a JSON object with:
+Return a JSON object with these keys IN THIS ORDER:
 - "tldr": 2-3 direct, confident sentences that answer the main question. This will be the snippet AI lifts.
 - "meta_title": SEO-optimized page title under 60 characters. Include target keyword and year.
 - "meta_description": compelling meta description under 160 characters. Include primary keyword and call to action.
+- "focus_keyword": the single most important target keyword for this post (2-4 words).
+- "slug": URL-friendly slug for the post (lowercase, hyphens, max 60 chars).
+- "faq": HTML for an FAQ section with 5-8 questions. Each question uses <h3> tag, answer in <p> tag, wrapped in <div class="faq-item">. Use natural language questions.
 - "content": full HTML body following the template structure above. Use proper H2/H3 headings as defined in the template. Use <table> where the template calls for tables, numbered H2 steps for how-to guides. Insert 3–5 internal links from the list above using <a href="URL">anchor text</a> tags placed naturally within sentences.
-- "faq": HTML for an FAQ section with 5-8 questions using natural language queries as defined in the template.
-- "slug": URL-friendly slug for the post (lowercase, hyphens, max 60 chars)
 
 Important:
 - Follow the BLOG TEMPLATE structure exactly for the content organization
@@ -393,7 +394,7 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=4000
+                    max_tokens=6000
                 )
                 raw_content = response.choices[0].message.content.strip()
             except Exception:
@@ -405,7 +406,7 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=4000
+                    max_tokens=6000
                 )
                 raw_content = response.choices[0].message.content.strip()
             
