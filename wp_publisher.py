@@ -103,60 +103,45 @@ def _xmlrpc_set_yoast_meta(
     """
     Set Yoast SEO meta fields via XML-RPC.
 
-    Yoast's _yoast_wpseo_metadesc and _yoast_wpseo_focuskw are NOT registered
-    for the WP REST API, so REST meta writes silently do nothing for those
-    fields. XML-RPC's wp.editPost with custom_fields bypasses that restriction.
-
-    Args:
-        fields: dict of {meta_key: meta_value} to set, e.g.
-                {"_yoast_wpseo_metadesc": "...", "_yoast_wpseo_title": "..."}
-    Returns True if all fields were set successfully.
+    Fetches existing custom field IDs first so updates overwrite in-place
+    rather than creating duplicate meta rows (which Yoast ignores).
     """
-    import html as _html
+    import xmlrpc.client
 
-    # Build one custom_fields array with all keys
-    cf_items = ""
-    for key, value in fields.items():
-        safe_key   = _html.escape(str(key))
-        safe_value = _html.escape(str(value))
-        cf_items += f"""
-          <value><struct>
-            <member><name>key</name><value><string>{safe_key}</string></value></member>
-            <member><name>value</name><value><string>{safe_value}</string></value></member>
-          </struct></value>"""
-
-    # Strip spaces from app password (WP stores them without spaces)
-    pwd = app_password.replace(" ", "")
-
-    payload = f"""<?xml version="1.0" encoding="UTF-8"?>
-<methodCall>
-  <methodName>wp.editPost</methodName>
-  <params>
-    <param><value><int>1</int></value></param>
-    <param><value><string>{_html.escape(username)}</string></value></param>
-    <param><value><string>{_html.escape(pwd)}</string></value></param>
-    <param><value><int>{post_id}</int></value></param>
-    <param><value><struct>
-      <member>
-        <name>custom_fields</name>
-        <value><array><data>{cf_items}
-        </data></array></value>
-      </member>
-    </struct></value></param>
-  </params>
-</methodCall>"""
+    xmlrpc_url = f"{wp_url.rstrip('/')}/xmlrpc.php"
+    pwd = app_password  # WP accepts app passwords with or without spaces
 
     try:
-        resp = requests.post(
-            f"{wp_url.rstrip('/')}/xmlrpc.php",
-            data=payload.encode("utf-8"),
-            headers={"Content-Type": "text/xml"},
-            timeout=15,
-        )
-        success = "<boolean>1</boolean>" in resp.text
-        if not success:
-            logger.warning(f"XML-RPC Yoast meta update failed: {resp.text[:200]}")
-        return success
+        client = xmlrpc.client.ServerProxy(xmlrpc_url)
+
+        # Fetch existing custom fields to get their IDs
+        post = client.wp.getPost(1, username, pwd, post_id, ["custom_fields"])
+        existing = post.get("custom_fields", [])
+
+        # Build key -> [list of field IDs] map to handle any pre-existing duplicates
+        key_ids: dict = {}
+        for cf in existing:
+            k = cf.get("key", "")
+            if k in fields:
+                key_ids.setdefault(k, []).append(cf["id"])
+
+        custom_fields = []
+        for key, value in fields.items():
+            ids = key_ids.get(key, [])
+            if ids:
+                # Update the first occurrence; blank out any extras (duplicates)
+                custom_fields.append({"id": ids[0], "key": key, "value": str(value)})
+                for dup_id in ids[1:]:
+                    custom_fields.append({"id": dup_id, "key": key, "value": ""})
+            else:
+                # No existing field — let WP create it
+                custom_fields.append({"key": key, "value": str(value)})
+
+        result = client.wp.editPost(1, username, pwd, post_id, {"custom_fields": custom_fields})
+        if not result:
+            logger.warning(f"XML-RPC Yoast meta update returned false for post {post_id}")
+        return bool(result)
+
     except Exception as e:
         logger.warning(f"XML-RPC Yoast meta update error: {e}")
         return False
