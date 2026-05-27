@@ -123,11 +123,41 @@ def assemble_final_html(
     result = template
     for placeholder, value in replacements.items():
         result = result.replace(placeholder, value)
-    
+
     # Check for any remaining unreplaced placeholders
     remaining = result.count("{{")
     if remaining > 0:
         logger.warning(f"Template has {remaining} unreplaced placeholders")
-    
+
+    result = _add_code_styles(result)
+
     logger.info(f"Assembled final HTML ({len(result)} chars)")
     return result
+
+
+def _add_code_styles(html_content: str) -> str:
+    """Add inline CSS to <code> and <pre> elements so they stand out from body text."""
+    PRE_STYLE = (
+        'style="display:block;background:#f6f8fa;color:#24292f;'
+        'font-family:\'Consolas\',\'Courier New\',monospace;font-size:13px;'
+        'line-height:1.7;padding:16px 20px;margin:20px 0;border-radius:8px;'
+        'overflow-x:auto;border:1px solid #d0d7de;border-left:4px solid #6c63ff;'
+        'white-space:pre-wrap;word-break:break-word;"'
+    )
+    INLINE_CODE_STYLE = (
+        'style="background:#f0f0f5;color:#7c3aed;'
+        'font-family:\'Consolas\',\'Courier New\',monospace;font-size:0.88em;'
+        'padding:2px 6px;border-radius:4px;border:1px solid #e0d9f5;"'
+    )
+    # Style <pre> blocks
+    result = re.sub(r'<pre(\s[^>]*)?>', f'<pre {PRE_STYLE}>', html_content)
+    # Style inline <code> only outside <pre> blocks
+    # Split on <pre>...</pre>, apply inline style only to code outside those segments
+    parts = re.split(r'(<pre[\s\S]*?</pre>)', result)
+    styled_parts = []
+    for part in parts:
+        if part.startswith('<pre'):
+            styled_parts.append(part)  # inside pre — leave <code> unstyled
+        else:
+            styled_parts.append(re.sub(r'<code(\s[^>]*)?>', f'<code {INLINE_CODE_STYLE}>', part))
+    return ''.join(styled_parts)

@@ -414,22 +414,26 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
             try:
                 result = json.loads(raw_content)
             except json.JSONDecodeError:
-                # Try to extract JSON from markdown code blocks
                 import re
+                from json_repair import repair_json
+                # Try markdown code block first
                 json_match = re.search(r'```(?:json)?\s*([\s\S]+?)\s*```', raw_content)
-                if json_match:
-                    result = json.loads(json_match.group(1))
+                candidate = json_match.group(1) if json_match else raw_content
+                # Find outermost JSON object
+                start = candidate.find('{')
+                end = candidate.rfind('}') + 1
+                if start != -1 and end != 0:
+                    candidate = candidate[start:end]
                 else:
-                    # Try to find JSON object in the response
-                    start = raw_content.find('{')
-                    end = raw_content.rfind('}') + 1
-                    if start != -1 and end != 0:
-                        result = json.loads(raw_content[start:end])
-                    else:
-                        raise ValueError("Could not extract JSON from LLM response")
+                    raise ValueError("Could not extract JSON from LLM response")
+                # Repair and parse
+                repaired = repair_json(candidate)
+                result = json.loads(repaired)
             
-            # Validate required keys
-            required_keys = ["tldr", "meta_title", "meta_description", "content", "faq"]
+            # Validate required keys — tldr is optional, fallback to meta_description
+            if "tldr" not in result:
+                result["tldr"] = result.get("meta_description", "")
+            required_keys = ["meta_title", "meta_description", "content", "faq"]
             for key in required_keys:
                 if key not in result:
                     raise ValueError(f"LLM response missing required key: {key}")

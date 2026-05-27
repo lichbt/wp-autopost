@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment & secrets
+.env
+credentials/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+
+# Database (runtime state)
+data/*.db
+data/*.db.bak
+data/*.db-shm
+data/*.db-wal
+
+# Claude Code worktrees & session data
+.claude/
+
+# Temp / generated files
+/tmp/
+*.bak
+plan_*.json
+shaunsocial_seo_aeo_strategy_2026.md
