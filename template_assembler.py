@@ -90,7 +90,6 @@ def assemble_final_html(
 </head>
 <body>
 <article>
-<h1>{{title}}</h1>
 <p><strong>TL;DR:</strong> {{tldr}}</p>
 <div class="post-content">{{content}}</div>
 <div class="faq">{{faq}}</div>
