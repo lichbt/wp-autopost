@@ -203,7 +203,7 @@ PRODUCT FACTS RULES (critical):
 - If the facts say the price is $149, always write $149 — never a different number.
 - If the facts say the mobile app is a PWA, never call it a native app, and vice versa.
 
-You MUST follow the provided blog template structure exactly. The template defines the required sections, headings, and formatting.
+Use the provided blog template as the RECOMMENDED structure. Follow its section flow and headings closely, but you MAY adapt it to the specific topic — add, reorder, merge, or drop sections where the topic and search intent clearly call for it. These blocks are MANDATORY in every article regardless of the template: a TL;DR, an FAQ section, and clear H2/H3 headings. Adapt the structure to serve the reader; never drop the mandatory blocks.
 
 INTERNAL LINKING RULES (mandatory):
 - Insert 3–5 contextual internal links within the body text using real <a href="URL">anchor text</a> HTML tags.
@@ -302,7 +302,7 @@ Special Instructions: {special_instructions}
 === PRODUCT FACTS (use these as ground truth — do NOT invent or contradict) ===
 {site_facts}
 {strategy_section}
-=== BLOG TEMPLATE (You MUST follow this structure) ===
+=== BLOG TEMPLATE (recommended structure — adapt to the topic, keep the mandatory blocks) ===
 {template}
 
 === ADDITIONAL CONTENT GUIDELINES ===
@@ -322,7 +322,7 @@ Return a JSON object with these keys IN THIS ORDER:
 - "content": full HTML body following the template structure above. Use proper H2/H3 headings as defined in the template. Use <table> where the template calls for tables, numbered H2 steps for how-to guides. Insert 3–5 internal links from the list above using <a href="URL">anchor text</a> tags placed naturally within sentences.
 
 Important:
-- Follow the BLOG TEMPLATE structure exactly for the content organization
+- Use the BLOG TEMPLATE as the recommended structure; adapt sections to the topic where it improves relevance, but always keep the mandatory TL;DR and FAQ blocks
 - Do not invent product features. Only mention product names when appropriate
 - Use HTML tags for formatting (<h2>, <h3>, <p>, <ul>, <li>, <table>, <strong>, <em>)
 - Include the target keywords naturally throughout the content
