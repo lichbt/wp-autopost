@@ -26,6 +26,9 @@ data/*.db.bak
 data/*.db-shm
 data/*.db-wal
 
+# Stray SQLite file created when DATABASE_PATH=":memory:" is written to disk
+:memory:
+
 # Claude Code worktrees & session data
 .claude/
 
