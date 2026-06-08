@@ -487,3 +487,95 @@ Be direct. Use the actual data — reference specific pillars, titles, and numbe
         return memo
     except Exception as exc:
         raise RuntimeError(f"Strategy memo generation failed: {exc}") from exc
+
+
+# ── Performance-Weighted Persona Selection ────────────────────────────────────
+# Closes the loop on writing personas: instead of blind topic_id % N rotation,
+# bias selection toward personas whose articles actually score well — while still
+# exploring under-used personas so every persona keeps accumulating data.
+
+def get_persona_performance(site_id: int, min_samples: int = 1) -> Dict[str, Dict]:
+    """Average composite score per writing persona over scored articles.
+
+    Returns {persona_name: {"avg_score": float, "count": int}}, only including
+    personas with at least `min_samples` scored articles.
+    """
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT writing_persona       AS persona,
+               AVG(performance_score) AS avg_score,
+               COUNT(*)               AS count
+        FROM topics
+        WHERE site_id = ?
+          AND writing_persona IS NOT NULL AND writing_persona != ''
+          AND performance_score IS NOT NULL
+        GROUP BY writing_persona
+    """, (site_id,)).fetchall()
+    conn.close()
+
+    out: Dict[str, Dict] = {}
+    for r in rows:
+        d = dict(r)
+        if (d["count"] or 0) >= min_samples:
+            out[d["persona"]] = {
+                "avg_score": round(d["avg_score"] or 0.0, 2),
+                "count": int(d["count"]),
+            }
+    return out
+
+
+def select_persona(site_id: int, topic_id: int, epsilon: float = 0.2,
+                   min_total: int = 8) -> Dict:
+    """Pick a writing persona using deterministic epsilon-greedy on performance.
+
+    - Cold start (fewer than `min_total` scored articles, or <2 personas with
+      data) → fall back to the original deterministic rotation. Nothing changes
+      until there is enough signal.
+    - Exploit (most topics): the persona with the highest average score.
+    - Explore (every Nth topic, N≈1/epsilon): an under-sampled persona, so every
+      persona keeps gathering data and the ranking can't ossify.
+
+    Deterministic in (site performance snapshot, topic_id) — reproducible and
+    testable, no RNG.
+    """
+    from content_generator import WRITING_PERSONAS, get_persona_for_topic
+    names = [p["name"] for p in WRITING_PERSONAS]
+
+    try:
+        perf = get_persona_performance(site_id)
+    except Exception as exc:
+        logger.warning(f"[persona] performance lookup failed for site {site_id}: {exc}")
+        perf = {}
+
+    total_scored = sum(v["count"] for v in perf.values())
+    personas_with_data = [n for n in names if n in perf]
+
+    # Cold start — not enough signal yet.
+    if total_scored < min_total or len(personas_with_data) < 2:
+        chosen = get_persona_for_topic(topic_id)
+        logger.info(f"[persona] cold-start rotation → '{chosen['name']}' "
+                    f"(scored={total_scored}, with_data={len(personas_with_data)})")
+        return chosen
+
+    stats = {n: perf.get(n, {"avg_score": None, "count": 0}) for n in names}
+    explore_every = max(2, round(1.0 / epsilon)) if epsilon > 0 else 0
+
+    if explore_every and topic_id % explore_every == 0:
+        # Explore: least-sampled persona; rotate among ties by topic_id.
+        min_count = min(s["count"] for s in stats.values())
+        candidates = [n for n in names if stats[n]["count"] == min_count]
+        chosen_name = candidates[(topic_id // explore_every) % len(candidates)]
+        mode = "explore"
+    else:
+        # Exploit: best average score among personas that have data.
+        # Tie-break by name for determinism.
+        seen = [(n, stats[n]["avg_score"]) for n in names if stats[n]["avg_score"] is not None]
+        chosen_name = max(seen, key=lambda kv: (kv[1], kv[0]))[0]
+        mode = "exploit"
+
+    chosen = next((p for p in WRITING_PERSONAS if p["name"] == chosen_name), None)
+    if chosen is None:
+        return get_persona_for_topic(topic_id)
+    logger.info(f"[persona] {mode} → '{chosen_name}' "
+                f"(avg={stats[chosen_name]['avg_score']}, n={stats[chosen_name]['count']})")
+    return chosen

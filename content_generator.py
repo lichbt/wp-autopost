@@ -467,9 +467,15 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
     if DRY_RUN:
         return _get_mock_content(topic)
 
-    # ── Writing persona (deterministic by topic ID) ───────────────────────────
+    # ── Writing persona (performance-weighted, with rotation fallback) ─────────
     topic_id = topic.get("id", 0)
-    persona = get_persona_for_topic(topic_id)
+    site_id = topic.get("site_id") or (site or {}).get("id")
+    try:
+        from content_strategist import select_persona
+        persona = select_persona(site_id, topic_id) if site_id else get_persona_for_topic(topic_id)
+    except Exception as exc:
+        logger.warning(f"Persona selection fell back to rotation: {exc}")
+        persona = get_persona_for_topic(topic_id)
     system_prompt = build_system_prompt(persona)
     logger.info(f"Writing persona: '{persona['name']}' (topic {topic_id})")
 
