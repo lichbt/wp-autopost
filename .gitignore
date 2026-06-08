@@ -26,6 +26,9 @@ data/*.db.bak
 data/*.db-shm
 data/*.db-wal
 
+# Stray SQLite file created when DATABASE_PATH=":memory:" is written to disk
+:memory:
+
 # Claude Code worktrees & session data
 .claude/
 
@@ -34,3 +37,6 @@ data/*.db-wal
 *.bak
 plan_*.json
 shaunsocial_seo_aeo_strategy_2026.md
+
+# LLM-proposed templates awaiting human review (move up to templates/ to activate)
+templates/proposed/

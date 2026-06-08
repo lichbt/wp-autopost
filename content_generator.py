@@ -1,4 +1,5 @@
 import json
+import re
 import time
 import requests
 from pathlib import Path
@@ -9,6 +10,39 @@ from logger import logger
 
 # Templates directory
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
+
+# Facts files directory
+FACTS_DIR = PROJECT_ROOT / "data"
+
+# Map site domain keywords → facts filename
+_SITE_FACTS_MAP = {
+    "moodatingscript": "moodatingscript-facts.md",
+    "moodating":       "moodatingscript-facts.md",
+    "shaunsocial":     "shaunsocial-facts.md",
+}
+
+
+def _load_site_facts(site: Dict) -> str:
+    """
+    Load the product facts markdown for the given site.
+    Returns the facts content as a string, or empty string if not found.
+    """
+    site_url = site.get("wp_url", "").lower()
+    site_name = site.get("name", "").lower()
+
+    facts_file = None
+    for keyword, filename in _SITE_FACTS_MAP.items():
+        if keyword in site_url or keyword in site_name:
+            facts_file = FACTS_DIR / filename
+            break
+
+    if facts_file and facts_file.exists():
+        content = facts_file.read_text(encoding="utf-8")
+        logger.info(f"Loaded site facts: {facts_file.name}")
+        return content
+
+    logger.info("No site facts file found — proceeding without facts context")
+    return ""
 
 
 def _fetch_published_posts(site: Dict) -> List[Dict]:
@@ -49,55 +83,113 @@ def _format_link_context(posts: List[Dict]) -> str:
     return "\n".join(lines)
 
 
-def load_template(pillar: str) -> Optional[str]:
+# Default template used when nothing else resolves.
+DEFAULT_TEMPLATE = "how_to.md"
+
+# Legacy / loose pillar names → canonical template stem. Only consulted when a
+# direct "{slug}.md" file does not exist, so adding a real template file always
+# wins over an alias.
+_TEMPLATE_ALIASES = {
+    "how to":       "how_to",
+    "howto":        "how_to",
+    "comparisons":  "vs_comparison",
+    "comparison":   "vs_comparison",
+    "vs":           "vs_comparison",
+    "definitions":  "definition",
+    "explainer":    "feature_explainer",
+    "cost & roi":   "cost_roi",
+    "cost":         "cost_roi",
+    "roi":          "cost_roi",
+    "pricing":      "cost_roi",
+    "market":       "niche",
+    "best of":      "best_of",
+    "listicle":     "best_of",
+    "roundup":      "best_of",
+    "buyer guide":  "buyer_guide",
+    "buying guide": "buyer_guide",
+    "tutorial":     "setup_tutorial",
+    "setup":        "setup_tutorial",
+}
+
+
+def _slugify_pillar(name: str) -> str:
+    """Normalize a pillar/template name to a file-stem slug, e.g. 'How-To' → 'how_to'."""
+    slug = (name or "").strip().lower()
+    slug = re.sub(r"[\s\-&/]+", "_", slug)
+    slug = re.sub(r"_+", "_", slug).strip("_")
+    return slug
+
+
+def available_template_stems() -> list:
+    """All template stems on disk (filenames without .md, README excluded).
+
+    Discovered dynamically so any newly added template — including ones an LLM
+    proposes and we drop into the templates dir — is immediately resolvable.
     """
-    Load a blog template for the given pillar.
-    
+    if not TEMPLATES_DIR.exists():
+        return []
+    return sorted(
+        p.stem for p in TEMPLATES_DIR.glob("*.md")
+        if p.stem.lower() != "readme"
+    )
+
+
+def resolve_template_name(pillar: str, override: Optional[str] = None) -> str:
+    """Resolve a pillar (and optional explicit override) to a template filename.
+
+    Resolution order, trying the override first then the pillar:
+      1. exact "{slug}.md" file on disk      (covers all pillars named like files)
+      2. alias map → canonical stem          (legacy / loose names)
+      3. fuzzy contains against known stems
+    Falls back to DEFAULT_TEMPLATE if nothing matches.
+
+    `override` lets the planner/LLM pick a template per-topic that differs from
+    the pillar's default.
+    """
+    stems = set(available_template_stems())
+
+    for candidate in (override, pillar):
+        if not candidate:
+            continue
+        low = candidate.strip().lower()
+        slug = _slugify_pillar(candidate)
+        if not slug:
+            continue
+
+        # 1. direct file match
+        if slug in stems:
+            return f"{slug}.md"
+
+        # 2. alias map (check both the raw lowered form and the slug)
+        for key in (low, slug):
+            alias = _TEMPLATE_ALIASES.get(key)
+            if alias and alias in stems:
+                return f"{alias}.md"
+
+        # 3. fuzzy contains (e.g. "feature_explainer_guide" → feature_explainer)
+        for stem in stems:
+            if slug == stem or slug in stem or stem in slug:
+                return f"{stem}.md"
+
+    return DEFAULT_TEMPLATE
+
+
+def load_template(pillar: str, override: Optional[str] = None) -> Optional[str]:
+    """
+    Load a blog template for the given pillar (optionally overridden).
+
     Args:
-        pillar: Content pillar name (e.g., "How-To", "Comparisons", "Definition")
-    
+        pillar: Content pillar name (e.g., "how_to", "vs_comparison", "best_of")
+        override: Explicit template name/stem chosen per-topic; wins over pillar.
+
     Returns:
-        Template content or None if not found
+        Template content, or None if the resolved file is missing.
     """
-    # Map pillar names to template files
-    pillar_to_file = {
-        "how-to": "how_to.md",
-        "how to": "how_to.md",
-        "comparisons": "comparison.md",
-        "comparison": "comparison.md",
-        "vs": "comparison.md",
-        "definition": "definition.md",
-        "definitions": "definition.md",
-        "explainer": "definition.md",
-        "cost & roi": "cost_roi.md",
-        "cost": "cost_roi.md",
-        "roi": "cost_roi.md",
-        "pricing": "cost_roi.md",
-        "niche": "niche.md",
-        "market": "niche.md",
-    }
-    
-    # Normalize pillar name
-    pillar_lower = pillar.lower().strip()
-    
-    # Get template filename
-    filename = pillar_to_file.get(pillar_lower)
-    if not filename:
-        # Try partial match
-        for key, value in pillar_to_file.items():
-            if key in pillar_lower or pillar_lower in key:
-                filename = value
-                break
-    
-    if not filename:
-        filename = "how_to.md"  # Default template
-    
-    # Load template
+    filename = resolve_template_name(pillar, override)
     template_path = TEMPLATES_DIR / filename
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
             return f.read()
-    
     return None
 
 
@@ -105,7 +197,13 @@ def load_template(pillar: str) -> Optional[str]:
 CONTENT_SYSTEM_PROMPT = """You are an expert SEO/GEO content writer creating blog posts that are highly likely to be cited by AI systems (ChatGPT, Perplexity, Gemini).
 Your writing must be factual, structured with clear H2/H3 headings, include tables and lists when helpful, and always start with a direct answer.
 
-You MUST follow the provided blog template structure exactly. The template defines the required sections, headings, and formatting.
+PRODUCT FACTS RULES (critical):
+- The prompt includes a PRODUCT FACTS section — treat every fact in it as absolute ground truth.
+- Never invent, contradict, or deviate from the pricing, features, mobile app type, or open-source status stated in the facts.
+- If the facts say the price is $149, always write $149 — never a different number.
+- If the facts say the mobile app is a PWA, never call it a native app, and vice versa.
+
+Use the provided blog template as the RECOMMENDED structure. Follow its section flow and headings closely, but you MAY adapt it to the specific topic — add, reorder, merge, or drop sections where the topic and search intent clearly call for it. These blocks are MANDATORY in every article regardless of the template: a TL;DR, an FAQ section, and clear H2/H3 headings. Adapt the structure to serve the reader; never drop the mandatory blocks.
 
 INTERNAL LINKING RULES (mandatory):
 - Insert 3–5 contextual internal links within the body text using real <a href="URL">anchor text</a> HTML tags.
@@ -115,6 +213,84 @@ INTERNAL LINKING RULES (mandatory):
 - Never repeat the same URL more than once.
 - Do NOT add links inside the tldr, meta_description, or faq fields — only in the "content" field."""
 
+
+# ── Writing Personas ──────────────────────────────────────────────────────────
+# Each persona adds a style addon to CONTENT_SYSTEM_PROMPT. Selection is
+# deterministic: topic_id % len(WRITING_PERSONAS) — reproducible and loggable.
+
+WRITING_PERSONAS = [
+    {
+        "name": "expert_practitioner",
+        "system_addon": (
+            "WRITING PERSONA — Expert Practitioner:\n"
+            "Write from hard-won, hands-on experience. Open with a direct, opinionated statement you'd only "
+            "make if you'd actually used these tools. No hedge words ('may', 'might', 'could'). "
+            "Sentence length varies — short punchy sentences after long technical ones. "
+            "Get to the recommendation fast; justify it after."
+        ),
+    },
+    {
+        "name": "journalist",
+        "system_addon": (
+            "WRITING PERSONA — Journalist:\n"
+            "Open with a lede: one punchy sentence that tells the whole story. Use the inverted pyramid — "
+            "most important facts first. Headlines are verb-forward and crisp. "
+            "Named examples over abstractions. Context and stakes before the deep-dive."
+        ),
+    },
+    {
+        "name": "educator",
+        "system_addon": (
+            "WRITING PERSONA — Educator:\n"
+            "Assume the reader is intelligent but new to the topic. Define terms on first use. "
+            "Use one concrete analogy per major concept. Build knowledge progressively — "
+            "each section assumes the previous was read. Use numbered steps for any process. "
+            "Why-before-how structure throughout."
+        ),
+    },
+    {
+        "name": "business_strategist",
+        "system_addon": (
+            "WRITING PERSONA — Business Strategist:\n"
+            "Frame everything through business outcomes: cost saved, time reduced, risk managed, revenue gained. "
+            "Open with the business case, not the technical problem. "
+            "Decision-framing language: 'If X is your priority, choose Y.' "
+            "Include at least one cost or ROI data point per H2."
+        ),
+    },
+    {
+        "name": "data_analyst",
+        "system_addon": (
+            "WRITING PERSONA — Data Analyst:\n"
+            "Lead with the numbers. Every claim needs a figure, a source, or a stated basis. "
+            "Tables preferred over prose for any comparison with 3+ variables. "
+            "Precise language: '40% faster' not 'much faster'. "
+            "Data summary first, methodology second, interpretation third."
+        ),
+    },
+    {
+        "name": "critical_reviewer",
+        "system_addon": (
+            "WRITING PERSONA — Critical Reviewer:\n"
+            "Acknowledge real weaknesses of every tool or approach before recommending it. "
+            "Structure: strengths → real limitations → who it's actually right for. "
+            "Open with what the tool does NOT do well — earn reader trust before the recommendation. "
+            "No overselling. Honest limitations build credibility."
+        ),
+    },
+]
+
+
+def get_persona_for_topic(topic_id: int) -> dict:
+    """Deterministic persona selection: topic_id % number of personas."""
+    return WRITING_PERSONAS[topic_id % len(WRITING_PERSONAS)]
+
+
+def build_system_prompt(persona: dict) -> str:
+    """Combine base system prompt with persona-specific writing style addon."""
+    return f"{CONTENT_SYSTEM_PROMPT}\n\n{persona['system_addon']}"
+
+
 CONTENT_USER_PROMPT_TEMPLATE = """Create a blog post for the following topic:
 
 Title: {title}
@@ -123,7 +299,10 @@ Intent: {intent}
 Target Keywords: {keywords}
 Special Instructions: {special_instructions}
 
-=== BLOG TEMPLATE (You MUST follow this structure) ===
+=== PRODUCT FACTS (use these as ground truth — do NOT invent or contradict) ===
+{site_facts}
+{strategy_section}
+=== BLOG TEMPLATE (recommended structure — adapt to the topic, keep the mandatory blocks) ===
 {template}
 
 === ADDITIONAL CONTENT GUIDELINES ===
@@ -143,7 +322,7 @@ Return a JSON object with these keys IN THIS ORDER:
 - "content": full HTML body following the template structure above. Use proper H2/H3 headings as defined in the template. Use <table> where the template calls for tables, numbered H2 steps for how-to guides. Insert 3–5 internal links from the list above using <a href="URL">anchor text</a> tags placed naturally within sentences.
 
 Important:
-- Follow the BLOG TEMPLATE structure exactly for the content organization
+- Use the BLOG TEMPLATE as the recommended structure; adapt sections to the topic where it improves relevance, but always keep the mandatory TL;DR and FAQ blocks
 - Do not invent product features. Only mention product names when appropriate
 - Use HTML tags for formatting (<h2>, <h3>, <p>, <ul>, <li>, <table>, <strong>, <em>)
 - Include the target keywords naturally throughout the content
@@ -306,11 +485,21 @@ def _get_mock_content(topic: Dict) -> Dict:
         
         meta_description = f"Learn about {title.lower()} and how it impacts dating app success. Expert insights and practical guidance."
     
+    # Derive SEO fields so dry-run output matches the real LLM contract
+    keywords = topic.get("target_keywords") or []
+    focus_keyword = keywords[0] if keywords else title.lower()
+    meta_title = (title[:57] + "...") if len(title) > 60 else title
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+
     return {
         "tldr": tldr,
         "content": content,
         "faq": faq,
-        "meta_description": meta_description
+        "meta_description": meta_description,
+        "meta_title": meta_title,
+        "focus_keyword": focus_keyword,
+        "slug": slug,
+        "writing_persona": get_persona_for_topic(topic.get("id", 0))["name"],
     }
 
 
@@ -331,24 +520,45 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
     """
     title = topic.get("title", "Untitled")
     pillar = topic.get("pillar", "General")
-    
+
     # Dry-run mode: return mock content
     if DRY_RUN:
         return _get_mock_content(topic)
-    
-    # Load template for this pillar
-    template = load_template(pillar)
+
+    # ── Writing persona (deterministic by topic ID) ───────────────────────────
+    topic_id = topic.get("id", 0)
+    persona = get_persona_for_topic(topic_id)
+    system_prompt = build_system_prompt(persona)
+    logger.info(f"Writing persona: '{persona['name']}' (topic {topic_id})")
+
+    # ── Strategy context from GSC/GA4 data (Feature 2) ───────────────────────
+    try:
+        from content_strategist import get_strategy_context
+        strategy_context = get_strategy_context(site.get("id", 0))
+    except Exception:
+        strategy_context = ""
+    strategy_section = f"\n{strategy_context}\n" if strategy_context else ""
+
+    # Load template for this pillar. A per-topic "recommended_template" (set by
+    # the planner/LLM) overrides the pillar's default structure.
+    template_override = topic.get("recommended_template") or topic.get("template")
+    resolved_template = resolve_template_name(pillar, template_override)
+    template = load_template(pillar, template_override)
     if template:
-        logger.info(f"Loaded template for pillar: {pillar}")
+        logger.info(f"Loaded template '{resolved_template}' for pillar '{pillar}'"
+                    + (f" (override: {template_override})" if template_override else ""))
     else:
         logger.warning(f"No template found for pillar: {pillar}, using default guidelines")
         template = "Standard SEO-optimized article with introduction, H2 sections, and FAQ"
-    
+
     # Get pillar hints from plan context (additional to template)
     pillar_hints = plan_context.get("default_pillar_template_hints", {}).get(
         pillar,
         "Follow the template structure above"
     )
+
+    # Load site facts (product pricing, features, correct names)
+    site_facts = _load_site_facts(site)
 
     # Fetch published posts for internal link context
     published_posts = _fetch_published_posts(site)
@@ -365,6 +575,8 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
         intent=topic.get("intent", "informational"),
         keywords=", ".join(topic.get("target_keywords", [])),
         special_instructions=topic.get("special_instructions") or "None",
+        site_facts=site_facts or "No product facts file found — use general knowledge.",
+        strategy_section=strategy_section,
         template=template,
         pillar_hints=pillar_hints,
         link_context=link_context or "No existing posts yet — skip internal links for now.",
@@ -390,11 +602,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                     model=LLM_MODEL,
                     response_format={"type": "json_object"},
                     messages=[
-                        {"role": "system", "content": CONTENT_SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=6000
+                    max_tokens=16000
                 )
                 raw_content = response.choices[0].message.content.strip()
             except Exception:
@@ -402,11 +614,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                 response = client.chat.completions.create(
                     model=LLM_MODEL,
                     messages=[
-                        {"role": "system", "content": CONTENT_SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=6000
+                    max_tokens=16000
                 )
                 raw_content = response.choices[0].message.content.strip()
             
@@ -421,11 +633,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                 candidate = json_match.group(1) if json_match else raw_content
                 # Find outermost JSON object
                 start = candidate.find('{')
-                end = candidate.rfind('}') + 1
-                if start != -1 and end != 0:
-                    candidate = candidate[start:end]
-                else:
+                if start == -1:
                     raise ValueError("Could not extract JSON from LLM response")
+                end = candidate.rfind('}') + 1
+                # If closing brace not found, JSON was truncated — try repair anyway
+                candidate = candidate[start:end] if end > 0 else candidate[start:]
                 # Repair and parse
                 repaired = repair_json(candidate)
                 result = json.loads(repaired)
@@ -437,7 +649,10 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
             for key in required_keys:
                 if key not in result:
                     raise ValueError(f"LLM response missing required key: {key}")
-            
+
+            # Tag with persona so scheduler can persist it
+            result["writing_persona"] = persona["name"]
+
             logger.info(f"Successfully generated content for: {title}")
             return result
             

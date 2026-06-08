@@ -208,6 +208,14 @@ def _run_migrations():
         ("generated_focus_keyword", "TEXT"),
         ("generated_seo_title", "TEXT"),
         ("generated_schema_type", "TEXT"),
+        # Feature 1: writing persona used for this article
+        ("writing_persona", "TEXT"),
+        # Feature 3: article performance scoring
+        ("performance_score", "REAL"),
+        ("last_scored_at", "DATE"),
+        ("score_tier", "TEXT"),
+        # LLM-suggested content template (overrides the pillar default structure)
+        ("recommended_template", "TEXT"),
     ]
 
     for col, col_type in new_site_cols:
@@ -339,14 +347,16 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
         internal_links = json.dumps(topic.get("internal_links", []))
         cursor.execute("""
             INSERT INTO topics (site_id, plan_id, title, slug, pillar, priority, intent,
-                              target_keywords, internal_links, special_instructions, scheduled_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              target_keywords, internal_links, special_instructions, scheduled_date,
+                              recommended_template)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             site_id, plan_id,
             topic.get("title"), topic.get("slug"), topic.get("pillar"),
             topic.get("priority", "medium"), topic.get("intent", "informational"),
             target_keywords, internal_links,
             topic.get("special_instructions"), topic.get("scheduled_date"),
+            topic.get("recommended_template"),
         ))
         topic_ids.append(cursor.lastrowid)
     conn.commit()
@@ -424,7 +434,9 @@ def get_stale_topics_for_refresh(site_id: int, days_old: int = 90) -> List[Dict]
         GROUP BY t.id
         HAVING (avg_position IS NULL OR avg_position > 20)
            AND (total_impressions IS NULL OR total_impressions > 0)
-        ORDER BY total_impressions DESC
+        ORDER BY
+            CASE WHEN t.performance_score IS NOT NULL THEN t.performance_score ELSE 50 END ASC,
+            total_impressions DESC
         LIMIT 5
     """, (site_id, cutoff))
     rows = cursor.fetchall()
@@ -445,6 +457,10 @@ def update_topic_status(topic_id: int, status: str, **kwargs):
         "wp_post_id", "generated_tldr", "generated_body", "generated_faq",
         "generated_meta_description", "generated_focus_keyword", "generated_seo_title",
         "generated_schema_type", "final_html", "last_error", "attempts", "slug",
+        # Feature 1
+        "writing_persona",
+        # Feature 3
+        "performance_score", "last_scored_at", "score_tier",
     }
     updates = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
     params = [status]
@@ -536,6 +552,102 @@ def get_topic_logs(topic_id: int) -> List[Dict]:
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+
+# ── WP Sync helpers ──────────────────────────────────────────────────────────
+
+def get_or_create_import_plan(site_id: int) -> int:
+    """
+    Return the plan_id of the 'WP Historical Import' pseudo-plan for this site.
+    Creates it if it doesn't exist yet (idempotent).
+    Required because topics.plan_id is NOT NULL with a FK constraint.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id FROM plans WHERE site_id = ? AND raw_markdown = 'WP Historical Import' LIMIT 1",
+        (site_id,),
+    )
+    row = cursor.fetchone()
+    if row:
+        conn.close()
+        return row["id"]
+    cursor.execute(
+        "INSERT INTO plans (site_id, raw_markdown, extracted_json) VALUES (?, ?, ?)",
+        (site_id, "WP Historical Import", '{"global": {"strategy_summary": "Imported from WordPress"}, "topics": []}'),
+    )
+    plan_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    logger.info(f"Created WP import plan for site {site_id} (plan_id={plan_id})")
+    return plan_id
+
+
+def import_wp_post_stub(
+    site_id: int, plan_id: int,
+    title: str, slug: str, wp_post_id: int,
+) -> int:
+    """
+    Insert a minimal stub topic row for a WordPress post not already in the DB.
+    Sets status='published' so get_pending_topics() dedup skips it.
+    Returns new topic_id, or 0 if a duplicate slug/wp_post_id already exists.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Guard against race conditions / duplicate calls
+    cursor.execute(
+        "SELECT id FROM topics WHERE site_id = ? AND (slug = ? OR wp_post_id = ?) LIMIT 1",
+        (site_id, slug, wp_post_id),
+    )
+    if cursor.fetchone():
+        conn.close()
+        return 0
+    cursor.execute("""
+        INSERT INTO topics
+            (site_id, plan_id, title, slug, wp_post_id, status, priority, attempts)
+        VALUES (?, ?, ?, ?, ?, 'published', 'medium', 0)
+    """, (site_id, plan_id, title, slug, wp_post_id))
+    topic_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return topic_id
+
+
+def get_all_topic_wp_ids(site_id: int) -> set:
+    """Return set of all wp_post_id integers tracked in the DB for this site."""
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT wp_post_id FROM topics WHERE site_id = ? AND wp_post_id IS NOT NULL",
+        (site_id,),
+    ).fetchall()
+    conn.close()
+    return {r["wp_post_id"] for r in rows}
+
+
+def get_all_topic_slugs(site_id: int) -> set:
+    """Return set of all non-empty slugs tracked in the DB for this site."""
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT slug FROM topics WHERE site_id = ? AND slug IS NOT NULL AND slug != ''",
+        (site_id,),
+    ).fetchall()
+    conn.close()
+    return {r["slug"] for r in rows}
+
+
+def link_wp_post_by_slug(site_id: int, slug: str, wp_post_id: int):
+    """
+    Update a topic found by slug to record the WordPress post ID and mark as published.
+    Used when sync finds a slug match but the wp_post_id column was NULL.
+    """
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE topics SET wp_post_id = ?, status = 'published', updated_at = CURRENT_TIMESTAMP "
+        "WHERE site_id = ? AND slug = ?",
+        (wp_post_id, site_id, slug),
+    )
+    conn.commit()
+    conn.close()
 
 
 # ── GSC / GA4 data ────────────────────────────────────────────────────────────

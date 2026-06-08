@@ -103,6 +103,7 @@ def run_automation_cycle(site_id: int) -> int:
                 generated_meta_description=content.get("meta_description", ""),
                 generated_meta_title=content.get("meta_title", ""),
                 generated_slug=content.get("slug", ""),
+                writing_persona=content.get("writing_persona", ""),
                 final_html=""  # Will be set below
             )
             log_action(topic_id, "content_generated", "Content generated successfully")

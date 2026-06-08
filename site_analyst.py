@@ -115,7 +115,21 @@ def _fmt_existing_topics(topics: List[Dict], limit: int = 50) -> str:
     return "\n".join(lines)
 
 
-def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int) -> str:
+def _fmt_wp_posts(posts: List[Dict], limit: int = 300) -> str:
+    """Format live WP posts for the Claude planning prompt."""
+    if not posts:
+        return "  (none — site may be new or credentials not set)"
+    lines = []
+    for p in posts[:limit]:
+        slug  = p.get("slug", "")
+        title = p.get("title", "")
+        lines.append(f"  /{slug}/ — {title}")
+    if len(posts) > limit:
+        lines.append(f"  ... and {len(posts) - limit} more (not shown)")
+    return "\n".join(lines)
+
+
+def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int, wp_posts: List[Dict] = None) -> str:
     site_name = intake.get("name", "Unknown Site")
     site_url = intake.get("url", "")
     niche = intake.get("niche", "")
@@ -140,6 +154,16 @@ def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dic
     gsc_low_ctr = _fmt_gsc_rows(gsc.get("low_ctr_opportunities", []))
     ga4_top = _fmt_ga4_rows(ga4.get("top_pages", []))
     existing_str = _fmt_existing_topics(existing)
+    wp_posts_list = wp_posts or []
+    wp_posts_str = _fmt_wp_posts(wp_posts_list)
+
+    # Available content-structure templates (discovered from the templates dir),
+    # offered to the planner so it can pick the best-fit structure per topic.
+    try:
+        from content_generator import available_template_stems
+        available_templates = ", ".join(available_template_stems()) or "how_to"
+    except Exception:
+        available_templates = "vs_comparison, best_of, buyer_guide, setup_tutorial, feature_explainer, use_case, how_to, definition, cost_roi"
 
     # Compute a date schedule: posts_per_day posts/day over the horizon
     horizon_days = max(14, num_topics // posts_per_day + 1)
@@ -158,8 +182,14 @@ Target audience:
 Competitors: {competitor_names}
 Content pillars: {", ".join(pillars) if isinstance(pillars, list) else pillars}
 
-## EXISTING CONTENT IN DB
+## EXISTING CONTENT IN DB (automation-tracked)
 {existing_str}
+
+## LIVE WORDPRESS POSTS — DO NOT SUGGEST THESE
+These articles already exist on the live site. Do NOT propose any topic that
+covers the same subject matter, even with a different year or angle:
+{wp_posts_str}
+(Total live: {len(wp_posts_list)} posts)
 
 ## GOOGLE SEARCH CONSOLE — Top Queries (last 30 days)
 {gsc_top}
@@ -180,11 +210,16 @@ Optimise for TWO goals simultaneously:
 2. GEO (Generative Engine Optimisation) — structure topics so AI systems (ChatGPT, Perplexity, Gemini, Claude) will cite them.
    GEO priority order: vs_comparison > best_of > buyer_guide > setup_tutorial > feature_explainer > use_case
 
-Do NOT repeat topics already in the existing content list.
+CRITICAL: Do NOT suggest any topic whose title or subject closely matches any entry
+in EXISTING CONTENT IN DB or LIVE WORDPRESS POSTS above. Check both lists carefully.
 
 For each topic return:
   - title: exact post title (SEO-optimized, includes year if relevant)
   - pillar: one of [vs_comparison, best_of, buyer_guide, setup_tutorial, feature_explainer, use_case, how_to, definition, cost_roi]
+  - recommended_template: the content STRUCTURE that best fits THIS topic's search intent.
+    Choose one of: [{available_templates}]. It usually matches the pillar, but pick a
+    different one when the SERP/intent calls for it (e.g. a topic filed under "best_of"
+    that is really a walkthrough → "setup_tutorial"). Use null to fall back to the pillar default.
   - priority: high / medium / low
   - intent: commercial / informational / navigational
   - target_keywords: array of 3–5 keyword strings
@@ -355,6 +390,16 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
     ga4 = get_ga4_summary(site_id)
     existing = get_topics_summary(site_id)
 
+    # Fetch live WP posts so Claude avoids proposing duplicates
+    wp_posts: List[Dict] = []
+    if not DRY_RUN:
+        try:
+            from wp_sync import get_wp_post_list
+            wp_posts = get_wp_post_list(site)
+            print(GREEN(f"  ✓ Live WP posts fetched: {len(wp_posts)}"))
+        except Exception as exc:
+            print(YELLOW(f"  ⚠ Could not fetch live WP posts: {exc}"))
+
     print(f"  Existing topics in DB: {len(existing)}")
     print(f"  GSC query rows: {len(gsc.get('top_queries', []))}")
     print(f"  GA4 page rows:  {len(ga4.get('top_pages', []))}")
@@ -365,7 +410,7 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         plan = _get_mock_plan(site_name, num_topics)
         print(YELLOW("  [DRY RUN] Mock plan generated — set ANTHROPIC_API_KEY for real output."))
     else:
-        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics)
+        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics, wp_posts=wp_posts)
         messages: List[Dict] = [{"role": "user", "content": analysis_prompt}]
         try:
             raw = _call_claude(messages)

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MooDatingScript — June 2026 Report & 12-Article Plan</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+
+.header { background: linear-gradient(135deg, #1a0f35 0%, #0f1117 100%); border-bottom: 2px solid #7c3aed; padding: 28px 40px; }
+.header h1 { font-size: 22px; font-weight: 700; color: #f8fafc; }
+.header .meta { color: #64748b; font-size: 13px; margin-top: 5px; }
+.header .vs { display: inline-block; font-size: 11px; background: #7c3aed20; border: 1px solid #7c3aed40; color: #a78bfa; padding: 3px 10px; border-radius: 20px; margin-top: 8px; }
+
+.container { max-width: 1260px; margin: 0 auto; padding: 28px 40px; }
+
+.section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #7c3aed; margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: #1e293b; }
+
+/* KPIs */
+.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 12px; }
+.kpi { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+.kpi .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.kpi .val { font-size: 24px; font-weight: 800; color: #f8fafc; }
+.kpi .sub { font-size: 11px; color: #475569; margin-top: 3px; }
+.kpi.bad .val { color: #f87171; }
+.kpi.warn .val { color: #fbbf24; }
+.kpi.ok .val { color: #34d399; }
+
+/* Comparison with ShaunSocial */
+.compare-bar { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 13px; }
+.compare-bar h4 { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.compare-bar .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1e293b; }
+.compare-bar .row:last-child { border-bottom: none; }
+.compare-bar .row .site { color: #94a3b8; }
+.compare-bar .row .val-bad { color: #f87171; font-weight: 700; }
+.compare-bar .row .val-ok { color: #34d399; font-weight: 700; }
+
+/* Alerts */
+.alert { border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+.alert-red  { background: #dc262612; border: 1px solid #dc262640; color: #fca5a5; }
+.alert-blue { background: #2563eb12; border: 1px solid #2563eb40; color: #93c5fd; }
+.alert-grn  { background: #05996912; border: 1px solid #05996940; color: #6ee7b7; }
+.alert-yw   { background: #d9770612; border: 1px solid #d9770640; color: #fbbf24; }
+.alert-purple { background: #7c3aed12; border: 1px solid #7c3aed40; color: #c4b5fd; }
+.alert .icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.alert strong { color: inherit; font-weight: 700; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0 20px; }
+thead th { background: #161b2e; color: #64748b; font-weight: 600; text-align: left; padding: 9px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e293b; }
+thead th.r { text-align: right; }
+tbody tr { border-bottom: 1px solid #161b2e; }
+tbody tr:hover { background: #1e293b55; }
+tbody td { padding: 9px 12px; vertical-align: middle; }
+.r { text-align: right; font-variant-numeric: tabular-nums; }
+.ctr-bad  { color: #f87171; font-weight: 700; }
+.ctr-ok   { color: #fbbf24; font-weight: 600; }
+.ctr-good { color: #34d399; font-weight: 600; }
+.pos-good { color: #34d399; font-weight: 600; }
+.pos-ok   { color: #fbbf24; font-weight: 600; }
+.pos-bad  { color: #f87171; font-weight: 600; }
+.pos-ugly { color: #dc2626; font-weight: 700; }
+
+/* Pills */
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.pill-red    { background: #dc262620; color: #f87171; border: 1px solid #dc262640; }
+.pill-yw     { background: #d9770620; color: #fbbf24; border: 1px solid #d9770640; }
+.pill-blue   { background: #2563eb20; color: #60a5fa; border: 1px solid #2563eb40; }
+.pill-green  { background: #05996920; color: #34d399; border: 1px solid #05996940; }
+.pill-purple { background: #7c3aed20; color: #a78bfa; border: 1px solid #7c3aed40; }
+.pill-gray   { background: #47556920; color: #94a3b8; border: 1px solid #47556940; }
+.pill-orange { background: #ea580c20; color: #fb923c; border: 1px solid #ea580c40; }
+
+/* Article cards */
+.article-grid { display: flex; flex-direction: column; gap: 16px; }
+
+.art-card { background: #1a1a2e; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; }
+.art-card:hover { border-color: #334155; }
+.art-card.tier1 { border-left: 4px solid #ef4444; }
+.art-card.tier2 { border-left: 4px solid #f59e0b; }
+.art-card.tier3 { border-left: 4px solid #7c3aed; }
+
+.art-header { padding: 16px 20px; display: flex; align-items: flex-start; gap: 16px; cursor: pointer; }
+.art-num { font-size: 26px; font-weight: 900; flex-shrink: 0; width: 36px; line-height: 1; }
+.art-card.tier1 .art-num { color: #7f1d1d; }
+.art-card.tier2 .art-num { color: #78350f; }
+.art-card.tier3 .art-num { color: #3b0764; }
+
+.art-main { flex: 1; }
+.art-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 5px; }
+.art-slug  { font-size: 11px; color: #7c3aed; font-family: monospace; }
+.art-meta  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.art-stats { display: flex; flex-direction: column; gap: 4px; text-align: right; flex-shrink: 0; min-width: 90px; }
+.art-stats .s-impr { font-size: 18px; font-weight: 800; color: #f8fafc; }
+.art-stats .s-label { font-size: 10px; color: #475569; text-transform: uppercase; }
+.art-stats .s-pos   { font-size: 12px; margin-top: 2px; }
+
+.art-body { padding: 0 20px 18px 72px; display: none; }
+.art-body.open { display: block; }
+.art-body h4 { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 6px; }
+.art-body p  { font-size: 13px; color: #94a3b8; line-height: 1.65; }
+.art-body ul { font-size: 13px; color: #94a3b8; padding-left: 18px; line-height: 1.8; }
+.art-body ul li strong { color: #cbd5e1; }
+.art-body .kw-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 10px 14px; margin: 8px 0; }
+.art-body .kw-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.art-body .kw-chip { background: #1e293b; border: 1px solid #334155; border-radius: 5px; padding: 3px 9px; font-size: 11px; color: #94a3b8; }
+.art-body .kw-chip b { color: #fbbf24; margin-left: 5px; }
+.art-body .brief-box { background: #0a0a1a; border-left: 3px solid #7c3aed; border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; color: #c4b5fd; }
+.art-body .brief-box strong { color: #ddd6fe; }
+
+/* Calendar */
+.cal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cal-week { background: #1a1a2e; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
+.cal-week .wk-hdr { padding: 10px 14px; font-size: 12px; font-weight: 700; color: #94a3b8; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; }
+.cal-week .wk-hdr .dates { color: #475569; font-weight: 400; font-size: 11px; }
+.cal-week ul { list-style: none; padding: 10px 0; }
+.cal-week ul li { padding: 7px 14px; font-size: 12px; color: #cbd5e1; border-bottom: 1px solid #0f1117; display: flex; gap: 8px; }
+.cal-week ul li:last-child { border-bottom: none; }
+.cal-week ul li .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-red    { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-purple { background: #7c3aed; }
+.dot-green  { background: #10b981; }
+
+/* DB status badges */
+.db-pending { background: #d9770620; color: #fbbf24; border: 1px solid #d9770640; font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+.db-draft   { background: #2563eb20; color: #60a5fa; border: 1px solid #2563eb40; font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+.db-rewrite { background: #dc262620; color: #f87171; border: 1px solid #dc262640; font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+
+.toggle-all { background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
+.toggle-all:hover { color: #f8fafc; }
+
+footer { border-top: 1px solid #1e293b; padding: 20px 40px; color: #334155; font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>MooDatingScript — June 2026 Report &amp; 12-Article Plan</h1>
+  <div class="meta">GSC data: May 1–29, 2026 &nbsp;·&nbsp; 35 published posts &nbsp;·&nbsp; site_id = 2 &nbsp;·&nbsp; Generated June 1, 2026</div>
+  <div class="vs">domain: moodatingscript.com — early-stage SEO, avg pos 26</div>
+</div>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="section-label">📊 May 2026 — Current Stats (Last 28 Days)</div>
+
+  <div class="kpi-row">
+    <div class="kpi warn">
+      <div class="label">Total Impressions</div>
+      <div class="val">1,633</div>
+      <div class="sub">all pages incl. demo</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Blog Impressions</div>
+      <div class="val">~900</div>
+      <div class="sub">blog pages only</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Total Clicks</div>
+      <div class="val">18</div>
+      <div class="sub">0.64 clicks/day</div>
+    </div>
+    <div class="kpi bad">
+      <div class="label">Avg CTR</div>
+      <div class="val">1.1%</div>
+      <div class="sub">target: ≥ 3% by Sep</div>
+    </div>
+    <div class="kpi bad">
+      <div class="label">Avg Position</div>
+      <div class="val">26.3</div>
+      <div class="sub">page 3+ for most KWs</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Published Posts</div>
+      <div class="val">35</div>
+      <div class="sub">43 more in draft/pending</div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="compare-bar">
+    <div>
+      <h4>MooDatingScript vs ShaunSocial — May 2026</h4>
+      <div class="row"><span class="site">Monthly impressions</span><span class="val-bad">1,633</span></div>
+      <div class="row"><span class="site">Monthly clicks</span><span class="val-bad">18</span></div>
+      <div class="row"><span class="site">Avg position</span><span class="val-bad">26.3</span></div>
+      <div class="row"><span class="site">CTR</span><span class="val-bad">1.1%</span></div>
+      <div class="row"><span class="site">Published posts</span><span class="val-bad">35</span></div>
+    </div>
+    <div>
+      <h4>ShaunSocial (same period)</h4>
+      <div class="row"><span class="site">Monthly impressions</span><span class="val-ok">88,736</span></div>
+      <div class="row"><span class="site">Monthly clicks</span><span class="val-ok">399</span></div>
+      <div class="row"><span class="site">Avg position</span><span class="val-ok">10.7</span></div>
+      <div class="row"><span class="site">CTR</span><span class="val-ok">0.45% (but 22× more traffic)</span></div>
+      <div class="row"><span class="site">Published posts</span><span class="val-ok">88</span></div>
+    </div>
+  </div>
+
+  <div class="alert alert-red">
+    <span class="icon">🚨</span>
+    <span><strong>Root cause: domain authority is too low.</strong> MooDatingScript averages position 26–35 across all keywords — Google doesn't trust the domain yet. The site has 35 published posts but almost none break page 2. The fix is not more content — it's <strong>higher-quality, longer, more authoritative AEO content</strong> on the keywords that already have impressions, plus filling the pending topic gaps in the DB.</span>
+  </div>
+
+  <div class="alert alert-purple">
+    <span class="icon">📌</span>
+    <span><strong>43 articles are sitting in draft/pending status in the DB.</strong> This month's priority: pick the 12 highest-impact ones, write them, and publish. Combined with rewrites of 3 existing weak pages, this doubles the published count and broadens topical authority.</span>
+  </div>
+
+  <!-- Top Pages -->
+  <div class="section-label">📄 Top Pages — May 2026</div>
+  <table>
+    <thead>
+      <tr><th>Page</th><th class="r">Impr (90d)</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Pos</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>/ (homepage)</td><td class="r">606</td><td class="r">5</td><td class="r ctr-bad">0.8%</td><td class="r pos-ugly">35.3</td><td><span class="pill pill-red">Homepage SEO needs fixing</span></td></tr>
+      <tr><td>/best-php-dating-scripts-2026/</td><td class="r">141</td><td class="r">1</td><td class="r ctr-bad">0.7%</td><td class="r pos-ugly">26.2</td><td><span class="pill pill-red">🔥 Rewrite — Article #1</span></td></tr>
+      <tr><td>/what-are-the-best-wordpress-dating-plugins-in-2026/</td><td class="r">103</td><td class="r">1</td><td class="r ctr-bad">1.0%</td><td class="r pos-bad">12.9</td><td><span class="pill pill-yw">Best CTR ratio — build on it</span></td></tr>
+      <tr><td>/pricing/</td><td class="r">135</td><td class="r">1</td><td class="r ctr-bad">0.7%</td><td class="r pos-ugly">24.7</td><td><span class="pill pill-yw">Pricing page at pos 25 is bad</span></td></tr>
+      <tr><td>/features/</td><td class="r">91</td><td class="r">1</td><td class="r ctr-bad">1.1%</td><td class="r pos-ugly">22.2</td><td><span class="pill pill-yw">Improve feature page content</span></td></tr>
+      <tr><td>/pwa-apps/</td><td class="r">59</td><td class="r">1</td><td class="r ctr-ok">1.7%</td><td class="r pos-ok">9.1</td><td><span class="pill pill-green">Page 1 — blog about PWA more</span></td></tr>
+      <tr><td>demo.moodatingscript.com/</td><td class="r">119</td><td class="r">6</td><td class="r ctr-good">5.0%</td><td class="r pos-bad">12.3</td><td><span class="pill pill-green">Demo converts well — link to it</span></td></tr>
+      <tr><td>/addons/</td><td class="r">15</td><td class="r">2</td><td class="r ctr-good">13.3%</td><td class="r pos-good">7.7</td><td><span class="pill pill-green">Best performing product page</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Top Keywords -->
+  <div class="section-label">🔑 Top Keywords — 90 Days (Key Opportunities)</div>
+  <table>
+    <thead>
+      <tr><th>Keyword</th><th class="r">Impr (90d)</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Pos</th><th>Opportunity</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>php dating script</td><td class="r">165</td><td class="r">1</td><td class="r ctr-bad">0.6%</td><td class="r pos-ugly">32.9</td><td><span class="pill pill-red">Article #2 — top volume KW</span></td></tr>
+      <tr><td>dating script</td><td class="r">126</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-ugly">68.8</td><td><span class="pill pill-red">Article #3 — foundational term</span></td></tr>
+      <tr><td>dating script for sale</td><td class="r">88</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-ugly">32.0</td><td><span class="pill pill-red">Article #4 — buyer intent</span></td></tr>
+      <tr><td>best php dating script</td><td class="r">78</td><td class="r">1</td><td class="r ctr-bad">1.3%</td><td class="r pos-bad">19.6</td><td><span class="pill pill-yw">Closest to page 1 — Article #1 target</span></td></tr>
+      <tr><td>php dating software</td><td class="r">76</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-ugly">37.6</td><td><span class="pill pill-red">Article #2 target</span></td></tr>
+      <tr><td>dating script php</td><td class="r">72</td><td class="r">1</td><td class="r ctr-bad">1.4%</td><td class="r pos-ugly">25.4</td><td><span class="pill pill-yw">Same intent as "php dating script"</span></td></tr>
+      <tr><td>moodating</td><td class="r">80</td><td class="r">5</td><td class="r ctr-good">6.2%</td><td class="r pos-good">6.2</td><td><span class="pill pill-green">Brand — healthy, grow it</span></td></tr>
+      <tr><td>php dating scripts</td><td class="r">23</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-bad">23.9</td><td><span class="pill pill-yw">Same cluster as #1</span></td></tr>
+      <tr><td>chameleon dating software</td><td class="r">6</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-bad">15.0</td><td><span class="pill pill-yw">Competitor name — Article #5</span></td></tr>
+      <tr><td>best dating script</td><td class="r">40</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-ugly">35.8</td><td><span class="pill pill-yw">Covered by Article #1 rewrite</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- 12 Articles -->
+  <div class="section-label">✍️ 12 Articles — June 2026 Plan</div>
+
+  <div class="alert alert-blue">
+    <span class="icon">💡</span>
+    <span><strong>Strategy:</strong> 3 rewrites of existing weak pages (fastest ranking lift) + 9 new articles from pending/draft DB topics. The DB already has 43 planned articles — this month we write the 12 highest-impact ones. Focus on AEO format, 2,000+ words, direct answers, comparison tables.</span>
+  </div>
+
+  <button class="toggle-all" onclick="toggleAll()">Expand All Briefs ▼</button>
+
+  <div class="article-grid">
+
+    <!-- Article 1 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(1)">
+        <div class="art-num">1</div>
+        <div class="art-main">
+          <div class="art-title">Best PHP Dating Scripts in 2026: Ranked, Reviewed &amp; Compared</div>
+          <div class="art-slug">/best-php-dating-scripts-2026/ · REWRITE existing WP#570</div>
+          <div class="art-meta">
+            <span class="pill pill-red">🔥 HIGHEST PRIORITY</span>
+            <span class="db-rewrite">REWRITE</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 1 · Jun 2–6</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">141</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos" style="color:#ef4444">pos 26.2 — page 3</div>
+        </div>
+      </div>
+      <div class="art-body" id="b1">
+        <h4>Why This Article</h4>
+        <p>Your most-impressioned blog page — and it ranks on page 3. The existing article exists but clearly isn't competitive enough. "Best php dating script" (78 impr) is the closest keyword to page 1 (pos 19.6). A comprehensive AEO rewrite that's 2× longer than competitors, with a proper comparison table and direct answer opener, is the highest-ROI action for this site.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">best php dating script <b>78 impr, pos 19.6</b></div>
+            <div class="kw-chip">best php dating scripts <b>incl. in cluster</b></div>
+            <div class="kw-chip">php dating scripts <b>23 impr</b></div>
+            <div class="kw-chip">best dating script <b>40 impr</b></div>
+            <div class="kw-chip">dating script for sale <b>88 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "The best PHP dating script in 2026 is MooDatingScript for full-featured self-hosted platforms. Here's how the top 6 PHP scripts compare on features, price, and mobile app support."</li>
+          <li><strong>Quick comparison table:</strong> MooDatingScript, SkaDate, Chameleon, Dating Pro, WPDating, phpFox Dating — columns: price, mobile app, open source, last updated, support, white-label</li>
+          <li><strong>Per-script reviews</strong> (200 words each, honest pros/cons)</li>
+          <li><strong>Buyer's guide section:</strong> 5 criteria for choosing a PHP dating script — license type, mobile app, plugin ecosystem, hosting requirements, update frequency</li>
+          <li><strong>MooDatingScript spotlight</strong> with pricing, demo link, addons</li>
+          <li><strong>FAQ:</strong> "Which PHP dating script is cheapest?", "Is there a free PHP dating script?", "What's the difference between PHP and SaaS dating software?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-php-dating-scripts-2026/ (update in-place) &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 2 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(2)">
+        <div class="art-num">2</div>
+        <div class="art-main">
+          <div class="art-title">PHP Dating Script: What It Is, How It Works &amp; How to Choose (2026)</div>
+          <div class="art-slug">/php-dating-script-guide-2026/ · REWRITE existing WP#572</div>
+          <div class="art-meta">
+            <span class="pill pill-red">HIGH PRIORITY</span>
+            <span class="db-rewrite">REWRITE</span>
+            <span class="pill pill-purple">definition</span>
+            <span class="pill pill-gray">Week 1 · Jun 2–6</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">237</div>
+          <div class="s-label">cluster impr</div>
+          <div class="s-pos" style="color:#ef4444">pos 29–33 — page 3+</div>
+        </div>
+      </div>
+      <div class="art-body" id="b2">
+        <h4>Why This Article</h4>
+        <p>"php dating script" (165 impr) + "dating script php" (72 impr) combined = 237 impressions landing at pos 29–33. The existing article exists but at page 3+. This is the highest-volume keyword cluster on the site. A definition/explainer article that thoroughly answers "what is a PHP dating script" and "how does it work" can outrank thinner competitors with AEO formatting.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">php dating script <b>165 impr</b></div>
+            <div class="kw-chip">dating script php <b>72 impr</b></div>
+            <div class="kw-chip">php dating software <b>76 impr</b></div>
+            <div class="kw-chip">dating php script <b>22 impr</b></div>
+            <div class="kw-chip">php dating site <b>~20 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A PHP dating script is a ready-made web application built in PHP that lets you launch a dating website without coding. Top options in 2026 cost $199–$599 one-time and include matching, chat, and mobile apps."</li>
+          <li><strong>Section 1:</strong> What is a PHP dating script? (clear definition, 200 words)</li>
+          <li><strong>Section 2:</strong> How does a PHP dating script work? (technical overview, server requirements, database)</li>
+          <li><strong>Section 3:</strong> PHP dating script vs SaaS — when to choose each, cost comparison table</li>
+          <li><strong>Section 4:</strong> Key features to look for — matching algorithm, chat, mobile app, payment gateway, admin panel</li>
+          <li><strong>Section 5:</strong> MooDatingScript as the recommended choice with feature list + demo CTA</li>
+          <li><strong>FAQ:</strong> "Is PHP good for dating sites?", "How much does a PHP dating script cost?", "Can I modify a PHP dating script?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /php-dating-script-guide-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> definition &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 3 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(3)">
+        <div class="art-num">3</div>
+        <div class="art-main">
+          <div class="art-title">MooDatingScript vs SkaDate: Complete 2026 Comparison (Updated)</div>
+          <div class="art-slug">/moodatescript-vs-skadate-2026/ · REWRITE existing WP#543</div>
+          <div class="art-meta">
+            <span class="pill pill-red">HIGH PRIORITY</span>
+            <span class="db-rewrite">REWRITE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 1 · Jun 2–6</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~40</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">SkaDate = top competitor</div>
+        </div>
+      </div>
+      <div class="art-body" id="b3">
+        <h4>Why This Article</h4>
+        <p>SkaDate is the #1 competitor for MooDatingScript — the most-searched PHP dating script. The existing comparison article (WP#543) exists, but with the domain averaging pos 26+, it needs to be dramatically better than the SkaDate website's own comparison pages. This is the money comparison — someone searching "moodating vs skadate" is ready to buy one of them.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">moodating vs skadate <b>~15 impr</b></div>
+            <div class="kw-chip">skadate alternative <b>~20 impr</b></div>
+            <div class="kw-chip">skadate alternatives <b>~15 impr</b></div>
+            <div class="kw-chip">skadate pricing <b>~10 impr</b></div>
+            <div class="kw-chip">skadate review <b>~10 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO verdict opener:</strong> "MooDatingScript is the better choice for most buyers: one-time pricing vs SkaDate's subscription, built-in PWA app, and more flexible customization. SkaDate is better if you need extensive third-party integrations."</li>
+          <li><strong>Head-to-head table:</strong> pricing model, mobile app, matching system, chat, plugins, hosting requirements, support, demo availability, white-label, last major update</li>
+          <li><strong>SkaDate breakdown:</strong> honest pros/cons — don't trash it, be factual</li>
+          <li><strong>MooDatingScript breakdown:</strong> strengths + pricing + demo link</li>
+          <li><strong>Total cost of ownership:</strong> SkaDate subscription vs MooDating one-time over 3 years</li>
+          <li><strong>FAQ:</strong> "Is SkaDate free?", "Does SkaDate have a mobile app?", "Which is easier to set up?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /moodatescript-vs-skadate-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- ═══ NEW ARTICLES ═══ -->
+
+    <!-- Article 4 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(4)">
+        <div class="art-num">4</div>
+        <div class="art-main">
+          <div class="art-title">What is a Dating Script? The Complete Guide for 2026</div>
+          <div class="art-slug">/what-is-a-dating-script-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="db-pending">DB #50 pending</span>
+            <span class="pill pill-purple">definition</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">126</div>
+          <div class="s-label">impr "dating script"</div>
+          <div class="s-pos" style="color:#ef4444">pos 68 — buried</div>
+        </div>
+      </div>
+      <div class="art-body" id="b4">
+        <h4>Why This Article</h4>
+        <p>"dating script" gets 126 impressions/month but you rank at position 68 — page 7. This is the foundational definition keyword. Anyone searching "what is a dating script" is at the top of the funnel. Getting this page to page 1 creates a massive internal linking anchor for all other articles. It's also a relatively low-competition keyword because the term is broad and competitors don't have a dedicated, well-structured definition page.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">dating script <b>126 impr, pos 68</b></div>
+            <div class="kw-chip">what is a dating script <b>~30 impr</b></div>
+            <div class="kw-chip">dating script software <b>6 impr</b></div>
+            <div class="kw-chip">datingscript <b>10 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A dating script is ready-made software that powers a dating website — it handles user profiles, matching, messaging, and payments. Top scripts in 2026 cost $199–$599 one-time."</li>
+          <li><strong>Section 1:</strong> What is a dating script? (definition, history, how it differs from SaaS)</li>
+          <li><strong>Section 2:</strong> Types of dating scripts — PHP self-hosted, WordPress plugin, open source, white-label SaaS</li>
+          <li><strong>Section 3:</strong> Core features every dating script should have (table: 10 features, which scripts include each)</li>
+          <li><strong>Section 4:</strong> How to choose a dating script — 6 criteria checklist</li>
+          <li><strong>Section 5:</strong> MooDatingScript as top recommended option with demo CTA</li>
+          <li><strong>Internal links:</strong> link to PHP dating script guide, best PHP dating scripts, vs SkaDate</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /what-is-a-dating-script-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> definition &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 5 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(5)">
+        <div class="art-num">5</div>
+        <div class="art-main">
+          <div class="art-title">SkaDate Alternatives in 2026: 6 Options Ranked by Features &amp; Price</div>
+          <div class="art-slug">/skadate-alternatives-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="db-draft">DB #31 draft</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~50</div>
+          <div class="s-label">est. cluster impr</div>
+          <div class="s-pos">competitor name search</div>
+        </div>
+      </div>
+      <div class="art-body" id="b5">
+        <h4>Why This Article</h4>
+        <p>SkaDate is the most-searched PHP dating script competitor. Anyone googling "SkaDate alternatives" is already a qualified buyer who isn't satisfied with SkaDate's pricing (subscription model) or looking to compare options. ShaunSocial's "WoWonder alternatives" article performs well — same pattern applies here. MooDatingScript should be the #1 pick.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">skadate alternatives <b>~20 impr est.</b></div>
+            <div class="kw-chip">skadate alternative <b>~20 impr est.</b></div>
+            <div class="kw-chip">alternative to skadate <b>~10 impr</b></div>
+            <div class="kw-chip">skadate competitor <b>~10 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "The best SkaDate alternative in 2026 is MooDatingScript — one-time pricing, built-in PWA app, and active development. Here are 6 alternatives ranked."</li>
+          <li><strong>Why people leave SkaDate:</strong> subscription cost (honest), licensing limitations, mobile app gaps</li>
+          <li><strong>Comparison table:</strong> MooDatingScript, Chameleon, Dating Pro, WPDating, phpFox Dating, open source options</li>
+          <li><strong>Per-alternative mini-reviews</strong> with pros/cons</li>
+          <li><strong>MooDatingScript spotlight:</strong> pricing, demo, addons</li>
+          <li><strong>FAQ:</strong> "Is SkaDate still good in 2026?", "What is the cheapest SkaDate alternative?", "Can I migrate from SkaDate?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /skadate-alternatives-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 6 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(6)">
+        <div class="art-num">6</div>
+        <div class="art-main">
+          <div class="art-title">Dating Script for Sale: What to Look For &amp; How to Buy Safely (2026)</div>
+          <div class="art-slug">/dating-script-for-sale-buyers-guide-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="pill pill-orange">No existing page</span>
+            <span class="pill pill-purple">buyer_guide</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">88</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos" style="color:#ef4444">pos 32 · 0 clicks</div>
+        </div>
+      </div>
+      <div class="art-body" id="b6">
+        <h4>Why This Article</h4>
+        <p>"dating script for sale" gets 88 impressions at pos 32 with zero clicks — and no dedicated page exists on the site. This is pure commercial intent: someone with a credit card searching for what to buy. No existing article is specifically targeting this query. The buyer guide format is perfect — explain what to look for, warn about scams/nulled scripts, and recommend MooDatingScript as the safe purchase.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">dating script for sale <b>88 impr, pos 32</b></div>
+            <div class="kw-chip">buy dating script <b>~30 impr est.</b></div>
+            <div class="kw-chip">dating script nulled <b>2 impr</b></div>
+            <div class="kw-chip">where to buy dating script <b>~15 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A dating script typically sells for $199–$599 one-time for a self-hosted PHP platform. The safest places to buy are directly from the developer or verified marketplaces."</li>
+          <li><strong>Section 1:</strong> What's included when you buy a dating script (source code, license, support, updates)</li>
+          <li><strong>Section 2:</strong> How much does a dating script cost? (pricing table across top scripts)</li>
+          <li><strong>Section 3:</strong> Where to buy safely — official sites vs CodeCanyon vs "nulled" dangers (SEO angle on nulled searches)</li>
+          <li><strong>Section 4:</strong> What to check before buying — demo, support policy, update history, mobile app</li>
+          <li><strong>Section 5:</strong> MooDatingScript — pricing, what's included, demo link</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /dating-script-for-sale-buyers-guide-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> buyer_guide &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 7 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(7)">
+        <div class="art-num">7</div>
+        <div class="art-main">
+          <div class="art-title">PHP Dating Software vs SaaS Dating Platform: Which Is Right for You? (2026)</div>
+          <div class="art-slug">/php-dating-software-vs-saas-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="db-draft">DB #32 draft</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">76</div>
+          <div class="s-label">impr "php dating software"</div>
+          <div class="s-pos" style="color:#ef4444">pos 37.6 · 0 clicks</div>
+        </div>
+      </div>
+      <div class="art-body" id="b7">
+        <h4>Why This Article</h4>
+        <p>"php dating software" gets 76 impressions at pos 37.6 — page 4, zero clicks. There's no dedicated article. The PHP vs SaaS comparison is also in the DB as a planned article (#32). This targets buyers comparing the two approaches and lands them squarely in MooDatingScript's wheelhouse (self-hosted PHP). Also captures "dating app white label" and related queries.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">php dating software <b>76 impr, pos 37.6</b></div>
+            <div class="kw-chip">php vs saas dating platform <b>~20 impr</b></div>
+            <div class="kw-chip">self hosted dating software <b>~25 impr</b></div>
+            <div class="kw-chip">dating app white label <b>~15 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "PHP dating software gives you full control and one-time pricing. SaaS dating platforms are faster to launch but cost $99–$500/month forever. Here's how to choose."</li>
+          <li><strong>Comparison table:</strong> PHP self-hosted vs SaaS — setup time, cost/year, control, customization, maintenance, mobile app, data ownership</li>
+          <li><strong>When to choose PHP:</strong> full control buyers, cost-sensitive, technical users</li>
+          <li><strong>When to choose SaaS:</strong> non-technical, fast launch priority, small scale</li>
+          <li><strong>Total cost of ownership calculator logic:</strong> SaaS $199/month × 36 months = $7,164 vs MooDatingScript one-time</li>
+          <li><strong>MooDatingScript as top PHP option</strong> — feature list, pricing, demo</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /php-dating-software-vs-saas-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 8 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(8)">
+        <div class="art-num">8</div>
+        <div class="art-main">
+          <div class="art-title">How to Build a Dating App Without Coding in 2026 (Step-by-Step)</div>
+          <div class="art-slug">/build-dating-app-without-coding-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="db-pending">DB #45 pending</span>
+            <span class="pill pill-purple">how_to</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~80</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">no existing page</div>
+        </div>
+      </div>
+      <div class="art-body" id="b8">
+        <h4>Why This Article</h4>
+        <p>No page currently exists for this query. "How to build a dating app" type queries are high-volume and this specific angle (no-code/without-coding) is perfect for MooDatingScript's value proposition — you install a script, not write one. This captures the large segment of non-technical founders who want to launch a dating app without hiring developers.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">how to build a dating app without coding <b>~50 impr est.</b></div>
+            <div class="kw-chip">build dating app no code <b>~30 impr est.</b></div>
+            <div class="kw-chip">create dating website without coding <b>~25 impr est.</b></div>
+            <div class="kw-chip">dating app builder <b>~40 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "You can build a dating app without coding in 3 steps: buy a PHP script like MooDatingScript ($299), install it on a VPS (~$10/month), and customize the branding. Total time: 24–48 hours."</li>
+          <li><strong>Step 1:</strong> Choose your approach (script vs drag-drop builder vs SaaS) — table comparing each</li>
+          <li><strong>Step 2:</strong> Buy MooDatingScript (demo, pricing, what's included)</li>
+          <li><strong>Step 3:</strong> Set up hosting (managed hosting option = truly no-code)</li>
+          <li><strong>Step 4:</strong> Install and configure (1-click installer, branding setup)</li>
+          <li><strong>Step 5:</strong> Launch and get first users</li>
+          <li><strong>FAQ:</strong> "Do I need PHP knowledge?", "Can I use MooDatingScript without a developer?", "How long does it take?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /build-dating-app-without-coding-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> how_to &nbsp;·&nbsp; <strong>Schema:</strong> HowTo &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 9 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(9)">
+        <div class="art-num">9</div>
+        <div class="art-main">
+          <div class="art-title">Open Source Dating Script vs Paid Script: Which Is Better in 2026?</div>
+          <div class="art-slug">/open-source-dating-script-vs-paid-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">NEW</span>
+            <span class="db-draft">DB #34 draft</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~50</div>
+          <div class="s-label">est. cluster impr</div>
+          <div class="s-pos">pos 47–62 range</div>
+        </div>
+      </div>
+      <div class="art-body" id="b9">
+        <h4>Why This Article</h4>
+        <p>"open source dating script" (10 impr, pos 47), "dating script open source" (10 impr), "free php dating script" (3 impr), "best open source dating script" (8 impr) — all landing nowhere. Free vs paid is a classic top-of-funnel buying question. Also, the existing "Free vs Paid Dating Scripts" article (WP#390) covers related ground but with different intent — that's about scripts in general, this is specifically about open source.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">open source dating script <b>10 impr</b></div>
+            <div class="kw-chip">best open source dating script <b>8 impr</b></div>
+            <div class="kw-chip">free php dating script <b>3 impr</b></div>
+            <div class="kw-chip">dating script open source <b>10 impr</b></div>
+            <div class="kw-chip">free dating script <b>12 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "Open source dating scripts are free to download but require significant developer time to set up and maintain. Paid scripts like MooDatingScript cost $299 upfront but include support, updates, and a mobile app — making them cheaper long-term for most founders."</li>
+          <li><strong>Top open source options:</strong> Oxwall, Skadate Community, phpDating free, Alovoa — honest feature review</li>
+          <li><strong>True cost comparison:</strong> open source (dev time, hosting, security) vs paid ($299 + $10/mo hosting)</li>
+          <li><strong>When open source makes sense:</strong> developers, specific custom requirements</li>
+          <li><strong>When paid makes sense:</strong> non-technical founders, time-to-market priority</li>
+          <li><strong>MooDatingScript demo CTA</strong></li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /open-source-dating-script-vs-paid-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,600+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 10 -->
+    <div class="art-card tier3">
+      <div class="art-header" onclick="toggle(10)">
+        <div class="art-num">10</div>
+        <div class="art-main">
+          <div class="art-title">10 Profitable Niche Dating App Ideas for 2026 (With Launch Tips)</div>
+          <div class="art-slug">/profitable-niche-dating-app-ideas-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW</span>
+            <span class="db-pending">DB #69 pending</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~100</div>
+          <div class="s-label">est. cluster impr</div>
+          <div class="s-pos">top of funnel · high share</div>
+        </div>
+      </div>
+      <div class="art-body" id="b10">
+        <h4>Why This Article</h4>
+        <p>Existing article "What are the best niche dating app ideas?" (WP#428) exists but with a question-style URL and no clear structure. A fresh "10 Profitable..." article with a numbered list format is far more shareable and linkable. This targets founders at the very start of their journey — before they've picked a niche. Getting them early means they discover MooDatingScript when they're most open to buying.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">niche dating app ideas <b>~40 impr est.</b></div>
+            <div class="kw-chip">profitable dating app ideas <b>~30 impr</b></div>
+            <div class="kw-chip">niche online dating <b>1 impr</b></div>
+            <div class="kw-chip">dating app ideas 2026 <b>~25 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "The most profitable niche dating apps in 2026 target underserved communities: religious groups, professionals, seniors, and regional markets. Here are 10 ideas with real market data."</li>
+          <li><strong>10 niches:</strong> Christian, Muslim, Senior, LGBTQ+, Professional, Fitness/Athlete, Farmer/Rural, Vegan, University/Student, Regional (SE Asia / Middle East)</li>
+          <li>For each: market size estimate, competition level, revenue potential, key features needed</li>
+          <li><strong>How to launch any niche dating app:</strong> 3-step with MooDatingScript</li>
+          <li><strong>Links to existing niche articles</strong> (Christian dating app guide, etc.) for internal linking</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /profitable-niche-dating-app-ideas-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 11 -->
+    <div class="art-card tier3">
+      <div class="art-header" onclick="toggle(11)">
+        <div class="art-num">11</div>
+        <div class="art-main">
+          <div class="art-title">Dating Script vs Custom Development: True Cost Comparison 2026</div>
+          <div class="art-slug">/dating-script-vs-custom-development-cost-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW</span>
+            <span class="db-pending">DB #77 pending</span>
+            <span class="pill pill-purple">cost_roi</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~80</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">bottom-of-funnel intent</div>
+        </div>
+      </div>
+      <div class="art-body" id="b11">
+        <h4>Why This Article</h4>
+        <p>Existing article "Custom vs Ready-Made Dating Software" (WP#377) covers this broadly, but "dating script vs custom development cost" is a more specific and higher-intent search. Buyers comparing costs are further down the funnel. A cost-focused article with real numbers, tables, and a clear 3-year TCO comparison is extremely shareable and citable by AI tools (AEO value).</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">dating script vs custom development <b>~30 impr</b></div>
+            <div class="kw-chip">cost to build dating app 2026 <b>~40 impr</b></div>
+            <div class="kw-chip">how much does dating app development cost <b>~30 impr</b></div>
+            <div class="kw-chip">dating app development cost <b>~50 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A dating script costs $299–$599 one-time. Custom dating app development costs $30,000–$150,000. Over 3 years, a script saves you $50,000+. Here's the full breakdown."</li>
+          <li><strong>Cost table:</strong> Dating script vs custom dev vs SaaS — upfront, monthly, 1yr, 3yr total</li>
+          <li><strong>Custom development breakdown:</strong> design, backend, iOS, Android, QA, maintenance — realistic hourly rates</li>
+          <li><strong>What you give up with a script vs custom:</strong> honest tradeoffs</li>
+          <li><strong>When custom makes sense:</strong> $1M+ funded, unique algorithm, large team</li>
+          <li><strong>MooDatingScript pricing breakdown</strong> — what's included, addons cost</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /dating-script-vs-custom-development-cost-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> cost_roi &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 12 -->
+    <div class="art-card tier3">
+      <div class="art-header" onclick="toggle(12)">
+        <div class="art-num">12</div>
+        <div class="art-main">
+          <div class="art-title">How to Launch a Muslim Dating Platform in 2026 (Halal Dating App Guide)</div>
+          <div class="art-slug">/how-to-launch-muslim-dating-platform-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW</span>
+            <span class="db-pending">DB #61 pending</span>
+            <span class="pill pill-purple">niche_how_to</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~60</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">low competition niche</div>
+        </div>
+      </div>
+      <div class="art-body" id="b12">
+        <h4>Why This Article</h4>
+        <p>The Muslim dating app market is underserved and growing (global Muslim population of 1.8B). You already have a "Christian dating app" guide (WP#398) — the Muslim dating guide is the natural companion piece. This is also a low-competition long-tail where a new domain can rank because few SEO-optimized guides exist. It's a strategic niche article that builds topical authority on "niche dating apps."</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">muslim dating platform <b>~25 impr est.</b></div>
+            <div class="kw-chip">halal dating app <b>~30 impr est.</b></div>
+            <div class="kw-chip">islamic dating software <b>~15 impr est.</b></div>
+            <div class="kw-chip">how to build a muslim dating app <b>~15 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "Launching a Muslim dating platform in 2026 requires Halal-compliant features: no explicit content, marriage-intent matching, wali (guardian) integration, and Islamic profile fields. MooDatingScript supports all of these with custom configuration."</li>
+          <li><strong>Market overview:</strong> Muslim dating app market size, Muzmatch / Minder success as evidence of demand</li>
+          <li><strong>Key features for halal dating apps:</strong> marriage-intent toggle, privacy modes, guardian approval, location-based for same community</li>
+          <li><strong>How to configure MooDatingScript for Muslim dating:</strong> step-by-step customization</li>
+          <li><strong>Marketing section:</strong> how to reach Muslim communities</li>
+          <li><strong>Internal links:</strong> to niche dating app ideas article, Christian dating guide, PHP dating script guide</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /how-to-launch-muslim-dating-platform-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> how_to &nbsp;·&nbsp; <strong>Schema:</strong> HowTo &nbsp;·&nbsp; <strong>Length:</strong> 1,800+ words</div>
+      </div>
+    </div>
+
+  </div><!-- /article-grid -->
+
+  <!-- Calendar -->
+  <div class="section-label">📅 June 2026 — Publication Schedule (3/week)</div>
+
+  <div class="cal">
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 1</span><span class="dates">Jun 2–6</span></div>
+      <ul>
+        <li><span class="dot dot-red"></span>#1 Best PHP Dating Scripts 2026 (rewrite WP#570)</li>
+        <li><span class="dot dot-red"></span>#2 PHP Dating Script Guide (rewrite WP#572)</li>
+        <li><span class="dot dot-red"></span>#3 MooDatingScript vs SkaDate (rewrite WP#543)</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 2</span><span class="dates">Jun 9–13</span></div>
+      <ul>
+        <li><span class="dot dot-yellow"></span>#4 What is a Dating Script? (DB #50)</li>
+        <li><span class="dot dot-yellow"></span>#5 SkaDate Alternatives 2026 (DB #31)</li>
+        <li><span class="dot dot-yellow"></span>#6 Dating Script for Sale Buyer's Guide</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 3</span><span class="dates">Jun 16–20</span></div>
+      <ul>
+        <li><span class="dot dot-yellow"></span>#7 PHP Dating Software vs SaaS (DB #32)</li>
+        <li><span class="dot dot-yellow"></span>#8 Build Dating App Without Coding (DB #45)</li>
+        <li><span class="dot dot-yellow"></span>#9 Open Source vs Paid Dating Script (DB #34)</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 4</span><span class="dates">Jun 23–27</span></div>
+      <ul>
+        <li><span class="dot dot-purple"></span>#10 10 Niche Dating App Ideas 2026 (DB #69)</li>
+        <li><span class="dot dot-purple"></span>#11 Dating Script vs Custom Dev Cost (DB #77)</li>
+        <li><span class="dot dot-purple"></span>#12 Muslim Dating Platform Guide (DB #61)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert alert-grn" style="margin-top:16px;">
+    <span class="icon">🎯</span>
+    <span><strong>Expected outcome by end of June:</strong> 47 total published posts (+35% from current 35). The 3 rewrites target 350+ existing impressions currently stuck at page 3. The 9 new articles add topical breadth. Combined with internal linking, average position should move from 26.3 toward ~18 by September.</span>
+  </div>
+
+</div>
+
+<footer>MooDatingScript Content Plan · June 2026 · GSC data May 1–29, 2026</footer>
+
+<script>
+function toggle(n) {
+  var el = document.getElementById('b' + n);
+  el.classList.toggle('open');
+}
+var allOpen = false;
+function toggleAll() {
+  allOpen = !allOpen;
+  for (var i = 1; i <= 12; i++) {
+    var el = document.getElementById('b' + i);
+    if (allOpen) el.classList.add('open');
+    else el.classList.remove('open');
+  }
+  document.querySelector('.toggle-all').textContent = allOpen ? 'Collapse All ▲' : 'Expand All Briefs ▼';
+}
+</script>
+</body>
+</html>
