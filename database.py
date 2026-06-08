@@ -214,6 +214,8 @@ def _run_migrations():
         ("performance_score", "REAL"),
         ("last_scored_at", "DATE"),
         ("score_tier", "TEXT"),
+        # LLM-suggested content template (overrides the pillar default structure)
+        ("recommended_template", "TEXT"),
     ]
 
     for col, col_type in new_site_cols:
@@ -345,14 +347,16 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
         internal_links = json.dumps(topic.get("internal_links", []))
         cursor.execute("""
             INSERT INTO topics (site_id, plan_id, title, slug, pillar, priority, intent,
-                              target_keywords, internal_links, special_instructions, scheduled_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              target_keywords, internal_links, special_instructions, scheduled_date,
+                              recommended_template)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             site_id, plan_id,
             topic.get("title"), topic.get("slug"), topic.get("pillar"),
             topic.get("priority", "medium"), topic.get("intent", "informational"),
             target_keywords, internal_links,
             topic.get("special_instructions"), topic.get("scheduled_date"),
+            topic.get("recommended_template"),
         ))
         topic_ids.append(cursor.lastrowid)
     conn.commit()

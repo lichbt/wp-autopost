@@ -190,3 +190,37 @@ class TestPostLog:
         
         assert len(logs) == 1
         assert logs[0]["action"] == "test_action"
+
+
+class TestRecommendedTemplate:
+    """The LLM-suggested content template must persist and reach the generator."""
+
+    def _make_topic(self, **over):
+        t = {
+            "title": "Best Dating Scripts Compared",
+            "slug": "best-dating-scripts-compared",
+            "pillar": "best_of",
+            "priority": "high",
+            "intent": "commercial",
+            "target_keywords": ["dating scripts"],
+            "internal_links": [],
+            "special_instructions": None,
+            "scheduled_date": None,
+        }
+        t.update(over)
+        return t
+
+    def test_recommended_template_round_trips(self, db_conn, sample_site):
+        plan_id = add_plan(sample_site, "raw", None)
+        add_topics_bulk(sample_site, plan_id, [
+            self._make_topic(recommended_template="setup_tutorial"),
+        ])
+        pending = get_pending_topics(sample_site)
+        assert len(pending) == 1
+        assert pending[0]["recommended_template"] == "setup_tutorial"
+
+    def test_recommended_template_defaults_to_none(self, db_conn, sample_site):
+        plan_id = add_plan(sample_site, "raw", None)
+        add_topics_bulk(sample_site, plan_id, [self._make_topic()])  # no template key
+        pending = get_pending_topics(sample_site)
+        assert pending[0]["recommended_template"] is None

@@ -15,7 +15,7 @@ PARSE_USER_PROMPT_TEMPLATE = """Here is the content strategy document:
 {raw_markdown}
 
 Extract:
-- A list of "topics": each with title, pillar, priority (high/medium/low), intent (commercial/informational/navigational), target_keywords (array), internal_links (array of URLs from the strategy's linking suggestions), special_instructions (string or null), scheduled_date (YYYY-MM-DD or null, inferred from phase timelines if mentioned).
+- A list of "topics": each with title, pillar, priority (high/medium/low), intent (commercial/informational/navigational), target_keywords (array), internal_links (array of URLs from the strategy's linking suggestions), special_instructions (string or null), scheduled_date (YYYY-MM-DD or null, inferred from phase timelines if mentioned), recommended_template (best-fit content structure such as vs_comparison/best_of/buyer_guide/setup_tutorial/feature_explainer/use_case/how_to/definition/cost_roi, or null to use the pillar default).
 - "global": {{ default_pillar_template_hints (object mapping pillar to content structure requirements), posts_per_month (number), overall_strategy_goal (short sentence) }}
 
 If a topic belongs to a phase, map the phase to dates assuming Phase 1 = month 1-2 from current date, Phase 2 = month 3-4, Phase 3 = month 5-6. For example, if today is {today}, Phase 1 topics can have dates in the first two months.
