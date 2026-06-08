@@ -73,6 +73,8 @@ Examples:
                         help="Print top and bottom performers table")
     parser.add_argument("--memo",   action="store_true",
                         help="Generate weekly strategy memo via Claude (uses OpenRouter)")
+    parser.add_argument("--personas", action="store_true",
+                        help="Show per-persona average score + sample count (the persona feedback loop)")
     parser.add_argument("--suggest-templates", action="store_true",
                         help="Propose NEW content templates from performance data (saved to templates/proposed/ for review)")
     parser.add_argument("--max-proposals", type=int, default=3,
@@ -100,10 +102,11 @@ Examples:
         score_all_topics,
         get_top_and_bottom_performers,
         generate_strategy_memo,
+        get_persona_performance,
         suggest_templates,
     )
 
-    if not (args.score or args.report or args.memo or args.suggest_templates):
+    if not (args.score or args.report or args.memo or args.personas or args.suggest_templates):
         parser.print_help()
         sys.exit(0)
 
@@ -146,6 +149,20 @@ Examples:
         except RuntimeError as exc:
             print(f"\nError: {exc}")
             sys.exit(1)
+
+    # ── Persona performance ──────────────────────────────────────────────────────
+    if args.personas:
+        perf = get_persona_performance(args.site)
+        if not perf:
+            print("\nNo scored articles with a persona yet. Run --score first "
+                  "(selection uses round-robin rotation until then).")
+        else:
+            ranked = sorted(perf.items(), key=lambda kv: kv[1]["avg_score"], reverse=True)
+            print(f"\n  {'Persona':<22} {'Avg score':>10} {'Articles':>9}")
+            print(f"  {'-'*42}")
+            for name, s in ranked:
+                print(f"  {name:<22} {s['avg_score']:>10.1f} {s['count']:>9}")
+            print("\n  (Selection exploits the top personas and explores under-sampled ones.)")
 
     # ── Suggest templates ────────────────────────────────────────────────────────
     if args.suggest_templates:
