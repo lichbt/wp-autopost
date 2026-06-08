@@ -1,7 +1,7 @@
 """
 Tests for Feature 4 — data-driven template proposals (content_strategist).
 
-The OpenRouter call and the templates dir are mocked, so these run offline and
+The claude CLI call and the templates dir are mocked, so these run offline and
 never touch the real templates/ directory.
 """
 import json
@@ -28,28 +28,24 @@ class TestParseProposalsJson:
         assert cs._parse_proposals_json("not json at all") == []
 
 
-class _FakeResp:
-    def __init__(self, content):
-        self._content = content
-    def raise_for_status(self):
-        pass
-    def json(self):
-        return {"choices": [{"message": {"content": self._content}}]}
-
-
 class TestSuggestTemplates:
-    def test_requires_api_key(self, monkeypatch):
-        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
-        with pytest.raises(RuntimeError):
-            cs.suggest_templates(site_id=1)
-
     def test_skips_when_no_scored_articles(self, monkeypatch):
-        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
         monkeypatch.setattr(cs, "get_top_and_bottom_performers",
                             lambda site_id, n=10: {"top": [], "bottom": []})
         result = cs.suggest_templates(site_id=1)
         assert result["proposals"] == []
         assert "No scored articles" in result["skipped"]
+
+    def test_cli_failure_raises_runtimeerror(self, monkeypatch):
+        monkeypatch.setattr(cs, "get_top_and_bottom_performers",
+                            lambda site_id, n=10: {"top": [{"title": "T", "pillar": "how_to",
+                                                            "performance_score": 90}], "bottom": []})
+        monkeypatch.setattr(cs, "get_pillar_performance", lambda site_id, days=60: [])
+        def _boom(*a, **k):
+            raise cs.__dict__.get("ClaudeCLIError", RuntimeError)("cli down")
+        monkeypatch.setattr(cs, "claude_complete", _boom)
+        with pytest.raises(RuntimeError):
+            cs.suggest_templates(site_id=1)
 
     def test_writes_proposals_and_dedups(self, monkeypatch, tmp_path):
         # Point the templates dir at a temp location with one existing template.
@@ -57,7 +53,6 @@ class TestSuggestTemplates:
         (tmp_path / "how_to.md").write_text("# How-To\n## Steps\n", encoding="utf-8")
         monkeypatch.setattr(cg, "TEMPLATES_DIR", tmp_path)
 
-        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
         monkeypatch.setattr(cs, "get_top_and_bottom_performers",
                             lambda site_id, n=10: {"top": [{"title": "T", "pillar": "how_to",
                                                             "performance_score": 90}], "bottom": []})
@@ -70,7 +65,7 @@ class TestSuggestTemplates:
             {"name": "how_to", "when_to_use": "dup", "rationale": "dup", "markdown": "# dup"},
             {"name": "broken", "when_to_use": "x", "rationale": "x", "markdown": ""},
         ]})
-        monkeypatch.setattr(cs.requests, "post", lambda *a, **k: _FakeResp(payload))
+        monkeypatch.setattr(cs, "claude_complete", lambda *a, **k: payload)
 
         result = cs.suggest_templates(site_id=1, max_proposals=3)
 

@@ -17,10 +17,10 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import anthropic
+from claude_cli import claude_complete
 import yaml
 
-from config import ANTHROPIC_API_KEY, CLAUDE_ANALYSIS_MODEL, DRY_RUN, PROJECT_ROOT, SITES_DIR
+from config import CLAUDE_ANALYSIS_MODEL, DRY_RUN, PROJECT_ROOT, SITES_DIR
 from database import (
     get_site, get_gsc_summary, get_ga4_summary, get_topics_summary,
     add_plan, add_topics_bulk,
@@ -293,14 +293,16 @@ def display_plan(plan: Dict, site_name: str = ""):
 # ── Claude chat ───────────────────────────────────────────────────────────────
 
 def _call_claude(messages: List[Dict]) -> str:
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    response = client.messages.create(
-        model=CLAUDE_ANALYSIS_MODEL,
-        max_tokens=8096,
-        system="You are a senior content strategist. When revising a plan, return the FULL updated plan as valid JSON only — no commentary. Preserve all topics not explicitly changed.",
-        messages=messages,
-    )
-    return response.content[0].text.strip()
+    system = ("You are a senior content strategist. When revising a plan, return the FULL "
+              "updated plan as valid JSON only — no commentary. Preserve all topics not "
+              "explicitly changed.")
+    # Flatten the (possibly multi-turn) conversation into one prompt for the CLI.
+    if len(messages) == 1:
+        prompt = messages[0].get("content", "")
+    else:
+        prompt = "\n\n".join(f"{m.get('role', 'user').upper()}: {m.get('content', '')}"
+                             for m in messages)
+    return claude_complete(prompt, system=system, model=CLAUDE_ANALYSIS_MODEL, timeout=600).strip()
 
 
 def _parse_plan_json(raw: str) -> Dict:
@@ -408,7 +410,7 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
     # Initial plan generation
     if DRY_RUN:
         plan = _get_mock_plan(site_name, num_topics)
-        print(YELLOW("  [DRY RUN] Mock plan generated — set ANTHROPIC_API_KEY for real output."))
+        print(YELLOW("  [DRY RUN] Mock plan generated — install/log in the claude CLI for real output."))
     else:
         analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics, wp_posts=wp_posts)
         messages: List[Dict] = [{"role": "user", "content": analysis_prompt}]
@@ -460,7 +462,7 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         else:
             # Send feedback to Claude
             if DRY_RUN:
-                print(YELLOW("[DRY RUN] Cannot refine plan without ANTHROPIC_API_KEY."))
+                print(YELLOW("[DRY RUN] Cannot refine plan without the claude CLI."))
                 continue
             print(DIM("Updating plan with Claude..."))
             messages.append({"role": "user", "content": (

@@ -16,7 +16,8 @@ import requests
 from typing import Optional
 from urllib.parse import quote
 
-from config import PIXABAY_API_KEY, LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+from config import PIXABAY_API_KEY, CLAUDE_ANALYSIS_MODEL, CLAUDE_CLI_AVAILABLE
+from claude_cli import claude_complete
 from logger import logger
 
 # ── Niche-aware prompt templates for Pollinations ────────────────────────────
@@ -99,8 +100,8 @@ def _build_image_prompt(topic: dict, site: dict) -> str:
     niche = site.get("niche") or site.get("name") or "technology"
     pillar = topic.get("pillar", "")
 
-    if not LLM_API_KEY and not LLM_BASE_URL:
-        logger.info("No LLM configured — using pillar prompt template")
+    if not CLAUDE_CLI_AVAILABLE:
+        logger.info("claude CLI unavailable — using pillar prompt template")
         return _fallback_prompt(pillar, site)
 
     system = (
@@ -112,31 +113,11 @@ def _build_image_prompt(topic: dict, site: dict) -> str:
     user = f'Article title: "{title}"\nNiche: {niche}\n\nWrite an image prompt:'
 
     try:
-        resp = requests.post(
-            f"{LLM_BASE_URL.rstrip('/')}/chat/completions",
-            json={
-                "model": LLM_MODEL,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "max_tokens": 80,
-                "temperature": 0.7,
-            },
-            headers={"Authorization": f"Bearer {LLM_API_KEY}", "Content-Type": "application/json"},
-            timeout=20,
-        )
-        if resp.status_code == 200:
-            try:
-                data = resp.json()
-            except Exception:
-                # Local LLMs sometimes return streamed/malformed JSON — skip
-                raise ValueError("Non-JSON response from LLM")
-            prompt = data["choices"][0]["message"]["content"].strip().strip('"')
-            if len(prompt) > 10:
-                full_prompt = prompt + _QUALITY_SUFFIX
-                logger.info(f"LLM image prompt: '{prompt}'")
-                return full_prompt
+        prompt = claude_complete(user, system=system, model=CLAUDE_ANALYSIS_MODEL, timeout=60).strip().strip('"')
+        if len(prompt) > 10:
+            full_prompt = prompt + _QUALITY_SUFFIX
+            logger.info(f"LLM image prompt: '{prompt}'")
+            return full_prompt
     except Exception as e:
         logger.warning(f"LLM prompt generation failed: {e}")
 

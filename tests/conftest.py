@@ -11,7 +11,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Set test environment variables before importing config
 os.environ["DATABASE_PATH"] = ":memory:"  # Use in-memory DB for tests
-os.environ["OPENAI_API_KEY"] = ""  # Force dry-run mode
+os.environ["DRY_RUN"] = "true"  # Never shell out to the real claude CLI in tests
+os.environ["OPENAI_API_KEY"] = ""
 os.environ["ENCRYPTION_KEY"] = "OxcT9c_vLCJZFkSz6Ke_53sxqO2S3AwMDHpP7xzCRwE="
 
 from database import init_db, get_db_connection, add_site, add_plan, add_topics_bulk, reset_memory_db

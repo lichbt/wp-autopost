@@ -12,23 +12,23 @@ DB_FULL_PATH = PROJECT_ROOT / DATABASE_PATH
 LOG_FILE = os.getenv("LOG_FILE", "logs/automation.log")
 LOG_FULL_PATH = PROJECT_ROOT / LOG_FILE
 
-# ── Claude (primary) ──────────────────────────────────────────────────────────
+# ── Claude (sole LLM backend, via the `claude` CLI) ───────────────────────────
+# Writing + data-driven audits run through the local `claude` CLI using the
+# user's logged-in session — no API key required, no OpenRouter.
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_CONTENT_MODEL = os.getenv("CLAUDE_CONTENT_MODEL", "sonnet")
 CLAUDE_ANALYSIS_MODEL = os.getenv("CLAUDE_ANALYSIS_MODEL", "sonnet")
 
-# ── Legacy OpenAI / OpenRouter (fallback) ─────────────────────────────────────
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("OPENROUTER_API_KEY", "") or OPENAI_API_KEY
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "") or os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-LLM_MODEL = os.getenv("LLM_MODEL", "") or os.getenv("OPENROUTER_MODEL", "") or "gpt-4o"
+import shutil as _shutil
+CLAUDE_CLI_AVAILABLE = _shutil.which("claude") is not None
 
-# Dry-run: explicit env var takes priority; auto-enable only when no API key AND not explicitly disabled
+# Dry-run: explicit env var wins; otherwise auto-enable only when we have no way
+# to generate (no claude CLI and no Anthropic key).
 _dry_run_env = os.getenv("DRY_RUN", "").lower()
 if _dry_run_env in ("true", "false"):
     DRY_RUN = _dry_run_env == "true"
 else:
-    DRY_RUN = not ANTHROPIC_API_KEY and not LLM_API_KEY
+    DRY_RUN = not CLAUDE_CLI_AVAILABLE and not ANTHROPIC_API_KEY
 
 # ── Google APIs ───────────────────────────────────────────────────────────────
 # Option A (recommended): OAuth — authenticates as your own Google account

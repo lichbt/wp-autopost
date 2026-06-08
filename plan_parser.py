@@ -1,8 +1,8 @@
 import json
 from datetime import date, timedelta
 from typing import Dict, List
-from openai import OpenAI
-from config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, DRY_RUN
+from config import CLAUDE_ANALYSIS_MODEL, DRY_RUN
+from claude_cli import claude_complete
 from logger import logger
 
 
@@ -114,36 +114,21 @@ def extract_plan(raw_markdown: str) -> Dict:
         logger.info("[DRY RUN] Returning mock parsed plan")
         return _get_mock_parsed_plan()
     
-    # Initialize LLM client
-    if LLM_BASE_URL:
-        client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
-        logger.info(f"Using LLM at: {LLM_BASE_URL} with model: {LLM_MODEL}")
-    else:
-        client = OpenAI(api_key=LLM_API_KEY)
-        logger.info(f"Using OpenAI with model: {LLM_MODEL}")
-    
     today = date.today().isoformat()
     user_prompt = PARSE_USER_PROMPT_TEMPLATE.format(
         raw_markdown=raw_markdown,
         today=today
     )
-    
-    logger.info("Calling LLM to parse strategy document...")
-    
+
+    logger.info(f"Parsing strategy document via claude CLI (model: {CLAUDE_ANALYSIS_MODEL})...")
+
     try:
-        # Try with JSON mode first (OpenAI compatible)
-        response = client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=[
-                {"role": "system", "content": PARSE_SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,
-            max_tokens=15000
-        )
-        
-        raw_content = response.choices[0].message.content.strip()
-        
+        raw_content = claude_complete(
+            user_prompt,
+            system=PARSE_SYSTEM_PROMPT,
+            model=CLAUDE_ANALYSIS_MODEL,
+        ).strip()
+
         # Try to parse as JSON
         try:
             result = json.loads(raw_content)
