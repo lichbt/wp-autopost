@@ -470,9 +470,12 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
     # ── Writing persona (performance-weighted, with rotation fallback) ─────────
     topic_id = topic.get("id", 0)
     site_id = topic.get("site_id") or (site or {}).get("id")
+    # Persona is chosen for the article's content type (template if set, else pillar).
+    content_type = topic.get("recommended_template") or topic.get("pillar")
     try:
         from content_strategist import select_persona
-        persona = select_persona(site_id, topic_id) if site_id else get_persona_for_topic(topic_id)
+        persona = (select_persona(site_id, topic_id, content_type=content_type)
+                   if site_id else get_persona_for_topic(topic_id))
     except Exception as exc:
         logger.warning(f"Persona selection fell back to rotation: {exc}")
         persona = get_persona_for_topic(topic_id)

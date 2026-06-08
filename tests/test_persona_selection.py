@@ -86,3 +86,47 @@ class TestSelectPersona:
         _seed_distribution(db_conn, sample_site)
         # With epsilon=0, even topic_id 0 should exploit, not explore.
         assert select_persona(sample_site, 0, epsilon=0.0)["name"] == "data_analyst"
+
+
+def _seed_p(conn, site_id, plan_id, persona, score, i, pillar):
+    conn.execute(
+        "INSERT INTO topics (site_id, plan_id, title, slug, pillar, status, "
+        "writing_persona, performance_score) VALUES (?,?,?,?,?,?,?,?)",
+        (site_id, plan_id, f"T-{pillar}-{persona}-{i}", f"t-{pillar}-{persona}-{i}",
+         pillar, "published", persona, score),
+    )
+    conn.commit()
+
+
+class TestTemplateAwarePersona:
+    def test_coldstart_affinity_for_template(self, db_conn, sample_site):
+        # No data anywhere → the template's affinity persona (on an exploit topic, id%5!=0).
+        assert select_persona(sample_site, 1, content_type="how_to")["name"] == "educator"
+        assert select_persona(sample_site, 1, content_type="vs_comparison")["name"] == "data_analyst"
+        assert select_persona(sample_site, 1, content_type="cost_roi")["name"] == "business_strategist"
+
+    def test_coldstart_affinity_normalizes_alias(self, db_conn, sample_site):
+        assert select_persona(sample_site, 1, content_type="How-To")["name"] == "educator"
+
+    def test_coldstart_explore_topic_rotates_not_affinity(self, db_conn, sample_site):
+        # topic_id 0 is an explore topic (0 % 5 == 0) → rotation, so other personas
+        # still gather per-template data instead of always getting the affinity pick.
+        assert select_persona(sample_site, 0, content_type="how_to") == get_persona_for_topic(0)
+
+    def test_unknown_template_falls_back_to_rotation(self, db_conn, sample_site):
+        assert select_persona(sample_site, 1, content_type="totally_unknown") == get_persona_for_topic(1)
+
+    def test_segment_overrides_affinity(self, db_conn, sample_site):
+        # how_to articles written by journalist score highest → beats the affinity
+        # default ('educator') for that template once the segment has enough data.
+        plan_id = add_plan(sample_site, "raw", None)
+        for i, s in enumerate((90, 95, 95, 100)):
+            _seed_p(db_conn, sample_site, plan_id, "journalist", s, i, "how_to")
+        assert select_persona(sample_site, 1, content_type="how_to")["name"] == "journalist"
+
+    def test_empty_segment_falls_back_to_global(self, db_conn, sample_site):
+        # All scored data is how_to (data_analyst best). Asking for 'best_of' (empty
+        # segment, affinity=journalist) must use GLOBAL → data_analyst, proving the
+        # global tier beats the cold-start affinity.
+        _seed_distribution(db_conn, sample_site)
+        assert select_persona(sample_site, 1, content_type="best_of")["name"] == "data_analyst"

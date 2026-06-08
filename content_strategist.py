@@ -494,23 +494,32 @@ Be direct. Use the actual data — reference specific pillars, titles, and numbe
 # bias selection toward personas whose articles actually score well — while still
 # exploring under-used personas so every persona keeps accumulating data.
 
-def get_persona_performance(site_id: int, min_samples: int = 1) -> Dict[str, Dict]:
+def get_persona_performance(site_id: int, min_samples: int = 1,
+                            pillar: Optional[str] = None) -> Dict[str, Dict]:
     """Average composite score per writing persona over scored articles.
 
     Returns {persona_name: {"avg_score": float, "count": int}}, only including
     personas with at least `min_samples` scored articles.
+
+    If `pillar` is given, restricts to articles of that content type/template —
+    this is how persona performance is segmented per template.
     """
+    where = ("site_id = ? AND writing_persona IS NOT NULL AND writing_persona != '' "
+             "AND performance_score IS NOT NULL")
+    params: list = [site_id]
+    if pillar:
+        where += " AND pillar = ?"
+        params.append(pillar)
+
     conn = get_db_connection()
-    rows = conn.execute("""
+    rows = conn.execute(f"""
         SELECT writing_persona       AS persona,
                AVG(performance_score) AS avg_score,
                COUNT(*)               AS count
         FROM topics
-        WHERE site_id = ?
-          AND writing_persona IS NOT NULL AND writing_persona != ''
-          AND performance_score IS NOT NULL
+        WHERE {where}
         GROUP BY writing_persona
-    """, (site_id,)).fetchall()
+    """, params).fetchall()
     conn.close()
 
     out: Dict[str, Dict] = {}
@@ -524,58 +533,106 @@ def get_persona_performance(site_id: int, min_samples: int = 1) -> Dict[str, Dic
     return out
 
 
-def select_persona(site_id: int, topic_id: int, epsilon: float = 0.2,
-                   min_total: int = 8) -> Dict:
-    """Pick a writing persona using deterministic epsilon-greedy on performance.
+# Cold-start template → persona affinity: which persona suits which content type
+# before any performance data exists. Keyed by canonical pillar/template name.
+# (critical_reviewer is intentionally explore-only — no default slot.)
+TEMPLATE_PERSONA_AFFINITY: Dict[str, str] = {
+    "vs_comparison":     "data_analyst",       # comparisons want figures/tables
+    "best_of":           "journalist",         # roundups want an engaging survey
+    "buyer_guide":       "business_strategist", # decision-framing
+    "setup_tutorial":    "expert_practitioner", # hands-on walkthrough
+    "feature_explainer": "educator",
+    "use_case":          "business_strategist", # business outcomes
+    "how_to":            "educator",            # teach step by step
+    "definition":        "educator",
+    "cost_roi":          "business_strategist", # cost/ROI framing
+}
 
-    - Cold start (fewer than `min_total` scored articles, or <2 personas with
-      data) → fall back to the original deterministic rotation. Nothing changes
-      until there is enough signal.
-    - Exploit (most topics): the persona with the highest average score.
-    - Explore (every Nth topic, N≈1/epsilon): an under-sampled persona, so every
-      persona keeps gathering data and the ranking can't ossify.
 
-    Deterministic in (site performance snapshot, topic_id) — reproducible and
-    testable, no RNG.
+def _epsilon_greedy_name(names: List[str], perf: Dict[str, Dict],
+                         topic_id: int, epsilon: float) -> Tuple[Optional[str], str]:
+    """Deterministic epsilon-greedy pick over a performance snapshot.
+
+    Returns (persona_name|None, mode). Explore every ~1/epsilon topics (picking an
+    under-sampled persona), otherwise exploit the highest average score.
     """
-    from content_generator import WRITING_PERSONAS, get_persona_for_topic
-    names = [p["name"] for p in WRITING_PERSONAS]
-
-    try:
-        perf = get_persona_performance(site_id)
-    except Exception as exc:
-        logger.warning(f"[persona] performance lookup failed for site {site_id}: {exc}")
-        perf = {}
-
-    total_scored = sum(v["count"] for v in perf.values())
-    personas_with_data = [n for n in names if n in perf]
-
-    # Cold start — not enough signal yet.
-    if total_scored < min_total or len(personas_with_data) < 2:
-        chosen = get_persona_for_topic(topic_id)
-        logger.info(f"[persona] cold-start rotation → '{chosen['name']}' "
-                    f"(scored={total_scored}, with_data={len(personas_with_data)})")
-        return chosen
-
     stats = {n: perf.get(n, {"avg_score": None, "count": 0}) for n in names}
     explore_every = max(2, round(1.0 / epsilon)) if epsilon > 0 else 0
 
     if explore_every and topic_id % explore_every == 0:
-        # Explore: least-sampled persona; rotate among ties by topic_id.
         min_count = min(s["count"] for s in stats.values())
         candidates = [n for n in names if stats[n]["count"] == min_count]
-        chosen_name = candidates[(topic_id // explore_every) % len(candidates)]
-        mode = "explore"
-    else:
-        # Exploit: best average score among personas that have data.
-        # Tie-break by name for determinism.
-        seen = [(n, stats[n]["avg_score"]) for n in names if stats[n]["avg_score"] is not None]
-        chosen_name = max(seen, key=lambda kv: (kv[1], kv[0]))[0]
-        mode = "exploit"
+        return candidates[(topic_id // explore_every) % len(candidates)], "explore"
 
-    chosen = next((p for p in WRITING_PERSONAS if p["name"] == chosen_name), None)
-    if chosen is None:
-        return get_persona_for_topic(topic_id)
-    logger.info(f"[persona] {mode} → '{chosen_name}' "
-                f"(avg={stats[chosen_name]['avg_score']}, n={stats[chosen_name]['count']})")
+    seen = [(n, stats[n]["avg_score"]) for n in names if stats[n]["avg_score"] is not None]
+    if not seen:
+        return None, "none"
+    return max(seen, key=lambda kv: (kv[1], kv[0]))[0], "exploit"
+
+
+def select_persona(site_id: int, topic_id: int, content_type: Optional[str] = None,
+                   epsilon: float = 0.2, min_total: int = 8, min_segment: int = 4) -> Dict:
+    """Pick a writing persona — template-aware, deterministic epsilon-greedy.
+
+    Tiered, so the choice is the "proper persona for this template" as early as
+    possible and gets more data-driven over time:
+      1. SEGMENT — persona performance within this content type/template
+         (once it has >= min_segment scored articles). Best-for-this-template.
+      2. GLOBAL  — site-wide persona performance (>= min_total scored, >=2 personas).
+      3. AFFINITY — cold-start template→persona default (with occasional rotation
+         on explore topics so other personas still gather per-template data).
+      4. ROTATION — original topic_id % N fallback when nothing else applies.
+
+    `content_type` is the article's template/pillar (pass recommended_template or
+    pillar). Deterministic in (data snapshot, topic_id) — reproducible/testable.
+    """
+    from content_generator import WRITING_PERSONAS, get_persona_for_topic
+    names = [p["name"] for p in WRITING_PERSONAS]
+
+    def by_name(n: Optional[str]):
+        return next((p for p in WRITING_PERSONAS if p["name"] == n), None)
+
+    # 1. Segment by content type/template.
+    if content_type:
+        try:
+            seg = get_persona_performance(site_id, pillar=content_type)
+        except Exception as exc:
+            logger.warning(f"[persona] segment lookup failed ({content_type}): {exc}")
+            seg = {}
+        if sum(v["count"] for v in seg.values()) >= min_segment:
+            name, mode = _epsilon_greedy_name(names, seg, topic_id, epsilon)
+            p = by_name(name)
+            if p:
+                logger.info(f"[persona] segment[{content_type}] {mode} → '{name}'")
+                return p
+
+    # 2. Global performance.
+    try:
+        glob = get_persona_performance(site_id)
+    except Exception as exc:
+        logger.warning(f"[persona] global lookup failed for site {site_id}: {exc}")
+        glob = {}
+    if (sum(v["count"] for v in glob.values()) >= min_total
+            and len([n for n in names if n in glob]) >= 2):
+        name, mode = _epsilon_greedy_name(names, glob, topic_id, epsilon)
+        p = by_name(name)
+        if p:
+            logger.info(f"[persona] global {mode} → '{name}'")
+            return p
+
+    # 3. Cold-start affinity (proper persona for the template), with occasional
+    #    rotation on explore topics so per-template data still accumulates.
+    if content_type:
+        affinity = TEMPLATE_PERSONA_AFFINITY.get(_normalize_pillar(content_type))
+        explore_every = max(2, round(1.0 / epsilon)) if epsilon > 0 else 0
+        is_explore = bool(explore_every) and topic_id % explore_every == 0
+        if affinity and not is_explore:
+            p = by_name(affinity)
+            if p:
+                logger.info(f"[persona] cold-start affinity[{content_type}] → '{affinity}'")
+                return p
+
+    # 4. Rotation.
+    chosen = get_persona_for_topic(topic_id)
+    logger.info(f"[persona] rotation → '{chosen['name']}'")
     return chosen
