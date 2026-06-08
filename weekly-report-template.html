@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  WEEKLY REPORT TEMPLATE — MooDatingScript & ShaunSocial         ║
+  ║  How to use each week:                                           ║
+  ║  1. Find all {{PLACEHOLDERS}} and replace with real data         ║
+  ║  2. Fill in Google Ads bullets (add/remove as needed)            ║
+  ║  3. Fill in THIS WEEK articles for each site                     ║
+  ║  4. Fill in NEXT WEEK articles from the June plan (next week's   ║
+  ║     articles from shaunsocial-june-plan.html /                   ║
+  ║     moodating-june-plan.html)                                    ║
+  ║  5. Save as weekly-report-{{DATE}}.html and send to client       ║
+  ╚══════════════════════════════════════════════════════════════════╝
+
+  PLACEHOLDERS REFERENCE:
+  {{WEEK_PERIOD}}       e.g. "June 9–13, 2026"
+  {{REPORT_DATE}}       e.g. "June 13, 2026"
+  {{NEXT_WEEK_PERIOD}}  e.g. "June 16–20, 2026"
+  {{SHAUN_COUNT}}       e.g. "3 articles"
+  {{MOO_COUNT}}         e.g. "3 articles"
+  {{SHAUN_TOTAL}}       e.g. "91 total live"
+  {{MOO_TOTAL}}         e.g. "36 total live"
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Report — {{WEEK_PERIOD}}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f6fa;
+      color: #1a1e2e;
+      line-height: 1.7;
+      padding: 36px 20px;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+
+    .header {
+      background: linear-gradient(135deg, #1a1e2e 0%, #2d3561 100%);
+      color: #fff;
+      border-radius: 14px;
+      padding: 32px 36px;
+      margin-bottom: 24px;
+    }
+    .header .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #9aa3c8;
+      margin-bottom: 8px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .header .meta { font-size: 13px; color: #9aa3c8; margin-top: 14px; }
+    .header .meta span { margin-right: 24px; }
+    .header .meta strong { color: #fff; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 26px 30px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1e2e;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef0f8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    ul.bullets { list-style: none; }
+    ul.bullets li {
+      padding: 7px 0;
+      font-size: 14px;
+      color: #2b3050;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    ul.bullets li:last-child { border-bottom: none; }
+    ul.bullets li .dot {
+      flex-shrink: 0;
+      margin-top: 5px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #c5cae9;
+    }
+    ul.bullets li .dot.green  { background: #66bb6a; }
+    ul.bullets li .dot.orange { background: #ffa726; }
+    ul.bullets li .dot.red    { background: #ef5350; }
+
+    ul.links { list-style: none; }
+    ul.links li {
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    ul.links li:last-child { border-bottom: none; }
+    ul.links li::before { content: "↗"; color: #9aa3c8; flex-shrink: 0; font-size: 13px; }
+    a { color: #3d5afe; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .next-item {
+      padding: 8px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+    }
+    .next-item:last-child { border-bottom: none; }
+    .tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      padding: 3px 7px;
+      margin-top: 1px;
+      line-height: 1.4;
+    }
+    .tag-red    { background: #fce4ec; color: #c62828; }
+    .tag-orange { background: #fff3e0; color: #e65100; }
+    .tag-blue   { background: #e8f4fd; color: #0d47a1; }
+    .tag-green  { background: #e8f5e9; color: #1b5e20; }
+
+    .footer { text-align: center; font-size: 12px; color: #aab0c6; margin-top: 30px; }
+    .sub { font-size: 12px; color: #7b82a0; margin-top: 2px; }
+
+    .section-divider {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #9aa3c8;
+      margin: 18px 0 8px;
+      padding-top: 14px;
+      border-top: 1px solid #eef0f8;
+    }
+
+    ul.links li .pill-tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .pt-blue   { background: #e8f4fd; color: #0d47a1; }
+    .pt-green  { background: #e8f5e9; color: #1b5e20; }
+    .pt-purple { background: #f3e5f5; color: #4a148c; }
+    .pt-orange { background: #fff3e0; color: #bf360c; }
+    .pt-teal   { background: #e0f2f1; color: #004d40; }
+
+    /* Priority number colors */
+    .p-highest { color: #ef5350; }
+    .p-high    { color: #f57c00; }
+    .p-medium  { color: #7b82a0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════ -->
+  <div class="header">
+    <div class="eyebrow">Weekly Progress Report</div>
+    <h1>MooDatingScript &amp; ShaunSocial</h1>
+    <div class="meta">
+      <span><strong>Period:</strong> {{WEEK_PERIOD}}</span>
+      <span><strong>Date:</strong> {{REPORT_DATE}}</span>
+    </div>
+  </div>
+
+
+  <!-- ══ GOOGLE ADS ══════════════════════════════════════════════ -->
+  <!--
+    INSTRUCTIONS:
+    - Green dot  = done / fixed
+    - Orange dot = pending / warning
+    - Red dot    = issue / urgent
+    - Remove bullets that don't apply this week
+    - Add new bullets for any new work done
+  -->
+  <div class="card">
+    <div class="card-title">📊 Google Ads</div>
+    <ul class="bullets">
+
+      <!-- ✅ DONE items — use green dot -->
+      <li><span class="dot green"></span><div><strong>{{ADS_DONE_1_TITLE}}</strong> — {{ADS_DONE_1_DETAIL}}</div></li>
+      <li><span class="dot green"></span><div><strong>{{ADS_DONE_2_TITLE}}</strong> — {{ADS_DONE_2_DETAIL}}</div></li>
+      <!-- Add more green items as needed -->
+
+      <!-- ⚠️ PENDING / WARNING items — use orange dot -->
+      <li><span class="dot orange"></span><div><strong>{{ADS_PENDING_1_TITLE}}</strong> — {{ADS_PENDING_1_DETAIL}}</div></li>
+      <!-- Add more orange items as needed -->
+
+      <!-- ❌ Delete this block if no ads work was done this week -->
+    </ul>
+  </div>
+
+
+  <!-- ══ SHAUNSOCIAL ARTICLES ════════════════════════════════════ -->
+  <!--
+    INSTRUCTIONS:
+    - Query DB: SELECT title, slug, wp_post_id FROM topics WHERE site_id=4
+      AND status='published' AND date(updated_at) >= 'YYYY-MM-DD' ORDER BY updated_at DESC
+    - Number = article number from the June plan
+    - Priority color: #ef5350 = highest, #f57c00 = high, #7b82a0 = medium
+    - pill-tag: pt-blue=Best Of, pt-purple=VS, pt-orange=Definition/How-To, pt-green=Feature
+    - Type: "Rewrite" for existing pages, "New article" for new posts
+  -->
+  <div class="card">
+    <div class="card-title">✍️ ShaunSocial — Articles Published This Week
+      <span style="font-size:12px;font-weight:400;color:#7b82a0;margin-left:4px;">{{SHAUN_COUNT}} · {{SHAUN_TOTAL}}</span>
+    </div>
+    <ul class="links" style="margin-top:4px;">
+
+      <!-- REPEAT THIS BLOCK FOR EACH ARTICLE -->
+      <li style="align-items:flex-start;gap:12px;padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;flex-shrink:0;width:14px;margin-top:2px;" class="p-highest">1</span>
+        <div style="flex:1;">
+          <a href="https://shaunsocial.com/{{SLUG}}/" target="_blank" style="font-weight:600;">{{TITLE}}</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">{{TYPE}} · {{PILLAR}} · {{IMPRESSIONS}} impressions · {{CTR}} CTR · pos {{POSITION}}</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">{{CATEGORY}}</span>
+      </li>
+      <!-- END REPEAT -->
+
+    </ul>
+  </div>
+
+
+  <!-- ══ MOODATINGSCRIPT ARTICLES ════════════════════════════════ -->
+  <!--
+    INSTRUCTIONS:
+    - Query DB: SELECT title, slug, wp_post_id FROM topics WHERE site_id=2
+      AND status='published' AND date(updated_at) >= 'YYYY-MM-DD' ORDER BY updated_at DESC
+    - Same structure as ShaunSocial above
+    - URLs: https://moodatingscript.com/{{SLUG}}/
+  -->
+  <div class="card">
+    <div class="card-title">✍️ MooDatingScript — Articles Published This Week
+      <span style="font-size:12px;font-weight:400;color:#7b82a0;margin-left:4px;">{{MOO_COUNT}} · {{MOO_TOTAL}}</span>
+    </div>
+    <ul class="links" style="margin-top:4px;">
+
+      <!-- REPEAT THIS BLOCK FOR EACH ARTICLE -->
+      <li style="align-items:flex-start;gap:12px;padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;flex-shrink:0;width:14px;margin-top:2px;" class="p-highest">1</span>
+        <div style="flex:1;">
+          <a href="https://moodatingscript.com/{{SLUG}}/" target="_blank" style="font-weight:600;">{{TITLE}}</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">{{TYPE}} · {{PILLAR}} · {{IMPRESSIONS}} impressions · {{CTR}} CTR · pos {{POSITION}}</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">{{CATEGORY}}</span>
+      </li>
+      <!-- END REPEAT -->
+
+    </ul>
+  </div>
+
+
+  <!-- ══ NEXT WEEK ═══════════════════════════════════════════════ -->
+  <!--
+    INSTRUCTIONS:
+    - Ads actions: carry over any unresolved items from this week
+    - Articles: pull from the NEXT week in shaunsocial-june-plan.html
+      and moodating-june-plan.html (look for "Week N · Jun X–Y" pills)
+    - No links needed for next week — articles not published yet
+  -->
+  <div class="card">
+    <div class="card-title">🗓️ Next Week — {{NEXT_WEEK_PERIOD}}</div>
+
+    <!-- ADS ACTIONS — carry over unresolved items, add new ones -->
+    <!-- Remove this block if no ads actions pending -->
+    <div class="next-item">
+      <span class="tag tag-red">Urgent</span>
+      <div><strong>{{NEXT_ADS_URGENT_TITLE}}</strong> — {{NEXT_ADS_URGENT_DETAIL}}</div>
+    </div>
+    <div class="next-item">
+      <span class="tag tag-orange">Monitor</span>
+      <div><strong>{{NEXT_ADS_MONITOR_TITLE}}</strong> — {{NEXT_ADS_MONITOR_DETAIL}}</div>
+    </div>
+
+    <!-- SHAUNSOCIAL NEXT WEEK ARTICLES -->
+    <div class="section-divider">ShaunSocial — {{NEXT_SHAUN_COUNT}} Articles</div>
+    <ul class="links" style="margin:0;">
+
+      <!-- REPEAT FOR EACH PLANNED ARTICLE -->
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;flex-shrink:0;width:14px;margin-top:2px;" class="p-high">{{NUM}}</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">{{TITLE}}</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">{{TYPE}} · {{PILLAR}} · {{IMPRESSIONS}} impr · {{NOTES}}</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">{{CATEGORY}}</span>
+      </li>
+      <!-- END REPEAT -->
+
+    </ul>
+
+    <!-- MOODATINGSCRIPT NEXT WEEK ARTICLES -->
+    <div class="section-divider">MooDatingScript — {{NEXT_MOO_COUNT}} Articles</div>
+    <ul class="links" style="margin:0;">
+
+      <!-- REPEAT FOR EACH PLANNED ARTICLE -->
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;flex-shrink:0;width:14px;margin-top:2px;" class="p-high">{{NUM}}</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">{{TITLE}}</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">{{TYPE}} · {{PILLAR}} · {{IMPRESSIONS}} impr · {{NOTES}}</div>
+        </div>
+        <span class="pill-tag pt-orange" style="margin-top:2px;">{{CATEGORY}}</span>
+      </li>
+      <!-- END REPEAT -->
+
+    </ul>
+
+  </div>
+
+  <div class="footer">{{REPORT_DATE}} · MooDatingScript · ShaunSocial</div>
+
+</div>
+</body>
+</html>

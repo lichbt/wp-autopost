@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Report — June 2–5, 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f6fa;
+      color: #1a1e2e;
+      line-height: 1.7;
+      padding: 36px 20px;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1e2e 0%, #2d3561 100%);
+      color: #fff;
+      border-radius: 14px;
+      padding: 32px 36px;
+      margin-bottom: 24px;
+    }
+    .header .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #9aa3c8;
+      margin-bottom: 8px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .header .meta { font-size: 13px; color: #9aa3c8; margin-top: 14px; }
+    .header .meta span { margin-right: 24px; }
+    .header .meta strong { color: #fff; }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 26px 30px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1e2e;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef0f8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Bullets */
+    ul.bullets { list-style: none; }
+    ul.bullets li {
+      padding: 7px 0;
+      font-size: 14px;
+      color: #2b3050;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    ul.bullets li:last-child { border-bottom: none; }
+    ul.bullets li .dot {
+      flex-shrink: 0;
+      margin-top: 5px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #c5cae9;
+    }
+    ul.bullets li .dot.green  { background: #66bb6a; }
+    ul.bullets li .dot.orange { background: #ffa726; }
+    ul.bullets li .dot.red    { background: #ef5350; }
+
+    /* Article links list */
+    ul.links { list-style: none; }
+    ul.links li {
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    ul.links li:last-child { border-bottom: none; }
+    ul.links li::before {
+      content: "↗";
+      color: #9aa3c8;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+    a { color: #3d5afe; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Next week */
+    .next-item {
+      padding: 8px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f4fb;
+      display: flex;
+      gap: 10px;
+    }
+    .next-item:last-child { border-bottom: none; }
+    .tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      padding: 3px 7px;
+      margin-top: 1px;
+      line-height: 1.4;
+    }
+    .tag-red    { background: #fce4ec; color: #c62828; }
+    .tag-orange { background: #fff3e0; color: #e65100; }
+    .tag-blue   { background: #e8f4fd; color: #0d47a1; }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aab0c6;
+      margin-top: 30px;
+    }
+
+    .sub { font-size: 12px; color: #7b82a0; margin-top: 2px; }
+
+    /* Article category groups */
+    .art-group { margin-bottom: 16px; }
+    .art-group:last-child { margin-bottom: 0; }
+    .art-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #9aa3c8;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #eef0f8;
+    }
+    ul.links li .pill-tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .pt-blue   { background: #e8f4fd; color: #0d47a1; }
+    .pt-green  { background: #e8f5e9; color: #1b5e20; }
+    .pt-purple { background: #f3e5f5; color: #4a148c; }
+    .pt-orange { background: #fff3e0; color: #bf360c; }
+    .pt-teal   { background: #e0f2f1; color: #004d40; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">Weekly Progress Report</div>
+    <h1>MooDatingScript &amp; ShaunSocial</h1>
+    <div class="meta">
+      <span><strong>Period:</strong> June 2–5, 2026</span>
+      <span><strong>Date:</strong> June 5, 2026</span>
+    </div>
+  </div>
+
+  <!-- ── GOOGLE ADS ── -->
+  <div class="card">
+    <div class="card-title">📊 Google Ads</div>
+    <ul class="bullets">
+      <li><span class="dot green"></span><div><strong>Conversion tracking fixed</strong> — All 40 conversion actions in the account were disabled. Re-enabled 4 ShaunSocial conversions: <em>Order_Received, Trial_Conversion, Demo_Conversion, ViewDemo</em>. Also created the missing GA4 events so they sync back to Ads within 24–48 hrs.</div></li>
+      <li><span class="dot green"></span><div><strong>moodatingscript keywords updated</strong> — Added 13 new high-intent keywords (php dating script, tinder clone script, skadate alternative, white label dating software, etc.).</div></li>
+      <li><span class="dot green"></span><div><strong>Landing pages fixed</strong> — All 44 keywords were pointing to blog pages or had no URL set. Updated all to <code>https://moodatingscript.com</code>.</div></li>
+      <li><span class="dot green"></span><div><strong>Bidding confirmed</strong> — Both campaigns are already on Maximize Conversion Value. No changes needed.</div></li>
+      <li><span class="dot orange"></span><div><strong>AI Max — moodatingscript needs to be turned OFF</strong> — Budget is too small (₫44K/day) for AI broad expansion. Requires manual action in Google Ads UI (Settings → AI Max → Toggle OFF).</div></li>
+    </ul>
+  </div>
+
+  <!-- ── SHAUNSOCIAL ARTICLES ── -->
+  <div class="card">
+    <div class="card-title">✍️ ShaunSocial — Articles Published This Week
+      <span style="font-size:12px;font-weight:400;color:#7b82a0;margin-left:4px;">4 articles · rewrites from June plan</span>
+    </div>
+    <ul class="links" style="margin-top:4px;">
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#ef5350;flex-shrink:0;width:14px;margin-top:2px;">1</span>
+        <div style="flex:1;">
+          <a href="https://shaunsocial.com/best-social-network-softwares-in-2025-comparison/" target="_blank" style="font-weight:600;">Best Social Network Software in 2026: Full Comparison (Updated)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · best_of · 4,603 impressions · 0.3% CTR · pos 10.9</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">Best Of</span>
+      </li>
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#ef5350;flex-shrink:0;width:14px;margin-top:2px;">2</span>
+        <div style="flex:1;">
+          <a href="https://shaunsocial.com/best-frameworks-to-create-a-social-network-in-2025/" target="_blank" style="font-weight:600;">Best Frameworks to Build a Social Network in 2026 (Developer Guide)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · best_of · 6,829 impressions · 0.1% CTR · pos 10.9</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">Best Of</span>
+      </li>
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">3</span>
+        <div style="flex:1;">
+          <a href="https://shaunsocial.com/best-woowonder-alternative-in-2026-side-by-side-comparison/" target="_blank" style="font-weight:600;">Best WoWonder Alternative in 2026: Full Comparison (7 Options)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · vs_comparison · 1,797 impressions · 0.2% CTR · pos 20.6</div>
+        </div>
+        <span class="pill-tag pt-purple" style="margin-top:2px;">VS</span>
+      </li>
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">4</span>
+        <div style="flex:1;">
+          <a href="https://shaunsocial.com/best-white-label-social-media-platform-2026/" target="_blank" style="font-weight:600;">Best White Label Social Media Platform in 2026 (Ranked &amp; Compared)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · best_of · ~940 impressions · 0.2% CTR · pos 14–17</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">Best Of</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ── MOODATINGSCRIPT ARTICLES ── -->
+  <div class="card">
+    <div class="card-title">✍️ MooDatingScript — Articles Published This Week
+      <span style="font-size:12px;font-weight:400;color:#7b82a0;margin-left:4px;">3 articles · rewrites from June plan</span>
+    </div>
+    <ul class="links" style="margin-top:4px;">
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#ef5350;flex-shrink:0;width:14px;margin-top:2px;">1</span>
+        <div style="flex:1;">
+          <a href="https://moodatingscript.com/best-php-dating-scripts-2026/" target="_blank" style="font-weight:600;">Best PHP Dating Scripts in 2026: Ranked, Reviewed &amp; Compared</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · best_of · 141 impressions · pos 26.2 — page 3</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">Best Of</span>
+      </li>
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">2</span>
+        <div style="flex:1;">
+          <a href="https://moodatingscript.com/php-dating-script-what-it-is-and-how-to-choose-one/" target="_blank" style="font-weight:600;">PHP Dating Script: What It Is, How It Works &amp; How to Choose (2026)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · definition · 237 cluster impressions · pos 29–33 — page 3+</div>
+        </div>
+        <span class="pill-tag pt-orange" style="margin-top:2px;">Definition</span>
+      </li>
+      <li style="align-items:flex-start; gap:12px; padding:10px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">3</span>
+        <div style="flex:1;">
+          <a href="https://moodatingscript.com/moodatescript-vs-skadate-which-dating-script-is-better-in-2026/" target="_blank" style="font-weight:600;">MooDatingScript vs SkaDate: Complete 2026 Comparison (Updated)</a>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:3px;">Rewrite · vs_comparison · ~40 est. impressions · SkaDate = top competitor</div>
+        </div>
+        <span class="pill-tag pt-purple" style="margin-top:2px;">VS</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ── NEXT WEEK ── -->
+  <div class="card">
+    <div class="card-title">🗓️ Next Week — June 9–13, 2026</div>
+
+    <!-- Ads actions -->
+    <div class="next-item">
+      <span class="tag tag-red">Urgent</span>
+      <div><strong>Disable AI Max on moodatingscript</strong> — action in Google Ads UI (Settings → AI Max → Toggle OFF) before campaign wastes more budget on irrelevant searches.</div>
+    </div>
+    <div class="next-item">
+      <span class="tag tag-orange">Monitor</span>
+      <div><strong>Confirm conversion tracking is live</strong> — check that all 4 ShaunSocial conversions show "Include in metric = Yes" in Google Ads.</div>
+    </div>
+
+    <!-- ShaunSocial articles -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9aa3c8;margin:18px 0 8px;padding-top:14px;border-top:1px solid #eef0f8;">ShaunSocial — 3 Articles</div>
+
+    <ul class="links" style="margin:0;">
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">3</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">Best WoWonder Alternative in 2026: Full Comparison (7 Options)</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">Rewrite · vs_comparison · 1,797 impr · 0.2% CTR · pos 20.6</div>
+        </div>
+        <span class="pill-tag pt-purple" style="margin-top:2px;">VS</span>
+      </li>
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">4</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">Best White Label Social Media Platform in 2026 (Ranked &amp; Compared)</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">Rewrite · best_of · ~940 impr · 0.2% CTR · pos 14–17</div>
+        </div>
+        <span class="pill-tag pt-blue" style="margin-top:2px;">Best Of</span>
+      </li>
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#7b82a0;flex-shrink:0;width:14px;margin-top:2px;">5</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">Social Network Development: The Complete Guide for 2026</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">New article · how_to · 305 impr · pos 8–16 · intent gap</div>
+        </div>
+        <span class="pill-tag pt-orange" style="margin-top:2px;">How-To</span>
+      </li>
+    </ul>
+
+    <!-- MooDatingScript articles -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9aa3c8;margin:18px 0 8px;padding-top:14px;border-top:1px solid #eef0f8;">MooDatingScript — 3 Articles</div>
+
+    <ul class="links" style="margin:0;">
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#ef5350;flex-shrink:0;width:14px;margin-top:2px;">4</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">What is a Dating Script? The Complete Guide for 2026</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">New article · definition · 126 impr · "dating script" pos 68 — foundational term</div>
+        </div>
+        <span class="pill-tag pt-orange" style="margin-top:2px;">Definition</span>
+      </li>
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">5</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">SkaDate Alternatives in 2026: 6 Options Ranked by Features &amp; Price</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">New article · vs_comparison · ~50 impr · competitor name search</div>
+        </div>
+        <span class="pill-tag pt-purple" style="margin-top:2px;">VS</span>
+      </li>
+      <li style="align-items:flex-start;gap:12px;padding:9px 0;">
+        <span style="font-size:11px;font-weight:800;color:#f57c00;flex-shrink:0;width:14px;margin-top:2px;">6</span>
+        <div style="flex:1;">
+          <span style="font-weight:600;">Dating Script for Sale: What to Look For &amp; How to Buy Safely (2026)</span>
+          <div style="font-size:12px;color:#9aa3c8;margin-top:2px;">New article · buyer_guide · 88 impr · "dating script for sale" pos 32 · high buyer intent</div>
+        </div>
+        <span class="pill-tag pt-green" style="margin-top:2px;">Buyer Guide</span>
+      </li>
+    </ul>
+
+  </div>
+
+  <div class="footer">June 5, 2026 · MooDatingScript · ShaunSocial</div>
+
+</div>
+</body>
+</html>

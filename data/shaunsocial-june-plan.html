@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShaunSocial — June 2026 Report & 12-Article Plan</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+
+.header { background: linear-gradient(135deg, #1a1f35 0%, #0f1117 100%); border-bottom: 2px solid #1e40af; padding: 28px 40px; }
+.header h1 { font-size: 22px; font-weight: 700; color: #f8fafc; }
+.header .meta { color: #64748b; font-size: 13px; margin-top: 5px; }
+
+.container { max-width: 1260px; margin: 0 auto; padding: 28px 40px; }
+
+/* ─── STATS SECTION ─────────────────────────── */
+.section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #3b82f6; margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: #1e293b; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 8px; }
+.kpi { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+.kpi .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.kpi .val { font-size: 26px; font-weight: 800; color: #f8fafc; }
+.kpi .sub { font-size: 11px; color: #475569; margin-top: 3px; }
+.kpi.bad .val { color: #f87171; }
+.kpi.warn .val { color: #fbbf24; }
+.kpi.good .val { color: #34d399; }
+
+.alert { border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+.alert-red  { background: #dc262612; border: 1px solid #dc262640; color: #fca5a5; }
+.alert-blue { background: #2563eb12; border: 1px solid #2563eb40; color: #93c5fd; }
+.alert-grn  { background: #05996912; border: 1px solid #05996940; color: #6ee7b7; }
+.alert-yw   { background: #d9770612; border: 1px solid #d9770640; color: #fbbf24; }
+.alert .icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.alert strong { color: inherit; font-weight: 700; }
+
+/* ─── PAGES TABLE ─────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 12px 0 20px; }
+thead th { background: #161b2e; color: #64748b; font-weight: 600; text-align: left; padding: 9px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e293b; }
+thead th.r { text-align: right; }
+tbody tr { border-bottom: 1px solid #161b2e; }
+tbody tr:hover { background: #1e293b55; }
+tbody td { padding: 9px 12px; vertical-align: middle; }
+.r { text-align: right; font-variant-numeric: tabular-nums; }
+.ctr-bad  { color: #f87171; font-weight: 700; }
+.ctr-ok   { color: #fbbf24; font-weight: 600; }
+.ctr-good { color: #34d399; font-weight: 600; }
+.pos-good { color: #34d399; font-weight: 600; }
+.pos-ok   { color: #fbbf24; font-weight: 600; }
+.pos-bad  { color: #f87171; font-weight: 600; }
+
+/* ─── ARTICLE CARDS ─────────────────────────── */
+.article-grid { display: flex; flex-direction: column; gap: 16px; }
+
+.art-card { background: #1a2235; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
+.art-card:hover { border-color: #334155; }
+.art-card.tier1 { border-left: 4px solid #ef4444; }
+.art-card.tier2 { border-left: 4px solid #f59e0b; }
+.art-card.tier3 { border-left: 4px solid #3b82f6; }
+
+.art-header { padding: 16px 20px; display: flex; align-items: flex-start; gap: 16px; cursor: pointer; }
+.art-num { font-size: 28px; font-weight: 900; color: #1e293b; flex-shrink: 0; width: 36px; line-height: 1; }
+.art-card.tier1 .art-num { color: #7f1d1d; }
+.art-card.tier2 .art-num { color: #78350f; }
+.art-card.tier3 .art-num { color: #1e3a5f; }
+
+.art-main { flex: 1; }
+.art-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 5px; }
+.art-slug  { font-size: 11px; color: #3b82f6; font-family: monospace; }
+.art-meta  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.pill-red    { background: #dc262620; color: #f87171; border: 1px solid #dc262640; }
+.pill-yw     { background: #d9770620; color: #fbbf24; border: 1px solid #d9770640; }
+.pill-blue   { background: #2563eb20; color: #60a5fa; border: 1px solid #2563eb40; }
+.pill-green  { background: #05996920; color: #34d399; border: 1px solid #05996940; }
+.pill-purple { background: #7c3aed20; color: #a78bfa; border: 1px solid #7c3aed40; }
+.pill-gray   { background: #47556920; color: #94a3b8; border: 1px solid #47556940; }
+.pill-orange { background: #ea580c20; color: #fb923c; border: 1px solid #ea580c40; }
+
+.art-stats { display: flex; flex-direction: column; gap: 4px; text-align: right; flex-shrink: 0; min-width: 90px; }
+.art-stats .s-impr { font-size: 20px; font-weight: 800; color: #f8fafc; }
+.art-stats .s-label { font-size: 10px; color: #475569; text-transform: uppercase; }
+.art-stats .s-pos   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+.art-body { padding: 0 20px 18px 72px; display: none; }
+.art-body.open { display: block; }
+.art-body h4 { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 6px; }
+.art-body p  { font-size: 13px; color: #94a3b8; line-height: 1.65; }
+.art-body ul { font-size: 13px; color: #94a3b8; padding-left: 18px; line-height: 1.8; }
+.art-body ul li strong { color: #cbd5e1; }
+.art-body .kw-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 10px 14px; margin: 8px 0; }
+.art-body .kw-box .kw-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.art-body .kw-chip { background: #1e293b; border: 1px solid #334155; border-radius: 5px; padding: 3px 9px; font-size: 11px; color: #94a3b8; }
+.art-body .kw-chip b { color: #fbbf24; margin-left: 5px; }
+.art-body .brief-box { background: #0a1628; border-left: 3px solid #3b82f6; border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; color: #93c5fd; }
+.art-body .brief-box strong { color: #bfdbfe; }
+
+/* ─── CALENDAR ─────────────────────────── */
+.cal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cal-week { background: #1a2235; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
+.cal-week .wk-hdr { padding: 10px 14px; font-size: 12px; font-weight: 700; color: #94a3b8; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; }
+.cal-week .wk-hdr .dates { color: #475569; font-weight: 400; font-size: 11px; }
+.cal-week ul { list-style: none; padding: 10px 0; }
+.cal-week ul li { padding: 7px 14px; font-size: 12px; color: #cbd5e1; border-bottom: 1px solid #0f1117; display: flex; gap: 8px; }
+.cal-week ul li:last-child { border-bottom: none; }
+.cal-week ul li .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-red    { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-blue   { background: #3b82f6; }
+.dot-green  { background: #10b981; }
+
+footer { border-top: 1px solid #1e293b; padding: 20px 40px; color: #334155; font-size: 12px; text-align: center; }
+
+.toggle-all { background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
+.toggle-all:hover { color: #f8fafc; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ShaunSocial · June 2026 Report &amp; 12-Article Plan</h1>
+  <div class="meta">GSC data: May 1–29, 2026 &nbsp;·&nbsp; 88 published posts &nbsp;·&nbsp; site_id = 4 &nbsp;·&nbsp; Generated June 1, 2026</div>
+</div>
+
+<div class="container">
+
+  <!-- ── CURRENT STATS ───────────────────────────────────────── -->
+  <div class="section-label">📊 May 2026 — Current Stats (Last 28 Days)</div>
+
+  <div class="kpi-row">
+    <div class="kpi bad">
+      <div class="label">Total Impressions</div>
+      <div class="val">88,736</div>
+      <div class="sub">incl. 41k CDN waste</div>
+    </div>
+    <div class="kpi bad">
+      <div class="label">CDN Impressions</div>
+      <div class="val">41,456</div>
+      <div class="sub">user PDF files indexed</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Real Blog Impressions</div>
+      <div class="val">30,626</div>
+      <div class="sub">shaunsocial.com pages only</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Total Clicks</div>
+      <div class="val">399</div>
+      <div class="sub">337 real (62 CDN)</div>
+    </div>
+    <div class="kpi bad">
+      <div class="label">Avg Blog CTR</div>
+      <div class="val">0.45%</div>
+      <div class="sub">target: ≥ 2.5% by Sep</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Avg Position</div>
+      <div class="val">10.7</div>
+      <div class="sub">target: &lt; 8 by Sep</div>
+    </div>
+  </div>
+
+  <div class="alert alert-red">
+    <span class="icon">🚨</span>
+    <span><strong>41,456 impressions are being wasted on CDN PDF files.</strong> That's 57% of your total search visibility going to user-uploaded documents at cdn.shaunsocial.com. Fix: add <code>X-Robots-Tag: noindex, nofollow</code> via Cloudflare Transform Rule on cdn.shaunsocial.com. One-time fix, immediate impact.</span>
+  </div>
+
+  <div class="alert alert-red">
+    <span class="icon">🔥</span>
+    <span><strong>Two pages are bleeding 11,432 impressions at under 0.2% CTR:</strong> "Best Social Network Software" (4,603 impr → 16 clicks = 0.3% CTR) and "Best Frameworks" (6,829 impr → 7 clicks = 0.1% CTR). Both have stale 2025 slugs. Rewriting these two pages is the highest-ROI action you can take this month.</span>
+  </div>
+
+  <!-- Top Pages -->
+  <div class="section-label">📄 Top Pages — May 2026</div>
+  <table>
+    <thead>
+      <tr><th>Page</th><th class="r">Impr</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Pos</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>/ (homepage)</td><td class="r">1,987</td><td class="r">196</td><td class="r ctr-ok">9.9%</td><td class="r pos-ok">9.4</td><td><span class="pill pill-green">Brand traffic — healthy</span></td></tr>
+      <tr><td>/best-social-network-softwares-in-2025-comparison/</td><td class="r">4,603</td><td class="r">16</td><td class="r ctr-bad">0.3%</td><td class="r pos-ok">10.9</td><td><span class="pill pill-red">🔥 Rewrite — Article #1</span></td></tr>
+      <tr><td>/best-frameworks-to-create-a-social-network-in-2025/</td><td class="r">6,829</td><td class="r">7</td><td class="r ctr-bad">0.1%</td><td class="r pos-ok">10.9</td><td><span class="pill pill-red">🔥 Rewrite — Article #2</span></td></tr>
+      <tr><td>/best-woowonder-alternative-in-2026.../</td><td class="r">1,797</td><td class="r">4</td><td class="r ctr-bad">0.2%</td><td class="r pos-bad">20.6</td><td><span class="pill pill-yw">Refresh — Article #3</span></td></tr>
+      <tr><td>/shaunsocial-vs-wowonder-in-depth-comparison/</td><td class="r">901</td><td class="r">11</td><td class="r ctr-ok">1.2%</td><td class="r pos-bad">17.1</td><td><span class="pill pill-yw">Needs 2026 update</span></td></tr>
+      <tr><td>/why-shaunsocial-is-the-best-cms-to-create.../</td><td class="r">1,025</td><td class="r">5</td><td class="r ctr-bad">0.5%</td><td class="r pos-bad">13.8</td><td><span class="pill pill-yw">Refresh — Article #4</span></td></tr>
+      <tr><td>/shaunsocial-vs-sngine-in-depth-comparison/</td><td class="r">385</td><td class="r">6</td><td class="r ctr-ok">1.6%</td><td class="r pos-ok">8.6</td><td><span class="pill pill-green">Performing — monitor</span></td></tr>
+      <tr><td>/shaunsocial-vs-phpfox-...-2026/</td><td class="r">388</td><td class="r">5</td><td class="r ctr-ok">1.3%</td><td class="r pos-bad">14.4</td><td><span class="pill pill-yw">Fix 2025 redirect + CTR</span></td></tr>
+      <tr><td>/best-laravel-social-network-script-2026/</td><td class="r">327</td><td class="r">4</td><td class="r ctr-ok">1.2%</td><td class="r pos-ok">8.6</td><td><span class="pill pill-green">New — needs time to rank</span></td></tr>
+      <tr><td>/roadmap/</td><td class="r">662</td><td class="r">16</td><td class="r ctr-good">2.4%</td><td class="r pos-good">5.5</td><td><span class="pill pill-green">Healthy</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Top Keywords -->
+  <div class="section-label">🔑 Top Non-Brand Keywords — May 2026</div>
+  <table>
+    <thead>
+      <tr><th>Keyword</th><th class="r">Impr</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Pos</th><th>Opportunity</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>social network software</td><td class="r">288</td><td class="r">4</td><td class="r ctr-bad">1.4%</td><td class="r pos-bad">12.7</td><td><span class="pill pill-red">Article #1 target</span></td></tr>
+      <tr><td>shauns cloud</td><td class="r">122</td><td class="r">1</td><td class="r ctr-bad">0.8%</td><td class="r pos-ok">8.2</td><td><span class="pill pill-blue">Article #10 target</span></td></tr>
+      <tr><td>social cms</td><td class="r">72</td><td class="r">1</td><td class="r ctr-bad">1.4%</td><td class="r pos-ok">10.0</td><td><span class="pill pill-green">Just published — monitor</span></td></tr>
+      <tr><td>laravel social network</td><td class="r">87</td><td class="r">2</td><td class="r ctr-ok">2.3%</td><td class="r pos-ok">7.2</td><td><span class="pill pill-green">Improving — new article live</span></td></tr>
+      <tr><td>social network php script</td><td class="r">48</td><td class="r">8</td><td class="r ctr-good">16.7%</td><td class="r pos-good">5.0</td><td><span class="pill pill-green">Winning — build links</span></td></tr>
+      <tr><td>social network development</td><td class="r">57</td><td class="r">1</td><td class="r ctr-bad">1.8%</td><td class="r pos-bad">16.4</td><td><span class="pill pill-blue">Article #5 target</span></td></tr>
+      <tr><td>phpsocial</td><td class="r">19</td><td class="r">1</td><td class="r ctr-ok">5.3%</td><td class="r pos-bad">17.2</td><td><span class="pill pill-blue">Article #6 target</span></td></tr>
+      <tr><td>bettermode hivebrite disciple white label…</td><td class="r">76</td><td class="r">0</td><td class="r ctr-bad">0.0%</td><td class="r pos-ok">9.5</td><td><span class="pill pill-purple">Article #7 — high intent!</span></td></tr>
+      <tr><td>phpfox alternative</td><td class="r">10</td><td class="r">3</td><td class="r ctr-good">30.0%</td><td class="r pos-good">3.3</td><td><span class="pill pill-green">Winning — keep ranking</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 12 ARTICLES ──────────────────────────────────────────── -->
+  <div class="section-label">✍️ 12 Articles — June 2026 Plan</div>
+
+  <div class="alert alert-blue">
+    <span class="icon">📌</span>
+    <span><strong>Strategy:</strong> 4 rewrites (fastest ROI — fix pages already ranking with broken CTR) + 8 new articles (fill gaps spotted in GSC). Spread 3 per week across the month. Click any card to see the full brief.</span>
+  </div>
+
+  <button class="toggle-all" onclick="toggleAll()">Expand All Briefs ▼</button>
+
+  <div class="article-grid">
+
+    <!-- ═══ TIER 1: REWRITES ═══ -->
+
+    <!-- Article 1 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(1)">
+        <div class="art-num">1</div>
+        <div class="art-main">
+          <div class="art-title">Best Social Network Software in 2026: Full Comparison (Updated)</div>
+          <div class="art-slug">/best-social-network-software-2026/ · 301 from old /…-2025-comparison/</div>
+          <div class="art-meta">
+            <span class="pill pill-red">🔥 HIGHEST PRIORITY</span>
+            <span class="pill pill-orange">REWRITE</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 1 · Jun 2–6</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">4,603</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos">0.3% CTR · pos 10.9</div>
+        </div>
+      </div>
+      <div class="art-body" id="b1">
+        <h4>Why This Article</h4>
+        <p>Your single biggest missed opportunity. 4,603 impressions per month landing on a page with a 2025 slug and 0.3% CTR. People search for this, see "2025" in the title, and skip it. A 2026 AEO rewrite could realistically hit 3–5% CTR — that's 138–230 extra clicks/month from this keyword alone.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">social network software <b>288 impr</b></div>
+            <div class="kw-chip">best social network software <b>~80 impr</b></div>
+            <div class="kw-chip">social networking software <b>~50 impr</b></div>
+            <div class="kw-chip">social network platform software <b>~40 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Open with a direct answer:</strong> "The best social network software in 2026 is ShaunSocial for self-hosted PHP, [X] for cloud/SaaS. Here's how 8 platforms compare."</li>
+          <li><strong>Comparison table:</strong> ShaunSocial, Sngine, WoWonder, SocialEngine, HumHub, phpFox, Ning, BuddyBoss — columns: price, hosting, mobile app, open source, support</li>
+          <li><strong>Individual mini-reviews</strong> (H2 per tool, 150–200 words each)</li>
+          <li><strong>Buyer's guide section:</strong> "What to look for in social network software" — 5 criteria</li>
+          <li><strong>CTA:</strong> ShaunSocial demo link + pricing</li>
+          <li><strong>FAQ:</strong> 6 questions about social network software selection</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-social-network-software-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 2 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(2)">
+        <div class="art-num">2</div>
+        <div class="art-main">
+          <div class="art-title">Best Frameworks to Build a Social Network in 2026 (Developer Guide)</div>
+          <div class="art-slug">/best-social-network-frameworks-2026/ · 301 from old /…-2025/</div>
+          <div class="art-meta">
+            <span class="pill pill-red">🔥 CRITICAL</span>
+            <span class="pill pill-orange">REWRITE</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 1 · Jun 2–6</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">6,829</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos">0.1% CTR · pos 10.9</div>
+        </div>
+      </div>
+      <div class="art-body" id="b2">
+        <h4>Why This Article</h4>
+        <p>Your highest-impression blog page — and also your worst performer. 6,829 impressions, only 7 clicks (0.1% CTR). The 2025 slug is costing you dearly: developers searching in 2026 see this and assume outdated content. Also, this page currently absorbs "social network development" (57 impr, pos 16) and "how to build a social network" (73 impr, pos 14) — queries it isn't designed to answer. The rewrite should fix both the stale date and better match developer intent.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">social network framework <b>~114 impr</b></div>
+            <div class="kw-chip">best framework for social network <b>~60 impr</b></div>
+            <div class="kw-chip">social networking website development <b>~40 impr</b></div>
+            <div class="kw-chip">laravel social network <b>87 impr</b></div>
+            <div class="kw-chip">php social network framework <b>~30 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Open with direct answer:</strong> "The best framework to build a social network in 2026 is Laravel (PHP) for self-hosted, or React + Node for custom SPA builds. Here's a full breakdown."</li>
+          <li><strong>Section 1:</strong> Quick comparison table — Laravel, React/Next.js, Django, Ruby on Rails, Node.js — columns: learning curve, scalability, ecosystem, social network suitability</li>
+          <li><strong>Section 2:</strong> "Fastest path: skip the framework — use ShaunSocial (Laravel-based, pre-built)" with demo CTA</li>
+          <li><strong>Per-framework deep dives</strong> (H2 for each, include real code snippets or package names)</li>
+          <li><strong>Section 3:</strong> "When to build from scratch vs. use a script" — decision flowchart logic</li>
+          <li><strong>FAQ:</strong> developer-focused questions (Laravel vs custom, PHP vs Node for social, etc.)</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-social-network-frameworks-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> TechArticle &nbsp;·&nbsp; <strong>Length:</strong> 2,200+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 3 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(3)">
+        <div class="art-num">3</div>
+        <div class="art-main">
+          <div class="art-title">Best WoWonder Alternative in 2026: Full Comparison (7 Options)</div>
+          <div class="art-slug">/best-wowonder-alternative-2026/ · refresh existing</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">HIGH PRIORITY</span>
+            <span class="pill pill-orange">REWRITE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">1,797</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos">0.2% CTR · pos 20.6</div>
+        </div>
+      </div>
+      <div class="art-body" id="b3">
+        <h4>Why This Article</h4>
+        <p>You have <em>two</em> WoWonder articles: a "vs" comparison and a "Best Alternative" article. The alternative page gets 1,797 impressions at position 20.6 — page 2+. The CTR (0.2%) is dismal. The "vs" article also has 901 impressions at pos 17. Combined, that's 2,698 impressions with barely 15 total clicks. A consolidated, fully AEO-rewritten alternative article should push this to page 1.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">wowonder alternative <b>19 impr, pos 2.9</b></div>
+            <div class="kw-chip">wowonder alternatives <b>~9 impr</b></div>
+            <div class="kw-chip">best wowonder alternative <b>~20 impr</b></div>
+            <div class="kw-chip">shaunsocial vs wowonder <b>~15 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Direct answer opener:</strong> "The best WoWonder alternative in 2026 is ShaunSocial. It offers a native mobile app, active development, and full source code."</li>
+          <li><strong>Quick pick table:</strong> ShaunSocial, Sngine, SocialEngine, phpFox, ColibriSM, HumHub, Open Source — best for each use case</li>
+          <li><strong>Why people leave WoWonder:</strong> (slow updates, no mobile app, limited support) — honest, factual</li>
+          <li><strong>Per-alternative reviews</strong> with feature table comparison</li>
+          <li><strong>ShaunSocial spotlight:</strong> pricing, mobile app, demo link</li>
+          <li><strong>FAQ:</strong> "Is WoWonder still supported?", "What's the cheapest WoWonder alternative?", etc.</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-wowonder-alternative-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 4 -->
+    <div class="art-card tier1">
+      <div class="art-header" onclick="toggle(4)">
+        <div class="art-num">4</div>
+        <div class="art-main">
+          <div class="art-title">Best White Label Social Media Platform in 2026 (Ranked &amp; Compared)</div>
+          <div class="art-slug">/best-white-label-social-media-platform-2026/ · refresh existing</div>
+          <div class="art-meta">
+            <span class="pill pill-yw">HIGH PRIORITY</span>
+            <span class="pill pill-orange">REWRITE</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~940</div>
+          <div class="s-label">cluster impr</div>
+          <div class="s-pos">0.2% CTR · pos 14–17</div>
+        </div>
+      </div>
+      <div class="art-body" id="b4">
+        <h4>Why This Article</h4>
+        <p>The existing white label page covers three high-volume queries — "white label social media platform" (474 impr), "white label community platform" (371 impr), "white label social media app" (95 impr) — but all stuck at position 14–17. Combined ~940 impressions at 0.2% CTR = 2 clicks per month. These are buyer-intent keywords. An AEO rewrite targeting all three variants should consolidate and lift.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">white label social media platform <b>474 impr</b></div>
+            <div class="kw-chip">white label community platform <b>371 impr</b></div>
+            <div class="kw-chip">white label social media app <b>95 impr</b></div>
+            <div class="kw-chip">social community software <b>27 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A white-label social media platform is software you brand as your own. The top options in 2026: ShaunSocial (self-hosted), Bettermode (cloud), HumHub (open source)."</li>
+          <li><strong>Table:</strong> 8 platforms — price, hosting type, mobile app, custom domain, white-label depth, support</li>
+          <li><strong>Section per platform</strong> with pros/cons</li>
+          <li><strong>Buyer decision section:</strong> "Which is right for you?" — self-hosted vs SaaS, budget, technical skill</li>
+          <li>Target "white label community platform" in a dedicated sub-section on community features</li>
+          <li>Target "white label social media app" in a mobile-focused sub-section</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-white-label-social-media-platform-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,500+ words</div>
+      </div>
+    </div>
+
+    <!-- ═══ TIER 2: NEW ARTICLES ═══ -->
+
+    <!-- Article 5 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(5)">
+        <div class="art-num">5</div>
+        <div class="art-main">
+          <div class="art-title">Social Network Development: The Complete Guide for 2026</div>
+          <div class="art-slug">/social-network-development-guide-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-green">how_to</span>
+            <span class="pill pill-gray">Week 2 · Jun 9–13</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">305</div>
+          <div class="s-label">cluster impr</div>
+          <div class="s-pos">pos 8–16 · intent gap</div>
+        </div>
+      </div>
+      <div class="art-body" id="b5">
+        <h4>Why This Article</h4>
+        <p>"Social network development" (57 impr, pos 16.4) and "how to build a social network" (73 impr, pos 14) are both landing on your frameworks article — which is a "which technology" guide, not a "how do I actually build one" guide. These are completely different intents. A dedicated development guide will capture both queries and likely outrank the frameworks page for the dev queries within weeks of publishing.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">social network development <b>57 impr</b></div>
+            <div class="kw-chip">how to build a social network <b>73 impr</b></div>
+            <div class="kw-chip">build social networks <b>68 impr</b></div>
+            <div class="kw-chip">how to build social network from scratch <b>8 impr, pos 5.1</b></div>
+            <div class="kw-chip">create social network website <b>~40 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "Building a social network in 2026 takes 3–12 months custom, or 1–2 weeks with a ready-made script like ShaunSocial. Here's exactly what the development process looks like."</li>
+          <li><strong>Step 1:</strong> Define niche + core features — what to include, what to cut</li>
+          <li><strong>Step 2:</strong> Choose your stack — PHP script (ShaunSocial), custom Laravel, SaaS platform</li>
+          <li><strong>Step 3:</strong> Set up hosting + domain — server requirements for PHP social networks</li>
+          <li><strong>Step 4:</strong> Configure &amp; brand — how to white-label a script</li>
+          <li><strong>Step 5:</strong> Add monetization — ads, subscriptions, tipping</li>
+          <li><strong>Step 6:</strong> Launch &amp; grow — marketing basics</li>
+          <li><strong>Cost comparison table:</strong> custom vs script vs SaaS</li>
+          <li><strong>FAQ:</strong> dev-focused — "How much does it cost?", "Do I need PHP experience?", "How long does it take?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /social-network-development-guide-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> how_to &nbsp;·&nbsp; <strong>Schema:</strong> HowTo &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 6 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(6)">
+        <div class="art-num">6</div>
+        <div class="art-main">
+          <div class="art-title">ShaunSocial vs phpSocial: Which PHP Social Network Script Is Better? (2026)</div>
+          <div class="art-slug">/shaunsocial-vs-phpsocial-comparison-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">19</div>
+          <div class="s-label">impr on homepage</div>
+          <div class="s-pos">pos 17.2 · no page exists</div>
+        </div>
+      </div>
+      <div class="art-body" id="b6">
+        <h4>Why This Article</h4>
+        <p>"phpsocial" gets 19 impressions/month currently landing on your homepage at position 17.2. No dedicated page exists. phpSocial is a real CodeCanyon script (phpSocial by Codeshaker), a legitimate competitor. Creating a comparison article moves this from homepage-at-17 to a dedicated-page-at-5. Standard pattern — you've done this successfully for Sngine, phpFox, WoWonder.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">phpsocial <b>19 impr</b></div>
+            <div class="kw-chip">phpsocial alternative <b>~10 impr</b></div>
+            <div class="kw-chip">shaunsocial vs phpsocial <b>~5 impr</b></div>
+            <div class="kw-chip">php social script comparison <b>~15 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Verdict opener:</strong> "ShaunSocial is the better choice for most buyers: it includes a native mobile app, active updates, and better long-term support."</li>
+          <li><strong>Head-to-head table:</strong> features, price, mobile app, hosting, updates, support, customization, demo availability</li>
+          <li><strong>phpSocial breakdown:</strong> fair, factual pros/cons — don't trash it</li>
+          <li><strong>ShaunSocial breakdown:</strong> strengths, pricing, demo link</li>
+          <li><strong>Who should choose which:</strong> phpSocial for budget-only buyers, ShaunSocial for serious launches</li>
+          <li><strong>FAQ:</strong> "Is phpSocial still maintained?", "What does phpSocial cost?", comparison questions</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /shaunsocial-vs-phpsocial-comparison-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 7 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(7)">
+        <div class="art-num">7</div>
+        <div class="art-main">
+          <div class="art-title">Bettermode vs Hivebrite vs Disciple vs ShaunSocial: Which White Label Community Platform Wins? (2026)</div>
+          <div class="art-slug">/bettermode-vs-hivebrite-vs-disciple-vs-shaunsocial-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">76</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos">0% CTR · pos 9.5</div>
+        </div>
+      </div>
+      <div class="art-body" id="b7">
+        <h4>Why This Article</h4>
+        <p>This is the most surprising finding in the GSC data. The exact query "bettermode hivebrite disciple white label social network platform comparison" gets 76 impressions/month at position 9.5 with 0% clicks — because nobody is serving that comparison. People are actively comparing these three SaaS platforms and ShaunSocial isn't even in the conversation. This is a high buyer-intent query (someone evaluating $5k+/year SaaS tools) and ShaunSocial has a massive price advantage.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">bettermode hivebrite disciple comparison <b>76 impr</b></div>
+            <div class="kw-chip">bettermode alternative <b>~30 impr</b></div>
+            <div class="kw-chip">hivebrite alternative <b>~25 impr</b></div>
+            <div class="kw-chip">disciple media alternative <b>~20 impr</b></div>
+            <div class="kw-chip">white label community platform comparison <b>~40 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Opener:</strong> "Bettermode, Hivebrite, and Disciple are the top white-label community platforms — but all three are subscription SaaS starting at $99–$500+/month. ShaunSocial offers a one-time self-hosted option from $299. Here's how all four compare."</li>
+          <li><strong>Head-to-head table:</strong> Bettermode, Hivebrite, Disciple, ShaunSocial — pricing model, mobile app, white-label depth, community features, content tools, analytics, support</li>
+          <li><strong>Who each is best for:</strong> corporate communities (Hivebrite), creator communities (Disciple), mid-market (Bettermode), full ownership/cost-saving (ShaunSocial)</li>
+          <li><strong>Total Cost of Ownership section:</strong> SaaS $99/mo = $1,188/year vs ShaunSocial one-time — powerful angle for buyers</li>
+          <li><strong>FAQ:</strong> "Is Bettermode better than Hivebrite?", "What is the cheapest community platform?", etc.</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /bettermode-vs-hivebrite-vs-disciple-vs-shaunsocial/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 8 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(8)">
+        <div class="art-num">8</div>
+        <div class="art-main">
+          <div class="art-title">How to Monetize a Social Network: 7 Revenue Models That Work in 2026</div>
+          <div class="art-slug">/how-to-monetize-a-social-network-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-green">how_to</span>
+            <span class="pill pill-gray">Week 3 · Jun 16–20</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~100</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">no page exists</div>
+        </div>
+      </div>
+      <div class="art-body" id="b8">
+        <h4>Why This Article</h4>
+        <p>Zero current impressions — because no page exists. Buyers who already own or are about to buy ShaunSocial actively search for how to make money from it. This is bottom-of-funnel content: the person has already decided to build, now they want a monetization plan. Direct opportunity to showcase ShaunSocial's built-in advertising system and subscription features.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">how to monetize a social network <b>~60 impr est.</b></div>
+            <div class="kw-chip">social network revenue model <b>~30 impr est.</b></div>
+            <div class="kw-chip">make money social network <b>~25 impr est.</b></div>
+            <div class="kw-chip">social network business model <b>~20 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Direct answer opener:</strong> "Social networks make money through ads, subscriptions, tipping, marketplace fees, paid groups, job boards, and white-label resale. Here's how to implement each."</li>
+          <li><strong>7 revenue models</strong> (one H2 each): display ads, premium subscriptions, virtual gifts/tipping, marketplace/classifieds, paid private groups, job board, white-label resale</li>
+          <li>For each model: how it works, what % margin to expect, how to set it up in ShaunSocial</li>
+          <li><strong>Revenue comparison table:</strong> passive vs active income, setup effort, average revenue per user</li>
+          <li><strong>ShaunSocial ad system spotlight</strong> — deep link to the advertising feature article</li>
+          <li><strong>FAQ:</strong> "How much can a social network make?", "Which monetization works fastest?", etc.</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /how-to-monetize-a-social-network-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> how_to &nbsp;·&nbsp; <strong>Schema:</strong> HowTo &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 9 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(9)">
+        <div class="art-num">9</div>
+        <div class="art-main">
+          <div class="art-title">Best Open Source Social Network Software in 2026 (Free vs Paid Compared)</div>
+          <div class="art-slug">/best-open-source-social-network-software-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">best_of</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~150</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">not ranking at all</div>
+        </div>
+      </div>
+      <div class="art-body" id="b9">
+        <h4>Why This Article</h4>
+        <p>You're not ranking for "open source social network" at all — no page exists. This is a top-of-funnel audience: developers and budget-conscious founders who start with free software and later upgrade. By owning this keyword, ShaunSocial gets in front of buyers early in their research journey. Also creates natural springboards for 3+ future comparison articles (vs HumHub, vs Elgg, vs Oxwall).</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">open source social network <b>~150 impr est.</b></div>
+            <div class="kw-chip">free social network software <b>~80 impr est.</b></div>
+            <div class="kw-chip">humhub alternative <b>~30 impr est.</b></div>
+            <div class="kw-chip">oxwall alternative <b>~20 impr est.</b></div>
+            <div class="kw-chip">open source community platform <b>~40 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "The best open source social network software in 2026 is HumHub (for enterprise communities) and OSSN (for PHP developers). For production with mobile app + support, ShaunSocial is the leading paid alternative."</li>
+          <li><strong>Comparison table:</strong> HumHub, Elgg, OSSN, Oxwall, phpSocial, BuddyPress + ShaunSocial — license, tech stack, mobile app, last updated, community, learning curve</li>
+          <li><strong>Per-tool mini-review</strong> (150 words each) — be honest about both free and paid</li>
+          <li><strong>When free isn't enough:</strong> cases where open source limitations push teams to ShaunSocial</li>
+          <li><strong>TCO section:</strong> "Free software isn't free" — dev time, hosting, maintenance costs</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /best-open-source-social-network-software-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> best_of &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 2,000+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 10 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(10)">
+        <div class="art-num">10</div>
+        <div class="art-main">
+          <div class="art-title">ShaunSocial Cloud Hosting: Plans, Features &amp; How It Compares to Self-Hosting (2026)</div>
+          <div class="art-slug">/shaunsocial-cloud-hosting-vs-self-hosted-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">122</div>
+          <div class="s-label">impressions</div>
+          <div class="s-pos">0.8% CTR · pos 8.2</div>
+        </div>
+      </div>
+      <div class="art-body" id="b10">
+        <h4>Why This Article</h4>
+        <p>"shauns cloud" gets 122 impressions/month at position 8.2 with 0.8% CTR — people searching for this product specifically and not clicking. There's no dedicated blog article explaining what ShaunSocial Cloud is, what's included, how it compares to self-hosting, and pricing. This is a direct commercial intent page — someone who searches "shauns cloud" is already a warm lead.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">shauns cloud <b>122 impr, pos 8.2</b></div>
+            <div class="kw-chip">shaunsocial cloud hosting <b>~20 impr</b></div>
+            <div class="kw-chip">shaunsocial cloud vs self hosted <b>~15 impr</b></div>
+            <div class="kw-chip">social network cloud hosting <b>~30 impr</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Opener:</strong> "ShaunSocial Cloud is a managed hosting service for your ShaunSocial social network — no server setup, automatic updates, and dedicated support. Here's everything you need to know."</li>
+          <li><strong>What's included:</strong> server specs, managed updates, backups, CDN, SSL</li>
+          <li><strong>Cloud vs Self-Hosted comparison table:</strong> setup time, cost, technical skill needed, control, performance</li>
+          <li><strong>Pricing plans breakdown</strong> (use real pricing from ShaunSocial site)</li>
+          <li><strong>Who should choose cloud:</strong> non-technical founders, fast launchers</li>
+          <li><strong>Who should choose self-hosted:</strong> developers, cost-optimizers, full-control users</li>
+          <li><strong>FAQ:</strong> "Can I migrate from self-hosted to cloud?", "What happens if I cancel?", "Is ShaunSocial Cloud reliable?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /shaunsocial-cloud-hosting-vs-self-hosted-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 11 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(11)">
+        <div class="art-num">11</div>
+        <div class="art-main">
+          <div class="art-title">ShaunSocial vs HumHub: Which Community Platform Is Right for Your Business? (2026)</div>
+          <div class="art-slug">/shaunsocial-vs-humhub-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">vs_comparison</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~50</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">feeds from open source article</div>
+        </div>
+      </div>
+      <div class="art-body" id="b11">
+        <h4>Why This Article</h4>
+        <p>HumHub is the most popular open source community platform and a direct competitor in the "build your own social network" space. No page exists on ShaunSocial for this. Once the Open Source article (#9) ranks, this comparison becomes an internal link target that captures HumHub-comparison traffic naturally. HumHub also appeared in searches alongside Bettermode/Hivebrite which means buyers are actively comparing platforms including HumHub.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">humhub alternative <b>~30 impr est.</b></div>
+            <div class="kw-chip">shaunsocial vs humhub <b>~10 impr est.</b></div>
+            <div class="kw-chip">humhub vs shaunsocial <b>~10 impr est.</b></div>
+            <div class="kw-chip">humhub pricing <b>~50 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>Verdict opener:</strong> "ShaunSocial wins for most commercial use cases: it includes a native iOS/Android app, better monetization, and full source code. HumHub is the better choice for enterprise intranet communities on a tight budget."</li>
+          <li><strong>Feature comparison table:</strong> social features, mobile app, pricing, hosting, customization, support, activity stream, groups, marketplace</li>
+          <li><strong>HumHub pros/cons:</strong> open source + free, strong enterprise integrations, BUT no native mobile app, slow updates</li>
+          <li><strong>ShaunSocial pros/cons:</strong> native app, active development, premium support, BUT paid license</li>
+          <li><strong>Use case decision:</strong> corporate intranet → HumHub / Public social network or creator community → ShaunSocial</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /shaunsocial-vs-humhub-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> vs_comparison &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,500+ words</div>
+      </div>
+    </div>
+
+    <!-- Article 12 -->
+    <div class="art-card tier2">
+      <div class="art-header" onclick="toggle(12)">
+        <div class="art-num">12</div>
+        <div class="art-main">
+          <div class="art-title">Social Network Mobile App: What to Look for When Choosing a Platform (2026)</div>
+          <div class="art-slug">/social-network-mobile-app-guide-2026/</div>
+          <div class="art-meta">
+            <span class="pill pill-blue">NEW ARTICLE</span>
+            <span class="pill pill-purple">buyer_guide</span>
+            <span class="pill pill-gray">Week 4 · Jun 23–27</span>
+          </div>
+        </div>
+        <div class="art-stats">
+          <div class="s-impr">~80</div>
+          <div class="s-label">est. impr</div>
+          <div class="s-pos">no page exists</div>
+        </div>
+      </div>
+      <div class="art-body" id="b12">
+        <h4>Why This Article</h4>
+        <p>Mobile app availability is one of the top buyer criteria for social network scripts — and ShaunSocial has a strong native iOS/Android app, while most competitors don't. There's currently no dedicated article explaining what makes a good social network mobile app, what ShaunSocial's app includes, and how it compares. This is a product differentiator that should have its own landing page with SEO.</p>
+        <div class="kw-box">
+          <strong style="color:#94a3b8;font-size:11px;">TARGET KEYWORDS</strong>
+          <div class="kw-row">
+            <div class="kw-chip">social network mobile app <b>~80 impr est.</b></div>
+            <div class="kw-chip">social network app for business <b>~40 impr est.</b></div>
+            <div class="kw-chip">white label social network app <b>~30 impr</b></div>
+            <div class="kw-chip">build social network app <b>~50 impr est.</b></div>
+          </div>
+        </div>
+        <h4>Content Brief</h4>
+        <ul>
+          <li><strong>AEO opener:</strong> "A social network mobile app should include push notifications, news feed, messaging, profiles, and media sharing. Most PHP social scripts don't include a mobile app — ShaunSocial does."</li>
+          <li><strong>What to look for:</strong> native vs hybrid app, push notifications, offline support, app store publishing, white-label branding</li>
+          <li><strong>Comparison table:</strong> which social scripts include a mobile app (ShaunSocial ✓, WoWonder ✗, Sngine partial, phpFox ✗)</li>
+          <li><strong>ShaunSocial Mobile App deep-dive:</strong> iOS + Android, features list, screenshots description, how to publish under your own brand</li>
+          <li><strong>FAQ:</strong> "Can I publish ShaunSocial as my own app?", "Does it cost extra?", "Does it work on tablets?"</li>
+        </ul>
+        <div class="brief-box"><strong>Slug:</strong> /social-network-mobile-app-guide-2026/ &nbsp;·&nbsp; <strong>Pillar:</strong> buyer_guide &nbsp;·&nbsp; <strong>Schema:</strong> Article &nbsp;·&nbsp; <strong>Length:</strong> 1,500+ words</div>
+      </div>
+    </div>
+
+  </div><!-- /article-grid -->
+
+  <!-- ── CALENDAR ─────────────────────────────────────────────── -->
+  <div class="section-label">📅 June 2026 — Publication Schedule (3/week)</div>
+
+  <div class="cal">
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 1</span><span class="dates">Jun 2–6</span></div>
+      <ul>
+        <li><span class="dot dot-red"></span>#1 Best Social Network Software 2026 (rewrite)</li>
+        <li><span class="dot dot-red"></span>#2 Best Frameworks 2026 (rewrite)</li>
+        <li><span class="dot dot-green"></span>Technical: 301 redirect phpFox 2025→2026</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 2</span><span class="dates">Jun 9–13</span></div>
+      <ul>
+        <li><span class="dot dot-red"></span>#3 Best WoWonder Alternative 2026 (rewrite)</li>
+        <li><span class="dot dot-red"></span>#4 Best White Label Social Media Platform (rewrite)</li>
+        <li><span class="dot dot-yellow"></span>#5 Social Network Development Guide (new)</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 3</span><span class="dates">Jun 16–20</span></div>
+      <ul>
+        <li><span class="dot dot-yellow"></span>#6 ShaunSocial vs phpSocial (new)</li>
+        <li><span class="dot dot-yellow"></span>#7 Bettermode vs Hivebrite vs Disciple (new)</li>
+        <li><span class="dot dot-yellow"></span>#8 How to Monetize a Social Network (new)</li>
+      </ul>
+    </div>
+    <div class="cal-week">
+      <div class="wk-hdr"><span>Week 4</span><span class="dates">Jun 23–27</span></div>
+      <ul>
+        <li><span class="dot dot-blue"></span>#9 Best Open Source Social Network (new)</li>
+        <li><span class="dot dot-blue"></span>#10 ShaunSocial Cloud vs Self-Hosted (new)</li>
+        <li><span class="dot dot-blue"></span>#11 ShaunSocial vs HumHub (new)</li>
+        <li><span class="dot dot-blue"></span>#12 Social Network Mobile App Guide (new)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert alert-grn" style="margin-top:16px;">
+    <span class="icon">✅</span>
+    <span><strong>Already published this month (June 1):</strong> "Social CMS: What It Is…" (WP#3524) and "Social Network PHP Script: Best Options" (WP#3526). These two are done — the 12 articles above are the remaining plan for June.</span>
+  </div>
+
+</div>
+
+<footer>ShaunSocial Content Plan · June 2026 · GSC data May 1–29, 2026</footer>
+
+<script>
+function toggle(n) {
+  var el = document.getElementById('b' + n);
+  el.classList.toggle('open');
+}
+var allOpen = false;
+function toggleAll() {
+  allOpen = !allOpen;
+  for (var i = 1; i <= 12; i++) {
+    var el = document.getElementById('b' + i);
+    if (allOpen) el.classList.add('open');
+    else el.classList.remove('open');
+  }
+  document.querySelector('.toggle-all').textContent = allOpen ? 'Collapse All ▲' : 'Expand All Briefs ▼';
+}
+</script>
+</body>
+</html>
