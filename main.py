@@ -68,6 +68,10 @@ Examples:
         "--fetch-data", action="store_true",
         help="Fetch fresh GSC + GA4 data from Google APIs",
     )
+    parser.add_argument(
+        "--sync-wp", action="store_true",
+        help="Sync all live WordPress posts into DB (run once to bootstrap; safe to re-run)",
+    )
 
     # Publishing
     parser.add_argument("--run-once", action="store_true", help="Run one automation cycle")
@@ -128,6 +132,20 @@ Examples:
         result = collect_site_data(args.site)
         print(f"  GSC rows: {result['gsc_rows']}")
         print(f"  GA4 rows: {result['ga4_rows']}")
+
+    elif args.site and args.sync_wp:
+        from wp_sync import sync_wp_to_db
+        print(f"Syncing WordPress posts for site {args.site}...")
+        result = sync_wp_to_db(args.site)
+        print(
+            f"\n  Total WP posts:   {result['total_wp']}\n"
+            f"  Newly imported:   {result['created']}\n"
+            f"  Linked (wp_id):   {result['updated']}\n"
+            f"  Already synced:   {result['already_synced']}\n"
+            f"  Errors:           {result['errors']}"
+        )
+        if result['created'] > 0:
+            print(f"\n  ✓ {result['created']} historical posts imported — plan generation will now avoid duplicating them.")
 
     elif args.site and args.generate_plan:
         from site_analyst import generate_plan_interactive

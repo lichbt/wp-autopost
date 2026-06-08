@@ -1,4 +1,5 @@
 import json
+import re
 import time
 import requests
 from pathlib import Path
@@ -9,6 +10,39 @@ from logger import logger
 
 # Templates directory
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
+
+# Facts files directory
+FACTS_DIR = PROJECT_ROOT / "data"
+
+# Map site domain keywords → facts filename
+_SITE_FACTS_MAP = {
+    "moodatingscript": "moodatingscript-facts.md",
+    "moodating":       "moodatingscript-facts.md",
+    "shaunsocial":     "shaunsocial-facts.md",
+}
+
+
+def _load_site_facts(site: Dict) -> str:
+    """
+    Load the product facts markdown for the given site.
+    Returns the facts content as a string, or empty string if not found.
+    """
+    site_url = site.get("wp_url", "").lower()
+    site_name = site.get("name", "").lower()
+
+    facts_file = None
+    for keyword, filename in _SITE_FACTS_MAP.items():
+        if keyword in site_url or keyword in site_name:
+            facts_file = FACTS_DIR / filename
+            break
+
+    if facts_file and facts_file.exists():
+        content = facts_file.read_text(encoding="utf-8")
+        logger.info(f"Loaded site facts: {facts_file.name}")
+        return content
+
+    logger.info("No site facts file found — proceeding without facts context")
+    return ""
 
 
 def _fetch_published_posts(site: Dict) -> List[Dict]:
@@ -105,6 +139,12 @@ def load_template(pillar: str) -> Optional[str]:
 CONTENT_SYSTEM_PROMPT = """You are an expert SEO/GEO content writer creating blog posts that are highly likely to be cited by AI systems (ChatGPT, Perplexity, Gemini).
 Your writing must be factual, structured with clear H2/H3 headings, include tables and lists when helpful, and always start with a direct answer.
 
+PRODUCT FACTS RULES (critical):
+- The prompt includes a PRODUCT FACTS section — treat every fact in it as absolute ground truth.
+- Never invent, contradict, or deviate from the pricing, features, mobile app type, or open-source status stated in the facts.
+- If the facts say the price is $149, always write $149 — never a different number.
+- If the facts say the mobile app is a PWA, never call it a native app, and vice versa.
+
 You MUST follow the provided blog template structure exactly. The template defines the required sections, headings, and formatting.
 
 INTERNAL LINKING RULES (mandatory):
@@ -115,6 +155,84 @@ INTERNAL LINKING RULES (mandatory):
 - Never repeat the same URL more than once.
 - Do NOT add links inside the tldr, meta_description, or faq fields — only in the "content" field."""
 
+
+# ── Writing Personas ──────────────────────────────────────────────────────────
+# Each persona adds a style addon to CONTENT_SYSTEM_PROMPT. Selection is
+# deterministic: topic_id % len(WRITING_PERSONAS) — reproducible and loggable.
+
+WRITING_PERSONAS = [
+    {
+        "name": "expert_practitioner",
+        "system_addon": (
+            "WRITING PERSONA — Expert Practitioner:\n"
+            "Write from hard-won, hands-on experience. Open with a direct, opinionated statement you'd only "
+            "make if you'd actually used these tools. No hedge words ('may', 'might', 'could'). "
+            "Sentence length varies — short punchy sentences after long technical ones. "
+            "Get to the recommendation fast; justify it after."
+        ),
+    },
+    {
+        "name": "journalist",
+        "system_addon": (
+            "WRITING PERSONA — Journalist:\n"
+            "Open with a lede: one punchy sentence that tells the whole story. Use the inverted pyramid — "
+            "most important facts first. Headlines are verb-forward and crisp. "
+            "Named examples over abstractions. Context and stakes before the deep-dive."
+        ),
+    },
+    {
+        "name": "educator",
+        "system_addon": (
+            "WRITING PERSONA — Educator:\n"
+            "Assume the reader is intelligent but new to the topic. Define terms on first use. "
+            "Use one concrete analogy per major concept. Build knowledge progressively — "
+            "each section assumes the previous was read. Use numbered steps for any process. "
+            "Why-before-how structure throughout."
+        ),
+    },
+    {
+        "name": "business_strategist",
+        "system_addon": (
+            "WRITING PERSONA — Business Strategist:\n"
+            "Frame everything through business outcomes: cost saved, time reduced, risk managed, revenue gained. "
+            "Open with the business case, not the technical problem. "
+            "Decision-framing language: 'If X is your priority, choose Y.' "
+            "Include at least one cost or ROI data point per H2."
+        ),
+    },
+    {
+        "name": "data_analyst",
+        "system_addon": (
+            "WRITING PERSONA — Data Analyst:\n"
+            "Lead with the numbers. Every claim needs a figure, a source, or a stated basis. "
+            "Tables preferred over prose for any comparison with 3+ variables. "
+            "Precise language: '40% faster' not 'much faster'. "
+            "Data summary first, methodology second, interpretation third."
+        ),
+    },
+    {
+        "name": "critical_reviewer",
+        "system_addon": (
+            "WRITING PERSONA — Critical Reviewer:\n"
+            "Acknowledge real weaknesses of every tool or approach before recommending it. "
+            "Structure: strengths → real limitations → who it's actually right for. "
+            "Open with what the tool does NOT do well — earn reader trust before the recommendation. "
+            "No overselling. Honest limitations build credibility."
+        ),
+    },
+]
+
+
+def get_persona_for_topic(topic_id: int) -> dict:
+    """Deterministic persona selection: topic_id % number of personas."""
+    return WRITING_PERSONAS[topic_id % len(WRITING_PERSONAS)]
+
+
+def build_system_prompt(persona: dict) -> str:
+    """Combine base system prompt with persona-specific writing style addon."""
+    return f"{CONTENT_SYSTEM_PROMPT}\n\n{persona['system_addon']}"
+
+
 CONTENT_USER_PROMPT_TEMPLATE = """Create a blog post for the following topic:
 
 Title: {title}
@@ -123,6 +241,9 @@ Intent: {intent}
 Target Keywords: {keywords}
 Special Instructions: {special_instructions}
 
+=== PRODUCT FACTS (use these as ground truth — do NOT invent or contradict) ===
+{site_facts}
+{strategy_section}
 === BLOG TEMPLATE (You MUST follow this structure) ===
 {template}
 
@@ -306,11 +427,21 @@ def _get_mock_content(topic: Dict) -> Dict:
         
         meta_description = f"Learn about {title.lower()} and how it impacts dating app success. Expert insights and practical guidance."
     
+    # Derive SEO fields so dry-run output matches the real LLM contract
+    keywords = topic.get("target_keywords") or []
+    focus_keyword = keywords[0] if keywords else title.lower()
+    meta_title = (title[:57] + "...") if len(title) > 60 else title
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+
     return {
         "tldr": tldr,
         "content": content,
         "faq": faq,
-        "meta_description": meta_description
+        "meta_description": meta_description,
+        "meta_title": meta_title,
+        "focus_keyword": focus_keyword,
+        "slug": slug,
+        "writing_persona": get_persona_for_topic(topic.get("id", 0))["name"],
     }
 
 
@@ -331,11 +462,25 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
     """
     title = topic.get("title", "Untitled")
     pillar = topic.get("pillar", "General")
-    
+
     # Dry-run mode: return mock content
     if DRY_RUN:
         return _get_mock_content(topic)
-    
+
+    # ── Writing persona (deterministic by topic ID) ───────────────────────────
+    topic_id = topic.get("id", 0)
+    persona = get_persona_for_topic(topic_id)
+    system_prompt = build_system_prompt(persona)
+    logger.info(f"Writing persona: '{persona['name']}' (topic {topic_id})")
+
+    # ── Strategy context from GSC/GA4 data (Feature 2) ───────────────────────
+    try:
+        from content_strategist import get_strategy_context
+        strategy_context = get_strategy_context(site.get("id", 0))
+    except Exception:
+        strategy_context = ""
+    strategy_section = f"\n{strategy_context}\n" if strategy_context else ""
+
     # Load template for this pillar
     template = load_template(pillar)
     if template:
@@ -343,12 +488,15 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
     else:
         logger.warning(f"No template found for pillar: {pillar}, using default guidelines")
         template = "Standard SEO-optimized article with introduction, H2 sections, and FAQ"
-    
+
     # Get pillar hints from plan context (additional to template)
     pillar_hints = plan_context.get("default_pillar_template_hints", {}).get(
         pillar,
         "Follow the template structure above"
     )
+
+    # Load site facts (product pricing, features, correct names)
+    site_facts = _load_site_facts(site)
 
     # Fetch published posts for internal link context
     published_posts = _fetch_published_posts(site)
@@ -365,6 +513,8 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
         intent=topic.get("intent", "informational"),
         keywords=", ".join(topic.get("target_keywords", [])),
         special_instructions=topic.get("special_instructions") or "None",
+        site_facts=site_facts or "No product facts file found — use general knowledge.",
+        strategy_section=strategy_section,
         template=template,
         pillar_hints=pillar_hints,
         link_context=link_context or "No existing posts yet — skip internal links for now.",
@@ -390,11 +540,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                     model=LLM_MODEL,
                     response_format={"type": "json_object"},
                     messages=[
-                        {"role": "system", "content": CONTENT_SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=6000
+                    max_tokens=16000
                 )
                 raw_content = response.choices[0].message.content.strip()
             except Exception:
@@ -402,11 +552,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                 response = client.chat.completions.create(
                     model=LLM_MODEL,
                     messages=[
-                        {"role": "system", "content": CONTENT_SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=6000
+                    max_tokens=16000
                 )
                 raw_content = response.choices[0].message.content.strip()
             
@@ -421,11 +571,11 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
                 candidate = json_match.group(1) if json_match else raw_content
                 # Find outermost JSON object
                 start = candidate.find('{')
-                end = candidate.rfind('}') + 1
-                if start != -1 and end != 0:
-                    candidate = candidate[start:end]
-                else:
+                if start == -1:
                     raise ValueError("Could not extract JSON from LLM response")
+                end = candidate.rfind('}') + 1
+                # If closing brace not found, JSON was truncated — try repair anyway
+                candidate = candidate[start:end] if end > 0 else candidate[start:]
                 # Repair and parse
                 repaired = repair_json(candidate)
                 result = json.loads(repaired)
@@ -437,7 +587,10 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
             for key in required_keys:
                 if key not in result:
                     raise ValueError(f"LLM response missing required key: {key}")
-            
+
+            # Tag with persona so scheduler can persist it
+            result["writing_persona"] = persona["name"]
+
             logger.info(f"Successfully generated content for: {title}")
             return result
             
