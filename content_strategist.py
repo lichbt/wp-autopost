@@ -14,6 +14,7 @@ Usage (CLI via strategy.py):
 """
 
 import os
+import re
 import json
 import requests
 from collections import defaultdict
@@ -636,3 +637,172 @@ def select_persona(site_id: int, topic_id: int, content_type: Optional[str] = No
     chosen = get_persona_for_topic(topic_id)
     logger.info(f"[persona] rotation → '{chosen['name']}'")
     return chosen
+
+
+# ── Feature 4: Data-Driven Template Proposals ─────────────────────────────────
+
+def _read_template_library() -> List[Dict]:
+    """Summarise each existing template (name + heading outline) so the LLM can
+    avoid proposing duplicates. Lazy-imports content_generator to dodge a cycle."""
+    from content_generator import TEMPLATES_DIR, available_template_stems
+    library: List[Dict] = []
+    for stem in available_template_stems():
+        try:
+            text = (TEMPLATES_DIR / f"{stem}.md").read_text(encoding="utf-8")
+        except Exception:
+            continue
+        headings = [ln.strip() for ln in text.splitlines() if ln.lstrip().startswith("#")]
+        library.append({"name": stem, "headings": headings[:25]})
+    return library
+
+
+def _parse_proposals_json(raw: str) -> List[Dict]:
+    """Best-effort parse of the LLM's JSON proposals payload."""
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        match = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", raw)
+        candidate = match.group(1) if match else raw
+        start, end = candidate.find("{"), candidate.rfind("}") + 1
+        candidate = candidate[start:end] if start != -1 and end > 0 else candidate
+        try:
+            data = json.loads(candidate)
+        except json.JSONDecodeError:
+            from json_repair import repair_json
+            data = json.loads(repair_json(candidate))
+    proposals = data.get("proposals", data) if isinstance(data, dict) else data
+    return proposals if isinstance(proposals, list) else []
+
+
+def suggest_templates(site_id: int, n_top: int = 10, max_proposals: int = 3) -> Dict:
+    """
+    Propose NEW reusable content templates from performance data.
+
+    Looks at the top-scoring articles + pillar performance + the existing template
+    library, and asks the LLM to propose content structures that would capture more
+    traffic/citations — only when meaningfully different from what already exists.
+
+    Proposals are written to templates/proposed/ for human review. They are NOT
+    activated: available_template_stems() globs only the top-level templates dir,
+    so a proposal has no effect until a human moves it into templates/.
+
+    Returns {"proposals": [...], "saved_to": str|None, "skipped": str|None}.
+    Raises RuntimeError if OPENROUTER_API_KEY is missing.
+    """
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
+    if not openrouter_key:
+        raise RuntimeError(
+            "OPENROUTER_API_KEY not set — cannot suggest templates. Add it to .env."
+        )
+
+    performers  = get_top_and_bottom_performers(site_id, n=n_top)
+    pillar_perf = get_pillar_performance(site_id, days=60)
+    library     = _read_template_library()
+    existing_names = [t["name"] for t in library]
+
+    if not performers["top"]:
+        return {
+            "proposals": [], "saved_to": None,
+            "skipped": "No scored articles yet — run scoring first (strategy.py --score).",
+        }
+
+    prompt = f"""You are a content template strategist. Using the performance data below,
+propose NEW reusable article templates (content structures) that would help this site
+capture more search traffic and AI citations.
+
+=== TOP-PERFORMING ARTICLES (highest composite score) ===
+{json.dumps(performers['top'], indent=2)}
+
+=== PILLAR PERFORMANCE (last 60 days, GSC) ===
+{json.dumps(pillar_perf, indent=2)}
+
+=== EXISTING TEMPLATE LIBRARY (name + heading outline) — DO NOT DUPLICATE THESE ===
+{json.dumps(library, indent=2)}
+
+Return JSON ONLY in this exact shape:
+{{"proposals": [
+  {{"name": "lowercase_slug", "when_to_use": "1 sentence on the search intent/topic type this fits",
+    "rationale": "why the data justifies a new template (cite specific pillars/scores)",
+    "markdown": "# Title Template\\n\\n...full template in the same style as the existing ones..."}}
+]}}
+
+Rules:
+- Propose AT MOST {max_proposals} templates. Propose FEWER, even zero (empty list), if the
+  existing library already covers the high-performing patterns — quality over quantity.
+- Each proposal MUST be meaningfully different from every existing template: {existing_names}.
+- "name" is a lowercase underscore slug and must NOT match any existing template name.
+- "markdown" must follow the same structure style as the existing templates AND must include
+  a TL;DR block and an FAQ section (these are mandatory AEO/GEO blocks).
+- Ground every proposal in the data — reference the pillars/titles/scores that justify it.
+Return valid JSON only, no commentary."""
+
+    logger.info(f"[templates] Requesting template proposals for site {site_id} via OpenRouter...")
+    try:
+        resp = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {openrouter_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://shaunsocial.com",
+                "X-Title": "Content Template Proposals",
+            },
+            json={
+                "model": "anthropic/claude-3-5-haiku",
+                "messages": [
+                    {"role": "system", "content": "You are a content template strategist. Return valid JSON only."},
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": 4000,
+                "temperature": 0.5,
+            },
+            timeout=90,
+        )
+        resp.raise_for_status()
+        raw = resp.json()["choices"][0]["message"]["content"].strip()
+    except Exception as exc:
+        raise RuntimeError(f"Template proposal request failed: {exc}") from exc
+
+    proposals = _parse_proposals_json(raw)
+
+    # Persist proposals for human review (NOT into the active templates dir).
+    from content_generator import TEMPLATES_DIR
+    proposed_dir = TEMPLATES_DIR / "proposed"
+    existing_lower = {n.lower() for n in existing_names}
+
+    saved: List[Dict] = []
+    for p in proposals[:max_proposals]:
+        if not isinstance(p, dict):
+            continue
+        markdown = (p.get("markdown") or "").strip()
+        raw_name = p.get("name") or ""
+        slug = re.sub(r"[\s\-&/]+", "_", raw_name.strip().lower())
+        slug = re.sub(r"_+", "_", slug).strip("_")
+        if not slug or not markdown:
+            continue
+        if slug in existing_lower:
+            logger.info(f"[templates] Skipping proposal '{slug}' — duplicates an existing template.")
+            continue
+
+        proposed_dir.mkdir(parents=True, exist_ok=True)
+        header = (
+            "<!-- PROPOSED TEMPLATE — review before activating.\n"
+            f"When to use: {p.get('when_to_use', '').strip()}\n"
+            f"Rationale:   {p.get('rationale', '').strip()}\n"
+            f"To activate: move this file up into {TEMPLATES_DIR} (out of 'proposed/').\n"
+            "-->\n\n"
+        )
+        out_path = proposed_dir / f"{slug}.md"
+        out_path.write_text(header + markdown + "\n", encoding="utf-8")
+        saved.append({
+            "name": slug,
+            "when_to_use": p.get("when_to_use", "").strip(),
+            "rationale": p.get("rationale", "").strip(),
+            "path": str(out_path),
+        })
+        logger.info(f"[templates] Proposed new template '{slug}' → {out_path}")
+
+    return {
+        "proposals": saved,
+        "saved_to": str(proposed_dir) if saved else None,
+        "skipped": None if saved else "No new templates proposed — existing library already covers the patterns.",
+    }

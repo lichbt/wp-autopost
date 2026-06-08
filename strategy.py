@@ -75,6 +75,10 @@ Examples:
                         help="Generate weekly strategy memo via Claude (uses OpenRouter)")
     parser.add_argument("--personas", action="store_true",
                         help="Show per-persona average score + sample count (the persona feedback loop)")
+    parser.add_argument("--suggest-templates", action="store_true",
+                        help="Propose NEW content templates from performance data (saved to templates/proposed/ for review)")
+    parser.add_argument("--max-proposals", type=int, default=3,
+                        help="Max template proposals to generate (default: 3)")
     parser.add_argument("--days",   type=int, default=60,
                         help="GSC lookback window in days (default: 60)")
     parser.add_argument("--out",    type=str, default="",
@@ -99,9 +103,10 @@ Examples:
         get_top_and_bottom_performers,
         generate_strategy_memo,
         get_persona_performance,
+        suggest_templates,
     )
 
-    if not (args.score or args.report or args.memo or args.personas):
+    if not (args.score or args.report or args.memo or args.personas or args.suggest_templates):
         parser.print_help()
         sys.exit(0)
 
@@ -158,6 +163,28 @@ Examples:
             for name, s in ranked:
                 print(f"  {name:<22} {s['avg_score']:>10.1f} {s['count']:>9}")
             print("\n  (Selection exploits the top personas and explores under-sampled ones.)")
+
+    # ── Suggest templates ────────────────────────────────────────────────────────
+    if args.suggest_templates:
+        print("\nAnalysIng performance data to propose new content templates...")
+        try:
+            result = suggest_templates(args.site, max_proposals=args.max_proposals)
+        except RuntimeError as exc:
+            print(f"\nError: {exc}")
+            sys.exit(1)
+
+        if result.get("skipped"):
+            print(f"  {result['skipped']}")
+        elif not result["proposals"]:
+            print("  No new templates proposed.")
+        else:
+            print(f"\n  {len(result['proposals'])} template(s) proposed → {result['saved_to']}")
+            print("  (Review each, then move it up into templates/ to activate.)\n")
+            for p in result["proposals"]:
+                print(f"  • {p['name']}")
+                print(f"      when:  {p['when_to_use']}")
+                print(f"      why:   {p['rationale']}")
+                print(f"      file:  {p['path']}\n")
 
 
 if __name__ == "__main__":

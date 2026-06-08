@@ -157,6 +157,14 @@ def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dic
     wp_posts_list = wp_posts or []
     wp_posts_str = _fmt_wp_posts(wp_posts_list)
 
+    # Available content-structure templates (discovered from the templates dir),
+    # offered to the planner so it can pick the best-fit structure per topic.
+    try:
+        from content_generator import available_template_stems
+        available_templates = ", ".join(available_template_stems()) or "how_to"
+    except Exception:
+        available_templates = "vs_comparison, best_of, buyer_guide, setup_tutorial, feature_explainer, use_case, how_to, definition, cost_roi"
+
     # Compute a date schedule: posts_per_day posts/day over the horizon
     horizon_days = max(14, num_topics // posts_per_day + 1)
 
@@ -208,6 +216,10 @@ in EXISTING CONTENT IN DB or LIVE WORDPRESS POSTS above. Check both lists carefu
 For each topic return:
   - title: exact post title (SEO-optimized, includes year if relevant)
   - pillar: one of [vs_comparison, best_of, buyer_guide, setup_tutorial, feature_explainer, use_case, how_to, definition, cost_roi]
+  - recommended_template: the content STRUCTURE that best fits THIS topic's search intent.
+    Choose one of: [{available_templates}]. It usually matches the pillar, but pick a
+    different one when the SERP/intent calls for it (e.g. a topic filed under "best_of"
+    that is really a walkthrough → "setup_tutorial"). Use null to fall back to the pillar default.
   - priority: high / medium / low
   - intent: commercial / informational / navigational
   - target_keywords: array of 3–5 keyword strings

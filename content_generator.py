@@ -83,55 +83,113 @@ def _format_link_context(posts: List[Dict]) -> str:
     return "\n".join(lines)
 
 
-def load_template(pillar: str) -> Optional[str]:
+# Default template used when nothing else resolves.
+DEFAULT_TEMPLATE = "how_to.md"
+
+# Legacy / loose pillar names → canonical template stem. Only consulted when a
+# direct "{slug}.md" file does not exist, so adding a real template file always
+# wins over an alias.
+_TEMPLATE_ALIASES = {
+    "how to":       "how_to",
+    "howto":        "how_to",
+    "comparisons":  "vs_comparison",
+    "comparison":   "vs_comparison",
+    "vs":           "vs_comparison",
+    "definitions":  "definition",
+    "explainer":    "feature_explainer",
+    "cost & roi":   "cost_roi",
+    "cost":         "cost_roi",
+    "roi":          "cost_roi",
+    "pricing":      "cost_roi",
+    "market":       "niche",
+    "best of":      "best_of",
+    "listicle":     "best_of",
+    "roundup":      "best_of",
+    "buyer guide":  "buyer_guide",
+    "buying guide": "buyer_guide",
+    "tutorial":     "setup_tutorial",
+    "setup":        "setup_tutorial",
+}
+
+
+def _slugify_pillar(name: str) -> str:
+    """Normalize a pillar/template name to a file-stem slug, e.g. 'How-To' → 'how_to'."""
+    slug = (name or "").strip().lower()
+    slug = re.sub(r"[\s\-&/]+", "_", slug)
+    slug = re.sub(r"_+", "_", slug).strip("_")
+    return slug
+
+
+def available_template_stems() -> list:
+    """All template stems on disk (filenames without .md, README excluded).
+
+    Discovered dynamically so any newly added template — including ones an LLM
+    proposes and we drop into the templates dir — is immediately resolvable.
     """
-    Load a blog template for the given pillar.
-    
+    if not TEMPLATES_DIR.exists():
+        return []
+    return sorted(
+        p.stem for p in TEMPLATES_DIR.glob("*.md")
+        if p.stem.lower() != "readme"
+    )
+
+
+def resolve_template_name(pillar: str, override: Optional[str] = None) -> str:
+    """Resolve a pillar (and optional explicit override) to a template filename.
+
+    Resolution order, trying the override first then the pillar:
+      1. exact "{slug}.md" file on disk      (covers all pillars named like files)
+      2. alias map → canonical stem          (legacy / loose names)
+      3. fuzzy contains against known stems
+    Falls back to DEFAULT_TEMPLATE if nothing matches.
+
+    `override` lets the planner/LLM pick a template per-topic that differs from
+    the pillar's default.
+    """
+    stems = set(available_template_stems())
+
+    for candidate in (override, pillar):
+        if not candidate:
+            continue
+        low = candidate.strip().lower()
+        slug = _slugify_pillar(candidate)
+        if not slug:
+            continue
+
+        # 1. direct file match
+        if slug in stems:
+            return f"{slug}.md"
+
+        # 2. alias map (check both the raw lowered form and the slug)
+        for key in (low, slug):
+            alias = _TEMPLATE_ALIASES.get(key)
+            if alias and alias in stems:
+                return f"{alias}.md"
+
+        # 3. fuzzy contains (e.g. "feature_explainer_guide" → feature_explainer)
+        for stem in stems:
+            if slug == stem or slug in stem or stem in slug:
+                return f"{stem}.md"
+
+    return DEFAULT_TEMPLATE
+
+
+def load_template(pillar: str, override: Optional[str] = None) -> Optional[str]:
+    """
+    Load a blog template for the given pillar (optionally overridden).
+
     Args:
-        pillar: Content pillar name (e.g., "How-To", "Comparisons", "Definition")
-    
+        pillar: Content pillar name (e.g., "how_to", "vs_comparison", "best_of")
+        override: Explicit template name/stem chosen per-topic; wins over pillar.
+
     Returns:
-        Template content or None if not found
+        Template content, or None if the resolved file is missing.
     """
-    # Map pillar names to template files
-    pillar_to_file = {
-        "how-to": "how_to.md",
-        "how to": "how_to.md",
-        "comparisons": "comparison.md",
-        "comparison": "comparison.md",
-        "vs": "comparison.md",
-        "definition": "definition.md",
-        "definitions": "definition.md",
-        "explainer": "definition.md",
-        "cost & roi": "cost_roi.md",
-        "cost": "cost_roi.md",
-        "roi": "cost_roi.md",
-        "pricing": "cost_roi.md",
-        "niche": "niche.md",
-        "market": "niche.md",
-    }
-    
-    # Normalize pillar name
-    pillar_lower = pillar.lower().strip()
-    
-    # Get template filename
-    filename = pillar_to_file.get(pillar_lower)
-    if not filename:
-        # Try partial match
-        for key, value in pillar_to_file.items():
-            if key in pillar_lower or pillar_lower in key:
-                filename = value
-                break
-    
-    if not filename:
-        filename = "how_to.md"  # Default template
-    
-    # Load template
+    filename = resolve_template_name(pillar, override)
     template_path = TEMPLATES_DIR / filename
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
             return f.read()
-    
     return None
 
 
@@ -145,7 +203,7 @@ PRODUCT FACTS RULES (critical):
 - If the facts say the price is $149, always write $149 — never a different number.
 - If the facts say the mobile app is a PWA, never call it a native app, and vice versa.
 
-You MUST follow the provided blog template structure exactly. The template defines the required sections, headings, and formatting.
+Use the provided blog template as the RECOMMENDED structure. Follow its section flow and headings closely, but you MAY adapt it to the specific topic — add, reorder, merge, or drop sections where the topic and search intent clearly call for it. These blocks are MANDATORY in every article regardless of the template: a TL;DR, an FAQ section, and clear H2/H3 headings. Adapt the structure to serve the reader; never drop the mandatory blocks.
 
 INTERNAL LINKING RULES (mandatory):
 - Insert 3–5 contextual internal links within the body text using real <a href="URL">anchor text</a> HTML tags.
@@ -244,7 +302,7 @@ Special Instructions: {special_instructions}
 === PRODUCT FACTS (use these as ground truth — do NOT invent or contradict) ===
 {site_facts}
 {strategy_section}
-=== BLOG TEMPLATE (You MUST follow this structure) ===
+=== BLOG TEMPLATE (recommended structure — adapt to the topic, keep the mandatory blocks) ===
 {template}
 
 === ADDITIONAL CONTENT GUIDELINES ===
@@ -264,7 +322,7 @@ Return a JSON object with these keys IN THIS ORDER:
 - "content": full HTML body following the template structure above. Use proper H2/H3 headings as defined in the template. Use <table> where the template calls for tables, numbered H2 steps for how-to guides. Insert 3–5 internal links from the list above using <a href="URL">anchor text</a> tags placed naturally within sentences.
 
 Important:
-- Follow the BLOG TEMPLATE structure exactly for the content organization
+- Use the BLOG TEMPLATE as the recommended structure; adapt sections to the topic where it improves relevance, but always keep the mandatory TL;DR and FAQ blocks
 - Do not invent product features. Only mention product names when appropriate
 - Use HTML tags for formatting (<h2>, <h3>, <p>, <ul>, <li>, <table>, <strong>, <em>)
 - Include the target keywords naturally throughout the content
@@ -490,10 +548,14 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
         strategy_context = ""
     strategy_section = f"\n{strategy_context}\n" if strategy_context else ""
 
-    # Load template for this pillar
-    template = load_template(pillar)
+    # Load template for this pillar. A per-topic "recommended_template" (set by
+    # the planner/LLM) overrides the pillar's default structure.
+    template_override = topic.get("recommended_template") or topic.get("template")
+    resolved_template = resolve_template_name(pillar, template_override)
+    template = load_template(pillar, template_override)
     if template:
-        logger.info(f"Loaded template for pillar: {pillar}")
+        logger.info(f"Loaded template '{resolved_template}' for pillar '{pillar}'"
+                    + (f" (override: {template_override})" if template_override else ""))
     else:
         logger.warning(f"No template found for pillar: {pillar}, using default guidelines")
         template = "Standard SEO-optimized article with introduction, H2 sections, and FAQ"
