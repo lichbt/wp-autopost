@@ -18,6 +18,7 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 - ✅ **`wp_publisher.publish_post(update_post_id=…)`** — new param to update an existing WP post in place (POST to `/posts/{id}`), enabling regeneration without creating duplicate drafts.
 
 - ✅ **Imported the ShaunSocial June 12-article plan into the DB** (was only in `data/shaunsocial-june-plan.html`). Created plan **#10**, topics **#217–#228**; #217 (Best Social Network Software) marked `draft` + linked to WP #3581; #218–#228 pending, scheduled ~3/week (06-11 → 07-04). Verified 0 dedup title collisions with the 88 published, so the scheduler/dedup now track the plan.
+- ✅ **Reconciled the MooDatingScript June plan** (`data/moodating-june-plan.html`, 12 articles) against the DB. **11 of 12 already existed** (published/draft/pending) — a blind import would have duplicated them. Added only the **1 genuinely missing** topic: **#229 "Dating Script for Sale: What to Look For & How to Buy Safely"** (buyer_guide, pending, scheduled 06-15).
 
 ---
 
