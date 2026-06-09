@@ -69,6 +69,12 @@ Branch `feature/claude-cli-backend`, commit `8446919`.
 
 ---
 
+### EPIC 6 — Backlog & worklog convention
+- ✅ Created **`BACKLOG.md`** (this file) — running log of work, decisions, follow-ups. `18027f1`
+- ✅ Created **`CLAUDE.md`** documenting the convention: *append a dated section here at the end of each work session*, plus project orientation (claude CLI backend; GEO trackers stay on OpenRouter) and git/PR conventions — so future sessions maintain the log automatically.
+
+---
+
 ## Cross-cutting open items
 - ⏳ **Serper.dev API key** (from a prior session) — sign up (free, 2,500/mo), set `SERPER_API_KEY` in `.env`, then test `llm_tracker.py --llm google_ai` (Google AI Overview tracking).
 - ⏳ **WordPress ↔ DB sync** bootstrap — run `python main.py --site N --sync-wp` per site so plan generation/dedup see live posts (modules shipped in EPIC 2; one-time run still needed if not done).
