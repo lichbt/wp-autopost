@@ -473,14 +473,30 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
 
     # Tier 1: performance feedback signals (striking-distance, pillar perf, decay)
     planner_signals = ""
+    sig = {}
     try:
         from content_strategist import get_planner_signals, format_planner_signals
-        planner_signals = format_planner_signals(get_planner_signals(site_id))
+        sig = get_planner_signals(site_id)
+        planner_signals = format_planner_signals(sig)
         if planner_signals:
             sd = len([l for l in planner_signals.splitlines() if l.strip().startswith("•")])
             print(GREEN(f"  ✓ Performance signals loaded ({sd} data points)"))
     except Exception as exc:
         print(YELLOW(f"  ⚠ Could not load performance signals: {exc}"))
+
+    # Tier 3: live SERP keyword research (related searches, PAA, AI-Overview flags)
+    if not DRY_RUN:
+        try:
+            from keyword_research import get_keyword_research_block, serper_available
+            if serper_available():
+                seeds = [q.get("query") for q in sig.get("striking_distance", [])]
+                seeds += [q.get("query") for q in gsc.get("top_queries", [])[:6]]
+                kw_block = get_keyword_research_block([s for s in seeds if s])
+                if kw_block:
+                    planner_signals = (planner_signals + "\n\n" + kw_block).strip()
+                    print(GREEN(f"  ✓ Live SERP keyword research added ({len(kw_block.splitlines())} lines)"))
+        except Exception as exc:
+            print(YELLOW(f"  ⚠ Keyword research skipped: {exc}"))
 
     print(f"  Existing topics in DB: {len(existing)}")
     print(f"  GSC query rows: {len(gsc.get('top_queries', []))}")
