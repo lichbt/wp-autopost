@@ -38,12 +38,18 @@ from logger import logger
 
 # ── Core WP REST API fetch ─────────────────────────────────────────────────────
 
-def fetch_all_wp_posts(site: Dict, per_page: int = 100) -> List[Dict]:
+def fetch_all_wp_posts(site: Dict, per_page: int = 100, statuses: str = "publish") -> List[Dict]:
     """
-    Paginate through WP REST API until all published posts are fetched.
+    Paginate through WP REST API until all matching posts are fetched.
+
+    `statuses` is a comma-separated WP status filter ("publish" by default).
+    Pass e.g. "publish,draft,pending,future" to also include unpublished work —
+    a draft already covers a topic, so it must count when de-duplicating a plan.
+    (Non-published statuses require authenticated edit access; we pass app-password
+    auth, and on any permission error we fall back gracefully to whatever returned.)
 
     Uses X-WP-TotalPages header to stop pagination early.
-    Returns a list of dicts: {id, title, slug, link}.
+    Returns a list of dicts: {id, title, slug, link, status}.
 
     Non-blocking: on any error returns whatever was collected so far (may be []).
     """
@@ -58,12 +64,12 @@ def fetch_all_wp_posts(site: Dict, per_page: int = 100) -> List[Dict]:
             resp = requests.get(
                 f"{wp_url}/wp-json/wp/v2/posts",
                 params={
-                    "status":   "publish",
+                    "status":   statuses,
                     "per_page": per_page,
                     "page":     page,
                     "orderby":  "date",
                     "order":    "desc",
-                    "_fields":  "id,title,slug,link",
+                    "_fields":  "id,title,slug,link,status",
                 },
                 auth=auth,
                 timeout=20,
@@ -86,10 +92,11 @@ def fetch_all_wp_posts(site: Dict, per_page: int = 100) -> List[Dict]:
 
             for p in posts:
                 all_posts.append({
-                    "id":    p.get("id"),
-                    "title": p.get("title", {}).get("rendered", "").strip(),
-                    "slug":  p.get("slug", "").strip(),
-                    "link":  p.get("link", ""),
+                    "id":     p.get("id"),
+                    "title":  p.get("title", {}).get("rendered", "").strip(),
+                    "slug":   p.get("slug", "").strip(),
+                    "link":   p.get("link", ""),
+                    "status": p.get("status", "publish"),
                 })
 
             # Check if there are more pages
@@ -102,7 +109,7 @@ def fetch_all_wp_posts(site: Dict, per_page: int = 100) -> List[Dict]:
             logger.warning(f"[wp_sync] Error fetching page {page}: {exc}")
             break
 
-    logger.info(f"[wp_sync] Fetched {len(all_posts)} published posts from {wp_url}")
+    logger.info(f"[wp_sync] Fetched {len(all_posts)} posts ({statuses}) from {wp_url}")
     return all_posts
 
 
@@ -397,9 +404,14 @@ def find_plan_duplicates(site_id: int, proposed: List, include_live: bool = True
     if include_live:
         try:
             site = get_site(site_id)
-            for L in fetch_all_wp_posts(site) if site else []:
+            # Include unpublished work — a draft/pending/scheduled post already
+            # covers a topic, so it must count as an existing candidate.
+            live = fetch_all_wp_posts(site, statuses="publish,draft,pending,future") if site else []
+            for L in live:
+                st = L.get("status", "publish")
                 existing.append({"title": L.get("title", ""), "slug": _norm_slug(L.get("slug", "")),
-                                 "source": "live", "tok": _dedup_tokens(L.get("title", ""))})
+                                 "source": "live" if st == "publish" else f"live:{st}",
+                                 "tok": _dedup_tokens(L.get("title", ""))})
         except Exception as exc:
             logger.warning(f"[dedup] live fetch skipped: {exc}")
     by_slug = {e["slug"]: e for e in existing if e["slug"]}

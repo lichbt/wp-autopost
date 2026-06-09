@@ -54,3 +54,20 @@ def test_string_items_supported(db_conn, sample_site):
 def test_no_existing_all_unique(db_conn, sample_site):
     res = wp_sync.find_plan_duplicates(sample_site, [{"title": "Anything", "slug": "a"}], include_live=False)
     assert res["duplicates"] == [] and len(res["unique"]) == 1
+
+
+def test_unpublished_draft_counts_as_candidate(db_conn, sample_site, monkeypatch):
+    """A live WP *draft* (not yet published) must still block a duplicate proposal."""
+    monkeypatch.setattr(wp_sync, "get_site", lambda sid: {"wp_url": "https://x", "wp_username": "u", "wp_app_password": "p"})
+    monkeypatch.setattr(wp_sync, "fetch_all_wp_posts", lambda site, statuses="publish": [
+        {"id": 1, "title": "Social Network PHP Script: Best Options in 2026", "slug": "social-network-php-script", "status": "draft"},
+    ])
+    proposed = [
+        {"title": "Best Social Network PHP Scripts to Use in 2026", "slug": "p1"},  # dup of the DRAFT
+        {"title": "How to Moderate User-Generated Content", "slug": "p2"},          # unique
+    ]
+    res = wp_sync.find_plan_duplicates(sample_site, proposed, include_live=True)
+    dups = {d["title"]: d for d in res["duplicates"]}
+    assert "Best Social Network PHP Scripts to Use in 2026" in dups
+    assert dups["Best Social Network PHP Scripts to Use in 2026"]["source"] == "live:draft"
+    assert res["unique"] == [proposed[1]]
