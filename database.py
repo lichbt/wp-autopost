@@ -219,6 +219,9 @@ def _run_migrations():
         # Planner action: 'new' (default) or 'refresh' an existing live URL
         ("action", "TEXT"),
         ("target_url", "TEXT"),
+        # Topic cluster / hub this article belongs to (Tier 2)
+        ("cluster", "TEXT"),
+        ("is_pillar_page", "INTEGER DEFAULT 0"),
     ]
 
     for col, col_type in new_site_cols:
@@ -351,8 +354,8 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
         cursor.execute("""
             INSERT INTO topics (site_id, plan_id, title, slug, pillar, priority, intent,
                               target_keywords, internal_links, special_instructions, scheduled_date,
-                              recommended_template, action, target_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              recommended_template, action, target_url, cluster, is_pillar_page)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             site_id, plan_id,
             topic.get("title"), topic.get("slug"), topic.get("pillar"),
@@ -361,6 +364,7 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
             topic.get("special_instructions"), topic.get("scheduled_date"),
             topic.get("recommended_template"),
             topic.get("action", "new"), topic.get("target_url"),
+            topic.get("cluster"), 1 if topic.get("is_pillar_page") else 0,
         ))
         topic_ids.append(cursor.lastrowid)
     conn.commit()

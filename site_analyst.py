@@ -238,8 +238,15 @@ For each topic return:
   - internal_links: array of URLs to link to within this post (or [])
   - special_instructions: specific writing guidance (what tables, what comparisons, what data to include)
   - scheduled_date: YYYY-MM-DD (distribute evenly, {posts_per_day}/day, starting tomorrow)
+  - cluster: the topic-cluster/hub this article belongs to (a short theme name, e.g. "WoWonder alternatives").
+    Organise ALL topics into 3–5 clusters. Each cluster has ONE pillar/hub page plus supporting articles.
+  - is_pillar_page: true for the single hub page of its cluster, false for supporting articles.
   - geo_rationale: 1-sentence reason this will be cited by AI systems
   - gsc_opportunity: the specific GSC query this targets (or null)
+
+Topic-cluster rules: group topics into 3–5 clusters around your highest-value themes. In each cluster,
+the pillar page targets the broad head term and each supporting article targets a specific long-tail/intent.
+Set internal_links so supporting articles link to their pillar page and the pillar links back to supporters.
 
 Also return a "global" object:
   - strategy_summary: 3-sentence executive summary
@@ -250,6 +257,56 @@ Also return a "global" object:
 
 Return valid JSON only — no commentary.
 JSON structure: {{"topics": [...], "global": {{...}}}}"""
+
+
+# ── Tier 2: self-critique / refine pass ───────────────────────────────────────
+
+def build_critique_prompt(plan: Dict, existing: List[Dict], wp_posts: List[Dict],
+                          planner_signals: str = "") -> str:
+    """Prompt a skeptical editor pass to prune duplicates/cannibalisation, tighten
+    clusters, and swap weak topics for higher-opportunity ones."""
+    return f"""You are a skeptical senior content editor reviewing a DRAFT content plan before it ships.
+Return an IMPROVED version of the plan. Apply these checks rigorously:
+
+1. DEDUPE & CANNIBALISATION — remove or merge topics that duplicate each other, or that closely match
+   any entry in EXISTING CONTENT or LIVE WORDPRESS POSTS below (two pages targeting the same query hurt
+   each other). When two drafts overlap, keep the stronger one.
+2. CLUSTER COHERENCE — every topic must belong to a cluster; each cluster has exactly ONE pillar/hub page
+   (is_pillar_page=true) and ≥2 supporting articles, with internal_links wiring supporters↔pillar.
+3. INTENT MIX — ensure a healthy mix of commercial and informational intent; fix obvious gaps.
+4. OPPORTUNITY — drop vague/low-value topics. If you drop any, REPLACE them (keep the same total count)
+   with stronger topics that exploit the PERFORMANCE SIGNALS (striking-distance queries, winning pillars).
+5. Preserve every required field, including action/target_url for refreshes and recommended_template.
+
+=== DRAFT PLAN ===
+{json.dumps(plan, ensure_ascii=False)[:14000]}
+
+=== EXISTING CONTENT IN DB ===
+{_fmt_existing_topics(existing)}
+
+=== LIVE WORDPRESS POSTS ===
+{_fmt_wp_posts(wp_posts or [])}
+
+=== PERFORMANCE SIGNALS ===
+{planner_signals or '(none)'}
+
+Return the improved plan as valid JSON ONLY, same schema: {{"topics": [...], "global": {{...}}}}."""
+
+
+def critique_and_refine_plan(plan: Dict, existing: List[Dict], wp_posts: List[Dict],
+                             planner_signals: str = "") -> Dict:
+    """Run one editor pass; return the refined plan, or the original on any failure
+    or if the critique returns fewer than half the topics (likely a parse problem)."""
+    try:
+        raw = _call_claude([{"role": "user", "content":
+                             build_critique_prompt(plan, existing, wp_posts, planner_signals)}])
+        refined = _parse_plan_json(raw)
+        if len(refined.get("topics", [])) >= max(1, len(plan.get("topics", [])) // 2):
+            return refined
+        logger.warning("[critique] refined plan too small — keeping original")
+    except Exception as exc:
+        logger.warning(f"[critique] refine pass failed, keeping original: {exc}")
+    return plan
 
 
 # ── Display plan ──────────────────────────────────────────────────────────────
@@ -446,6 +503,13 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         except Exception as e:
             print(RED(f"Claude failed: {e}"))
             sys.exit(1)
+
+        # Tier 2: self-critique / refine pass (dedupe, cannibalisation, clusters)
+        print("Refining plan (self-critique pass)...")
+        before = len(plan.get("topics", []))
+        plan = critique_and_refine_plan(plan, existing, wp_posts, planner_signals)
+        after = len(plan.get("topics", []))
+        print(GREEN(f"  ✓ Plan refined ({before} → {after} topics after dedupe/cannibalisation check)"))
 
     display_plan(plan, site_name)
 
