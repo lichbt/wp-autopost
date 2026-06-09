@@ -7,6 +7,13 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 
 ---
 
+## 2026-06-09 — Plan-making overhaul (data-driven planner)
+
+- ✅ **Tier 1 — data-driven plan generation.** Closed the data→plan loop. New `get_striking_distance()` (GSC queries at pos 8-20 + the page that ranks → refresh vs new), `get_planner_signals()`/`format_planner_signals()` bundling striking-distance + pillar performance + top/bottom performers + decay into the planner prompt. Planner now prioritises striking-distance, doubles down on winning pillars, refreshes decaying pages. New per-topic `action` (new|refresh) + `target_url`. (`fe405ee`)
+- ✅ **Tier 2 — topic clusters + self-critique.** Planner organises topics into 3-5 clusters (pillar/hub + supporting articles + internal-link wiring; new `cluster`/`is_pillar_page` fields). Added a skeptical-editor second pass (`critique_and_refine_plan`) that dedupes, kills cannibalisation vs existing/live content, enforces cluster coherence, and swaps weak topics for higher-opportunity ones — with safe fallback to the original. (`5524940`)
+- ✅ **Tier 3 — live SERP keyword research (Serper).** `keyword_research.py`: related searches + People-Also-Ask + AI-Overview detection, seeded from striking-distance + top GSC queries, injected into planner signals; 7-day cache. Degrades gracefully. ⚠️ **Dormant — `.env` SERPER_API_KEY is still the placeholder; replace with a real key (free at serper.dev) to activate.**
+- 🧠 153 tests passing. Branch `feature/data-driven-planner` (off the claude-cli branch).
+
 ## 2026-06-09
 
 - ✅ **Fixed ShaunSocial DB↔live drift.** 5 pending plan topics were already published live under different slugs (dedup missed them): #218→wp#1802, #219→wp#3534 (WoWonder), #220→wp#3536, #221→wp#3252, #226→wp#2393. Marked them `published` + linked. Real queue is now 6 genuinely-new topics (#222 phpSocial, #223 Bettermode/Hivebrite/Disciple, #224 Monetize, #225 Open Source, #227 HumHub, #228 Mobile App). ✅ Productionized as **`wp_sync.reconcile_pending_against_live()`** (precision-first: auto-publishes only exact-slug or near-identical-title matches; flags borderline as a *review* list, never silently skips new content). Runs automatically at the start of every scheduler cycle and via `python main.py --site N --reconcile`. Dry-run on site 4 confirmed 0 false positives. 3 tests.
