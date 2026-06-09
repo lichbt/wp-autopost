@@ -19,6 +19,7 @@ Usage (programmatic, e.g. before plan generation):
     wp_posts = get_wp_post_list(site)  # [{title, slug}, ...]
 """
 
+import re
 import requests
 from typing import Dict, List, Optional
 
@@ -30,6 +31,7 @@ from database import (
     get_all_topic_wp_ids,
     get_all_topic_slugs,
     link_wp_post_by_slug,
+    update_topic_status,
 )
 from logger import logger
 
@@ -191,3 +193,138 @@ def sync_wp_to_db(site_id: int) -> Dict[str, int]:
         f"errors={stats['errors']}"
     )
     return stats
+
+
+# ── Pending ↔ live reconcile ────────────────────────────────────────────────────
+# Plan topics often get published under a slug that differs from the planned slug
+# (older plan runs, manual edits). Slug/title dedup then misses them and they sit
+# "pending", so the scheduler would re-write a duplicate. This reconcile marks a
+# pending topic as published+linked when it clearly already exists live.
+#
+# Precision-first: it AUTO-applies only high-confidence matches (exact slug, or
+# near-identical title). Weaker "same distinctive entity, different wording"
+# matches are returned as a REVIEW list and NOT applied — silently skipping a
+# genuinely-new topic is worse than re-confirming a borderline one.
+
+# Generic words stripped before title comparison so DISTINCTIVE tokens dominate
+# (competitor names, specific concepts) rather than boilerplate/domain nouns.
+_GENERIC_TITLE_WORDS = {
+    # years
+    "2023", "2024", "2025", "2026", "2027",
+    # articles / prepositions / conjunctions / question words
+    "the", "a", "an", "to", "for", "of", "and", "or", "in", "on", "is", "are",
+    "with", "your", "you", "it", "its", "that", "this", "how", "what", "which",
+    "why", "when", "who", "vs", "versus", "from", "as", "at", "by", "be",
+    # SEO-generic
+    "best", "top", "guide", "complete", "full", "ultimate", "comparison",
+    "compared", "compare", "updated", "update", "ranked", "review", "reviewed",
+    "options", "option", "right", "choose", "choosing", "explained", "everything",
+    "need", "know", "step", "steps", "tips", "ways", "things",
+    # domain-generic nouns (both niches) — keep the distinctive entity, drop these
+    "social", "network", "networking", "dating", "online", "platform", "platforms",
+    "software", "app", "apps", "application", "script", "scripts", "website",
+    "websites", "web", "site", "sites", "system", "solution", "tool", "tools",
+    "cms", "media", "php",
+}
+
+
+def _title_tokens(text: str, extra_stop: set) -> set:
+    toks = re.split(r"[^a-z0-9]+", (text or "").lower())
+    stop = _GENERIC_TITLE_WORDS | extra_stop
+    return {t for t in toks if len(t) > 2 and t not in stop}
+
+
+def _jaccard(a: set, b: set) -> float:
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def _norm_slug(slug: str) -> str:
+    return (slug or "").strip("/").lower()
+
+
+def _get_pending_topics_min(site_id: int) -> List[Dict]:
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT id, title, slug FROM topics WHERE site_id = ? AND status = 'pending'",
+        (site_id,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def reconcile_pending_against_live(
+    site_id: int,
+    apply: bool = True,
+    auto_threshold: float = 0.8,
+    review_threshold: float = 0.5,
+) -> Dict:
+    """Mark pending topics that already exist live as published + linked.
+
+    AUTO (applied when apply=True): exact slug match, or normalized-title
+    Jaccard >= auto_threshold. REVIEW (never auto-applied): Jaccard in
+    [review_threshold, auto_threshold) — surfaced for a human to confirm.
+
+    Returns {"checked": n, "published": [...], "review": [...]}.
+    """
+    site = get_site(site_id)
+    if not site:
+        return {"checked": 0, "published": [], "review": [], "error": "site not found"}
+
+    live = fetch_all_wp_posts(site)
+    if not live:
+        return {"checked": 0, "published": [], "review": []}
+
+    # Brand tokens (e.g. "shaunsocial", "moodatingscript") count as generic here.
+    brand_stop = _title_tokens(site.get("name", ""), set()) | _title_tokens(
+        (site.get("wp_url", "").split("//")[-1].split("/")[0]).replace(".", " "), set()
+    )
+
+    live_idx = [
+        {"id": L["id"], "slug": _norm_slug(L.get("slug")),
+         "title": L.get("title", ""), "tok": _title_tokens(L.get("title", ""), brand_stop)}
+        for L in live
+    ]
+    live_by_slug = {l["slug"]: l for l in live_idx if l["slug"]}
+
+    pending = _get_pending_topics_min(site_id)
+    published, review = [], []
+
+    for p in pending:
+        p_tok = _title_tokens(p["title"], brand_stop)
+        p_slug = _norm_slug(p.get("slug"))
+
+        match, score, reason = None, 0.0, ""
+        # 1. exact slug match → definitive
+        if p_slug and p_slug in live_by_slug:
+            match, score, reason = live_by_slug[p_slug], 1.0, "slug"
+        else:
+            # 2. best title similarity
+            for l in live_idx:
+                s = _jaccard(p_tok, l["tok"])
+                if s > score:
+                    match, score, reason = l, s, "title"
+
+        if not match:
+            continue
+        entry = {"topic_id": p["id"], "topic_title": p["title"],
+                 "wp_post_id": match["id"], "live_title": match["title"],
+                 "live_slug": match["slug"], "score": round(score, 2), "via": reason}
+
+        if reason == "slug" or score >= auto_threshold:
+            if apply:
+                update_topic_status(p["id"], "published",
+                                    wp_post_id=match["id"], slug=match["slug"])
+            published.append(entry)
+            logger.info(f"[reconcile] {p['id']} '{p['title'][:40]}' → live wp#{match['id']} "
+                        f"(score {entry['score']}, via {reason}) — marked published")
+        elif score >= review_threshold:
+            review.append(entry)
+            logger.warning(f"[reconcile] REVIEW: topic {p['id']} '{p['title'][:40]}' may match "
+                           f"live wp#{match['id']} '{match['title'][:40]}' (score {entry['score']}) "
+                           f"— NOT auto-applied")
+
+    logger.info(f"[reconcile] site {site_id}: checked {len(pending)} pending, "
+                f"published {len(published)}, review {len(review)}")
+    return {"checked": len(pending), "published": published, "review": review}

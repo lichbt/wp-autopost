@@ -27,7 +27,19 @@ def run_automation_cycle(site_id: int) -> int:
         return 0
     
     posts_per_day = site.get("posts_per_day", 2)
-    
+
+    # Self-heal: mark pending topics that already exist live as published, so we
+    # never re-write a duplicate when a plan slug differs from the live slug.
+    try:
+        from wp_sync import reconcile_pending_against_live
+        rec = reconcile_pending_against_live(site_id, apply=True)
+        if rec.get("published"):
+            logger.info(f"[cycle] reconcile auto-marked {len(rec['published'])} already-live topic(s) published")
+        if rec.get("review"):
+            logger.warning(f"[cycle] reconcile flagged {len(rec['review'])} topic(s) as possible live duplicates — review")
+    except Exception as exc:
+        logger.warning(f"[cycle] reconcile skipped: {exc}")
+
     # Check daily limit
     published_today = count_published_today(site_id)
     remaining_slots = posts_per_day - published_today
