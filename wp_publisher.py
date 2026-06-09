@@ -160,6 +160,7 @@ def publish_post(
     schema_type: str = "Article",
     faq_html: str = "",
     featured_media_id: int = None,
+    update_post_id: int = None,
 ) -> Optional[int]:
     """
     Publish a post to WordPress via REST API with full Yoast SEO + JSON-LD.
@@ -181,6 +182,9 @@ def publish_post(
 
     wp_url = site.get("wp_url", "").rstrip("/")
     api_endpoint = f"{wp_url}/wp-json/wp/v2/posts"
+    # POSTing to /posts/{id} updates an existing post in place (e.g. regeneration).
+    if update_post_id:
+        api_endpoint = f"{api_endpoint}/{update_post_id}"
     auth = (site["wp_username"], site["wp_app_password"])
 
     # Inject JSON-LD at the top of the content

@@ -7,6 +7,20 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 
 ---
 
+## 2026-06-09
+
+### Content production + fact correction
+- ✅ **Wrote 2 articles as WordPress drafts** (generated via the `claude` CLI / Sonnet, no OpenRouter):
+  - ShaunSocial — *"Best Social Network Software in 2026: Full Comparison (Updated)"* (June plan #1, `best_of`) → draft **#3581**.
+  - MooDatingScript — *"What is a Dating Script?"* (pending topic #50, Definition) → draft **#763**; topic #50 marked `draft` in DB.
+- ⚠️→✅ **Fixed misleading ShaunSocial pricing fact.** `data/shaunsocial-facts.md` implied native iOS/Android apps were included at the **$149** one-time price. Corrected: **$149 = web platform only**; **$559 one-time = web + native apps** (paid add-on). Updated the pricing table, Mobile App section, differentiators, pricing-comparison note, and content-rule guardrails.
+- ✅ **Regenerated the ShaunSocial article** with corrected facts and **updated draft #3581 in place** — verified every pricing mention now separates $149 (web) vs $559 (native apps), incl. an explicit FAQ "Does the $149 license include native apps? No."
+- ✅ **`wp_publisher.publish_post(update_post_id=…)`** — new param to update an existing WP post in place (POST to `/posts/{id}`), enabling regeneration without creating duplicate drafts.
+
+🧠 Note: ShaunSocial has **no pending plan topics in the DB** (88 published, mostly wp_sync imports); its topics live in `data/shaunsocial-june-plan.html` (12-article June plan). Consider importing that plan into the DB so the scheduler/dedup can track it.
+
+---
+
 ## 2026-06-08
 
 ### EPIC 1 — Google Ads conversion tracking audit & fixes
