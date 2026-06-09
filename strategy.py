@@ -72,7 +72,7 @@ Examples:
     parser.add_argument("--report", action="store_true",
                         help="Print top and bottom performers table")
     parser.add_argument("--memo",   action="store_true",
-                        help="Generate weekly strategy memo via Claude (uses OpenRouter)")
+                        help="Generate weekly strategy memo via the claude CLI")
     parser.add_argument("--personas", action="store_true",
                         help="Show per-persona average score + sample count (the persona feedback loop)")
     parser.add_argument("--suggest-templates", action="store_true",

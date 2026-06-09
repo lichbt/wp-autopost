@@ -72,6 +72,10 @@ Examples:
         "--sync-wp", action="store_true",
         help="Sync all live WordPress posts into DB (run once to bootstrap; safe to re-run)",
     )
+    parser.add_argument(
+        "--reconcile", action="store_true",
+        help="Mark pending topics that already exist live as published+linked (plan↔live self-heal)",
+    )
 
     # Publishing
     parser.add_argument("--run-once", action="store_true", help="Run one automation cycle")
@@ -146,6 +150,18 @@ Examples:
         )
         if result['created'] > 0:
             print(f"\n  ✓ {result['created']} historical posts imported — plan generation will now avoid duplicating them.")
+
+    elif args.site and args.reconcile:
+        from wp_sync import reconcile_pending_against_live
+        print(f"Reconciling pending topics for site {args.site} against live posts...")
+        result = reconcile_pending_against_live(args.site, apply=True)
+        print(f"\n  Checked pending:  {result['checked']}")
+        print(f"  Auto-published:   {len(result['published'])}")
+        for e in result['published']:
+            print(f"    ✓ #{e['topic_id']} → wp#{e['wp_post_id']} ({e['via']}, {e['score']}) {e['topic_title'][:48]}")
+        print(f"  Needs review:     {len(result['review'])}")
+        for e in result['review']:
+            print(f"    ? #{e['topic_id']} ~ wp#{e['wp_post_id']} ({e['score']}) {e['topic_title'][:36]} ?= {e['live_title'][:36]}")
 
     elif args.site and args.generate_plan:
         from site_analyst import generate_plan_interactive

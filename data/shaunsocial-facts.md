@@ -8,11 +8,13 @@
 
 | Package | Price | Notes |
 |---|---|---|
-| Standard license | **$149 one-time** | Full source code, all core features |
+| Web / Standard license | **$149 one-time** | Full source code, all core web features. **Native mobile apps NOT included.** |
+| Web + Native Mobile Apps | **$559 one-time** | Web platform PLUS native iOS + Android apps (publishable under your brand) |
 | Addons / plugins | Varies | Available in addons marketplace |
 | Hosting (recommended) | ~$10–20/month | VPS on DigitalOcean, Linode, Hetzner |
 
-- **No monthly subscription fee** — one-time purchase only
+- **No monthly subscription fee** — one-time purchase only.
+- ⚠️ **IMPORTANT — do not conflate these:** the **$149** license is the **web platform only**. The **native iOS + Android apps cost extra**; the package that includes them is **$559 one-time**. Never state or imply that native mobile apps are included at $149.
 - Pricing page: https://shaunsocial.com/pricing/
 - Demo: https://shaunsocial.com/demo/
 
@@ -51,7 +53,8 @@
 ## Mobile App
 
 - **Type**: Native iOS and Android apps
-- **How it works**: Full native apps included — publish to App Store and Google Play under your own brand name
+- **Pricing**: a **paid add-on** — included only in the **$559 one-time** package, **NOT** in the $149 web license.
+- **How it works**: publish the native apps to App Store and Google Play under your own brand name
 - **Features**: Push notifications, offline support, native performance
 - Apps are publishable under your brand — NOT under ShaunSocial branding
 
@@ -99,7 +102,7 @@ Source: https://www.shaunsocial.com/features/
 - Two-Factor Authentication (2FA)
 
 ### Mobile
-- Native iOS and Android apps (publish under your own brand in App Store / Google Play)
+- Native iOS and Android apps (publish under your own brand in App Store / Google Play) — available in the **$559** package (paid add-on; not in the $149 web license)
 
 ---
 
@@ -149,9 +152,9 @@ Source: https://www.shaunsocial.com/features/
 
 ## Key Differentiators (use in content)
 
-1. **Only self-hosted platform with native iOS + Android apps** at a one-time price
+1. **Only self-hosted platform offering native iOS + Android apps** at a one-time price (native-app package is **$559 one-time**; the apps are not part of the $149 web license)
 2. **Open source** — full PHP source code included; competitors like Bettermode have no source access
-3. **One-time pricing at $149** — vs Bettermode $499+/month ($5,988+/year)
+3. **One-time pricing — $149 for the web platform** (or **$559 one-time** including native mobile apps) — vs Bettermode $499+/month ($5,988+/year)
 4. **Fully white-label** — remove all branding, publish apps under your name
 5. **Complete feature set** included out of the box — no extra modules to buy for core features
 6. **Active development** — regular updates
@@ -159,6 +162,10 @@ Source: https://www.shaunsocial.com/features/
 ---
 
 ## Correct Pricing Comparisons (use these numbers)
+
+> Note: the figures below use the **$149 web license**. If the article's angle is the
+> native mobile apps, use the **$559** native-app package instead (still one-time vs the
+> recurring SaaS costs). Never imply native apps are included at $149.
 
 - ShaunSocial vs Bettermode over 3 years: $149 vs $17,964+ ($499/mo × 36)
 - ShaunSocial vs Hivebrite over 3 years: $149 vs $18,000+ ($500/mo × 36)
@@ -254,8 +261,8 @@ Source: https://www.shaunsocial.com/post-sitemap.xml
 
 ## Content Rules
 
-- **Price**: always $149 one-time (never $2,499, never $499)
-- **Mobile app**: always "native iOS and Android" — this is the key differentiator vs competitors
+- **Price**: **$149 one-time for the web platform**; **$559 one-time** for the package that includes native iOS + Android apps. Native apps are a paid add-on — **never** say or imply they are included at $149. (Never use $2,499 or $499.)
+- **Mobile app**: always "native iOS and Android" — the key differentiator vs competitors — but it costs extra ($559 package), it is NOT bundled into the $149 license.
 - **Open source**: always YES — full PHP source code included
 - **White-label**: always YES — fully white-label
 - **Never add H1 tags** to article body content

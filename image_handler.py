@@ -16,8 +16,25 @@ import requests
 from typing import Optional
 from urllib.parse import quote
 
-from config import PIXABAY_API_KEY, LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+from config import PIXABAY_API_KEY, CLAUDE_ANALYSIS_MODEL, CLAUDE_CLI_AVAILABLE, PROJECT_ROOT
+from claude_cli import claude_complete
 from logger import logger
+
+# Editable prompt guide tuned for Nano Banana 2 / Gemini image. Tweak this file to
+# change how featured-image prompts are written (no code change needed).
+_IMAGE_GUIDE_PATH = PROJECT_ROOT / "data" / "image_prompt_guide.md"
+_image_guide_cache = None
+
+
+def _load_image_guide() -> str:
+    """Load (and cache) the image-prompt guide; '' if missing."""
+    global _image_guide_cache
+    if _image_guide_cache is None:
+        try:
+            _image_guide_cache = _IMAGE_GUIDE_PATH.read_text(encoding="utf-8")
+        except Exception:
+            _image_guide_cache = ""
+    return _image_guide_cache
 
 # ── Niche-aware prompt templates for Pollinations ────────────────────────────
 # Used when the LLM prompt builder is unavailable or returns something empty.
@@ -99,44 +116,31 @@ def _build_image_prompt(topic: dict, site: dict) -> str:
     niche = site.get("niche") or site.get("name") or "technology"
     pillar = topic.get("pillar", "")
 
-    if not LLM_API_KEY and not LLM_BASE_URL:
-        logger.info("No LLM configured — using pillar prompt template")
+    if not CLAUDE_CLI_AVAILABLE:
+        logger.info("claude CLI unavailable — using pillar prompt template")
         return _fallback_prompt(pillar, site)
 
-    system = (
-        "You are an AI image prompt writer. Given an article title and niche, "
-        "write a single concise image prompt (max 25 words) suitable for AI image generation. "
-        "Focus on a realistic photographic scene that visually represents the article topic. "
-        "No text in image, no logos. Return only the prompt, nothing else."
+    # The guide (data/image_prompt_guide.md) is the system prompt — it already
+    # specifies the rich, Nano-Banana-2-optimized output format and constraints,
+    # so we do NOT append the legacy keyword-soup suffix here.
+    guide = _load_image_guide()
+    if not guide:
+        logger.info("image_prompt_guide.md missing — using pillar prompt template")
+        return _fallback_prompt(pillar, site)
+
+    user = (
+        f'Article title: "{title}"\n'
+        f"Niche: {niche}\n"
+        f"Content type: {pillar or 'general'}\n\n"
+        "Write the image prompt now (prompt text only)."
     )
-    user = f'Article title: "{title}"\nNiche: {niche}\n\nWrite an image prompt:'
 
     try:
-        resp = requests.post(
-            f"{LLM_BASE_URL.rstrip('/')}/chat/completions",
-            json={
-                "model": LLM_MODEL,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "max_tokens": 80,
-                "temperature": 0.7,
-            },
-            headers={"Authorization": f"Bearer {LLM_API_KEY}", "Content-Type": "application/json"},
-            timeout=20,
-        )
-        if resp.status_code == 200:
-            try:
-                data = resp.json()
-            except Exception:
-                # Local LLMs sometimes return streamed/malformed JSON — skip
-                raise ValueError("Non-JSON response from LLM")
-            prompt = data["choices"][0]["message"]["content"].strip().strip('"')
-            if len(prompt) > 10:
-                full_prompt = prompt + _QUALITY_SUFFIX
-                logger.info(f"LLM image prompt: '{prompt}'")
-                return full_prompt
+        prompt = claude_complete(user, system=guide, model=CLAUDE_ANALYSIS_MODEL, timeout=90).strip().strip('"')
+        if len(prompt) > 40:  # a real descriptive prompt, not a stub
+            logger.info(f"Nano-Banana image prompt: {prompt}")
+            return prompt
+        logger.warning(f"LLM prompt too short ({len(prompt)} chars) — falling back")
     except Exception as e:
         logger.warning(f"LLM prompt generation failed: {e}")
 

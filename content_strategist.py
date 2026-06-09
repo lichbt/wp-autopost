@@ -13,14 +13,14 @@ Usage (CLI via strategy.py):
     python strategy.py --site 2 --memo --out memos/weekly.md
 """
 
-import os
 import re
 import json
-import requests
 from collections import defaultdict
 from datetime import date, timedelta
 from typing import Dict, List, Optional, Tuple
 
+from config import CLAUDE_ANALYSIS_MODEL
+from claude_cli import claude_complete
 from database import get_db_connection, update_topic_status
 from logger import logger
 
@@ -397,7 +397,7 @@ def get_top_and_bottom_performers(site_id: int, n: int = 5) -> Dict[str, List[Di
 
 def generate_strategy_memo(site_id: int) -> str:
     """
-    Call the LLM via OpenRouter to produce a ~400-word Markdown strategy memo.
+    Call the LLM via the claude CLI to produce a ~400-word Markdown strategy memo.
 
     Sections:
       1. What's Working
@@ -407,12 +407,6 @@ def generate_strategy_memo(site_id: int) -> str:
 
     Returns the Markdown string. Raises RuntimeError on failure.
     """
-    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not openrouter_key:
-        raise RuntimeError(
-            "OPENROUTER_API_KEY not set — cannot generate strategy memo. "
-            "Add it to .env and try again."
-        )
 
     # Gather data
     pillar_perf  = get_pillar_performance(site_id, days=60)
@@ -458,32 +452,13 @@ Stalling: {json.dumps(trend_data['stalling'], indent=2)}
 
 Be direct. Use the actual data — reference specific pillars, titles, and numbers. Return Markdown only."""
 
-    logger.info(f"[memo] Requesting strategy memo for site {site_id} via OpenRouter...")
+    logger.info(f"[memo] Generating strategy memo for site {site_id} via claude CLI...")
     try:
-        resp = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {openrouter_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://shaunsocial.com",
-                "X-Title": "Content Strategy Memo",
-            },
-            json={
-                "model": "anthropic/claude-3-5-haiku",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a content strategy analyst. Be concise, direct, and data-driven. Return Markdown only.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                "max_tokens": 1200,
-                "temperature": 0.4,
-            },
-            timeout=60,
-        )
-        resp.raise_for_status()
-        memo = resp.json()["choices"][0]["message"]["content"].strip()
+        memo = claude_complete(
+            prompt,
+            system="You are a content strategy analyst. Be concise, direct, and data-driven. Return Markdown only.",
+            model=CLAUDE_ANALYSIS_MODEL,
+        ).strip()
         logger.info(f"[memo] Strategy memo generated ({len(memo)} chars)")
         return memo
     except Exception as exc:
@@ -687,14 +662,8 @@ def suggest_templates(site_id: int, n_top: int = 10, max_proposals: int = 3) -> 
     so a proposal has no effect until a human moves it into templates/.
 
     Returns {"proposals": [...], "saved_to": str|None, "skipped": str|None}.
-    Raises RuntimeError if OPENROUTER_API_KEY is missing.
+    Raises RuntimeError if the claude CLI call fails.
     """
-    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not openrouter_key:
-        raise RuntimeError(
-            "OPENROUTER_API_KEY not set — cannot suggest templates. Add it to .env."
-        )
-
     performers  = get_top_and_bottom_performers(site_id, n=n_top)
     pillar_perf = get_pillar_performance(site_id, days=60)
     library     = _read_template_library()
@@ -736,29 +705,13 @@ Rules:
 - Ground every proposal in the data — reference the pillars/titles/scores that justify it.
 Return valid JSON only, no commentary."""
 
-    logger.info(f"[templates] Requesting template proposals for site {site_id} via OpenRouter...")
+    logger.info(f"[templates] Requesting template proposals for site {site_id} via claude CLI...")
     try:
-        resp = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {openrouter_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://shaunsocial.com",
-                "X-Title": "Content Template Proposals",
-            },
-            json={
-                "model": "anthropic/claude-3-5-haiku",
-                "messages": [
-                    {"role": "system", "content": "You are a content template strategist. Return valid JSON only."},
-                    {"role": "user", "content": prompt},
-                ],
-                "max_tokens": 4000,
-                "temperature": 0.5,
-            },
-            timeout=90,
-        )
-        resp.raise_for_status()
-        raw = resp.json()["choices"][0]["message"]["content"].strip()
+        raw = claude_complete(
+            prompt,
+            system="You are a content template strategist. Return valid JSON only.",
+            model=CLAUDE_ANALYSIS_MODEL,
+        ).strip()
     except Exception as exc:
         raise RuntimeError(f"Template proposal request failed: {exc}") from exc
 

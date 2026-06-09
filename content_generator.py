@@ -4,8 +4,8 @@ import time
 import requests
 from pathlib import Path
 from typing import Dict, List, Optional
-from openai import OpenAI
-from config import LLM_API_KEY, LLM_MODEL, LLM_BASE_URL, DRY_RUN, MAX_RETRIES, RETRY_DELAYS, PROJECT_ROOT
+from config import CLAUDE_CONTENT_MODEL, DRY_RUN, MAX_RETRIES, RETRY_DELAYS, PROJECT_ROOT
+from claude_cli import claude_complete
 from logger import logger
 
 # Templates directory
@@ -591,46 +591,21 @@ def generate_post_content(topic: Dict, site: Dict, plan_context: Dict) -> Dict:
         link_context=link_context or "No existing posts yet — skip internal links for now.",
     )
     
-    # Initialize LLM client
-    if LLM_BASE_URL:
-        client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
-        logger.info(f"Using LLM at: {LLM_BASE_URL} with model: {LLM_MODEL}")
-    else:
-        client = OpenAI(api_key=LLM_API_KEY)
-        logger.info(f"Using OpenAI with model: {LLM_MODEL}")
-    
+    # Generate via the Claude CLI (logged-in session — no API key, no OpenRouter).
+    logger.info(f"Generating via claude CLI (model: {CLAUDE_CONTENT_MODEL})")
+
     # Retry logic
     last_error = None
     for attempt in range(MAX_RETRIES):
         try:
             logger.info(f"Generating content for: {title} (attempt {attempt + 1}/{MAX_RETRIES})")
-            
-            # Try with JSON mode first (some local LLMs may not support it)
-            try:
-                response = client.chat.completions.create(
-                    model=LLM_MODEL,
-                    response_format={"type": "json_object"},
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.7,
-                    max_tokens=16000
-                )
-                raw_content = response.choices[0].message.content.strip()
-            except Exception:
-                # Fallback to regular completion if JSON mode not supported
-                response = client.chat.completions.create(
-                    model=LLM_MODEL,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.7,
-                    max_tokens=16000
-                )
-                raw_content = response.choices[0].message.content.strip()
-            
+
+            raw_content = claude_complete(
+                user_prompt,
+                system=system_prompt,
+                model=CLAUDE_CONTENT_MODEL,
+            ).strip()
+
             # Try to parse JSON from response
             try:
                 result = json.loads(raw_content)
