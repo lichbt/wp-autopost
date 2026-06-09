@@ -216,6 +216,9 @@ def _run_migrations():
         ("score_tier", "TEXT"),
         # LLM-suggested content template (overrides the pillar default structure)
         ("recommended_template", "TEXT"),
+        # Planner action: 'new' (default) or 'refresh' an existing live URL
+        ("action", "TEXT"),
+        ("target_url", "TEXT"),
     ]
 
     for col, col_type in new_site_cols:
@@ -348,8 +351,8 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
         cursor.execute("""
             INSERT INTO topics (site_id, plan_id, title, slug, pillar, priority, intent,
                               target_keywords, internal_links, special_instructions, scheduled_date,
-                              recommended_template)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              recommended_template, action, target_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             site_id, plan_id,
             topic.get("title"), topic.get("slug"), topic.get("pillar"),
@@ -357,6 +360,7 @@ def add_topics_bulk(site_id: int, plan_id: int, topics_list: List[Dict]) -> List
             target_keywords, internal_links,
             topic.get("special_instructions"), topic.get("scheduled_date"),
             topic.get("recommended_template"),
+            topic.get("action", "new"), topic.get("target_url"),
         ))
         topic_ids.append(cursor.lastrowid)
     conn.commit()

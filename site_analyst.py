@@ -129,7 +129,7 @@ def _fmt_wp_posts(posts: List[Dict], limit: int = 300) -> str:
     return "\n".join(lines)
 
 
-def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int, wp_posts: List[Dict] = None) -> str:
+def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int, wp_posts: List[Dict] = None, planner_signals: str = "") -> str:
     site_name = intake.get("name", "Unknown Site")
     site_url = intake.get("url", "")
     niche = intake.get("niche", "")
@@ -156,6 +156,8 @@ def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dic
     existing_str = _fmt_existing_topics(existing)
     wp_posts_list = wp_posts or []
     wp_posts_str = _fmt_wp_posts(wp_posts_list)
+    signals_block = (f"\n## 📊 PERFORMANCE SIGNALS — let these DRIVE the plan\n{planner_signals}\n"
+                     if planner_signals else "")
 
     # Available content-structure templates (discovered from the templates dir),
     # offered to the planner so it can pick the best-fit structure per topic.
@@ -199,15 +201,22 @@ covers the same subject matter, even with a different year or angle:
 
 ## GA4 — Top Pages by Sessions (last 30 days)
 {ga4_top}
-
+{signals_block}
 ## TASK
 Today: {today}
 Generate exactly {num_topics} blog topics for a {horizon_days}-day publishing plan
 at {posts_per_day} post(s) per day.
 
-Optimise for TWO goals simultaneously:
-1. Google SEO — target queries shown in GSC data above; fix low-CTR pages with better title/angle; cover gaps competitors own.
-2. GEO (Generative Engine Optimisation) — structure topics so AI systems (ChatGPT, Perplexity, Gemini, Claude) will cite them.
+PRIORITISE BY PERFORMANCE (most important):
+0. STRIKING DISTANCE FIRST — for queries already ranking pos 8–20 (see PERFORMANCE SIGNALS),
+   create or refresh a focused article to push them onto page 1. These are the highest-ROI topics.
+   If a page already exists for that query, propose action="refresh" with its target_url instead of a new post.
+1. DOUBLE DOWN on pillars/article patterns that already perform well; AVOID the underperformer patterns.
+2. REFRESH decaying pages (listed under DECAYING PAGES) rather than writing new ones on the same subject.
+
+Then optimise for TWO goals simultaneously:
+A. Google SEO — target the GSC queries above; fix low-CTR pages with better title/angle; cover gaps competitors own.
+B. GEO (Generative Engine Optimisation) — structure topics so AI systems (ChatGPT, Perplexity, Gemini, Claude) will cite them.
    GEO priority order: vs_comparison > best_of > buyer_guide > setup_tutorial > feature_explainer > use_case
 
 CRITICAL: Do NOT suggest any topic whose title or subject closely matches any entry
@@ -220,7 +229,10 @@ For each topic return:
     Choose one of: [{available_templates}]. It usually matches the pillar, but pick a
     different one when the SERP/intent calls for it (e.g. a topic filed under "best_of"
     that is really a walkthrough → "setup_tutorial"). Use null to fall back to the pillar default.
-  - priority: high / medium / low
+  - action: "new" (write a new post) or "refresh" (improve an existing live post). Use "refresh"
+    for decaying pages and for striking-distance queries that already have a page.
+  - target_url: for action="refresh", the existing URL to update; otherwise null.
+  - priority: high / medium / low (striking-distance & refresh items should usually be high)
   - intent: commercial / informational / navigational
   - target_keywords: array of 3–5 keyword strings
   - internal_links: array of URLs to link to within this post (or [])
@@ -402,6 +414,17 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         except Exception as exc:
             print(YELLOW(f"  ⚠ Could not fetch live WP posts: {exc}"))
 
+    # Tier 1: performance feedback signals (striking-distance, pillar perf, decay)
+    planner_signals = ""
+    try:
+        from content_strategist import get_planner_signals, format_planner_signals
+        planner_signals = format_planner_signals(get_planner_signals(site_id))
+        if planner_signals:
+            sd = len([l for l in planner_signals.splitlines() if l.strip().startswith("•")])
+            print(GREEN(f"  ✓ Performance signals loaded ({sd} data points)"))
+    except Exception as exc:
+        print(YELLOW(f"  ⚠ Could not load performance signals: {exc}"))
+
     print(f"  Existing topics in DB: {len(existing)}")
     print(f"  GSC query rows: {len(gsc.get('top_queries', []))}")
     print(f"  GA4 page rows:  {len(ga4.get('top_pages', []))}")
@@ -412,7 +435,8 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         plan = _get_mock_plan(site_name, num_topics)
         print(YELLOW("  [DRY RUN] Mock plan generated — install/log in the claude CLI for real output."))
     else:
-        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics, wp_posts=wp_posts)
+        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics,
+                                                wp_posts=wp_posts, planner_signals=planner_signals)
         messages: List[Dict] = [{"role": "user", "content": analysis_prompt}]
         try:
             raw = _call_claude(messages)

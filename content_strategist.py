@@ -759,3 +759,103 @@ Return valid JSON only, no commentary."""
         "saved_to": str(proposed_dir) if saved else None,
         "skipped": None if saved else "No new templates proposed — existing library already covers the patterns.",
     }
+
+
+# ── Planner signals (Tier 1: data-driven plan generation) ─────────────────────
+# Bundles the performance feedback that should steer the next content plan:
+# striking-distance keywords, pillar performance, top/bottom articles, and decay.
+
+def get_striking_distance(site_id: int, days: int = 30, pos_min: float = 8.0,
+                          pos_max: float = 20.0, min_impressions: int = 30,
+                          limit: int = 25) -> List[Dict]:
+    """GSC queries ranking on the edge of page 1 (avg position ~8–20) with real
+    impressions — the highest-ROI SEO targets. Includes the current best-ranking
+    page so the planner can choose refresh-existing vs write-new.
+    """
+    conn = get_db_connection()
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    rows = conn.execute("""
+        SELECT query,
+               SUM(impressions) AS impressions,
+               SUM(clicks)      AS clicks,
+               AVG(position)    AS position
+        FROM gsc_data
+        WHERE site_id = ? AND fetched_date >= ? AND query IS NOT NULL AND query != ''
+        GROUP BY query
+        HAVING position >= ? AND position <= ? AND impressions >= ?
+        ORDER BY impressions DESC
+        LIMIT ?
+    """, (site_id, cutoff, pos_min, pos_max, min_impressions, limit)).fetchall()
+
+    out = []
+    for r in rows:
+        d = dict(r)
+        pr = conn.execute("""
+            SELECT page, AVG(position) p FROM gsc_data
+            WHERE site_id = ? AND query = ? AND fetched_date >= ? AND page != ''
+            GROUP BY page ORDER BY p ASC LIMIT 1
+        """, (site_id, d["query"], cutoff)).fetchone()
+        d["top_page"] = pr["page"] if pr else ""
+        d["position"] = round(d["position"] or 0.0, 1)
+        out.append(d)
+    conn.close()
+    return out
+
+
+def get_planner_signals(site_id: int, days: int = 60) -> Dict:
+    """Assemble all performance signals that should drive the next plan."""
+    def _safe(fn, default):
+        try:
+            return fn()
+        except Exception as exc:
+            logger.warning(f"[planner_signals] {fn} failed: {exc}")
+            return default
+    return {
+        "striking_distance":  _safe(lambda: get_striking_distance(site_id), []),
+        "pillar_performance": _safe(lambda: get_pillar_performance(site_id, days), []),
+        "performers":         _safe(lambda: get_top_and_bottom_performers(site_id, n=5),
+                                    {"top": [], "bottom": []}),
+        "trends":             _safe(lambda: get_rising_vs_stalling(site_id),
+                                    {"rising": [], "stalling": []}),
+    }
+
+
+def format_planner_signals(signals: Dict) -> str:
+    """Compact, prompt-ready text block. Returns '' if there's no signal at all."""
+    lines: List[str] = []
+
+    sd = signals.get("striking_distance") or []
+    if sd:
+        lines.append("STRIKING-DISTANCE QUERIES (already ranking pos 8–20 — highest ROI; "
+                     "target or refresh these first):")
+        for q in sd[:15]:
+            tag = (f"page exists → REFRESH: {q['top_page']}" if q.get("top_page")
+                   else "no strong page → NEW")
+            lines.append(f"  • \"{q['query']}\" — pos {q['position']}, {q['impressions']} impr — {tag}")
+
+    pp = [p for p in (signals.get("pillar_performance") or []) if p.get("total_clicks", 0) > 0]
+    if pp:
+        lines.append("\nPILLAR PERFORMANCE (double down on high-click / high-CTR pillars):")
+        for p in pp[:6]:
+            lines.append(f"  • {p['pillar']}: {p['total_clicks']} clicks, "
+                         f"{p['avg_ctr']*100:.1f}% CTR, pos {p['avg_position']}")
+
+    perf = signals.get("performers") or {}
+    if perf.get("top"):
+        lines.append("\nTOP-PERFORMING ARTICLES (replicate these structures/angles):")
+        for t in perf["top"][:5]:
+            lines.append(f"  • [{t.get('pillar','?')}] {(t.get('title') or '')[:62]} "
+                         f"(score {t.get('performance_score')})")
+    if perf.get("bottom"):
+        lines.append("\nUNDERPERFORMERS (avoid these patterns):")
+        for t in perf["bottom"][:5]:
+            lines.append(f"  • [{t.get('pillar','?')}] {(t.get('title') or '')[:62]} "
+                         f"(score {t.get('performance_score')})")
+
+    tr = signals.get("trends") or {}
+    if tr.get("stalling"):
+        lines.append("\nDECAYING PAGES (propose action=refresh for these existing URLs):")
+        for r in tr["stalling"][:5]:
+            lines.append(f"  • {(r.get('title') or '')[:62]} (slug: {r.get('slug','')})")
+
+    return "\n".join(lines)
