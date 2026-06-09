@@ -9,6 +9,11 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 
 ## 2026-06-09
 
+### Image-prompt quality (Nano Banana 2 / Gemini)
+- ✅ **New editable guide `data/image_prompt_guide.md`** — there was no md/plugin for image prompts (logic was hardcoded). The guide is tuned for **Nano Banana 2 / Gemini image**: rich natural-language scene descriptions (subject, composition, lighting, lens, palette, mood), `16:9 + negative space for headline`, explicit no-text/logo constraints, topic-type cues, and a worked example.
+- ✅ **`image_handler._build_image_prompt` rewritten** to use the guide as the system prompt — drops the old "max 25 words" instruction and the Midjourney-style keyword-soup suffix (`ultra-realistic, 4K…`) on the LLM path (that style hurts Gemini). Falls back to the pillar templates if the guide is missing or the output is too short. 6 tests added (`tests/test_image_prompt.py`).
+- 🧠 Note: auto-generation still uses **Pollinations.AI (Flux)**; the improved prompts are what you copy into Nano Banana 2 manually. If wanted, a follow-up could wire auto-gen directly to Gemini image.
+
 ### Content production + fact correction
 - ✅ **Wrote 2 articles as WordPress drafts** (generated via the `claude` CLI / Sonnet, no OpenRouter):
   - ShaunSocial — *"Best Social Network Software in 2026: Full Comparison (Updated)"* (June plan #1, `best_of`) → draft **#3581**.
