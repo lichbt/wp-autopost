@@ -9,6 +9,8 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 
 ## 2026-06-09
 
+- ✅ **Fixed ShaunSocial DB↔live drift.** 5 pending plan topics were already published live under different slugs (dedup missed them): #218→wp#1802, #219→wp#3534 (WoWonder), #220→wp#3536, #221→wp#3252, #226→wp#2393. Marked them `published` + linked. Real queue is now 6 genuinely-new topics (#222 phpSocial, #223 Bettermode/Hivebrite/Disciple, #224 Monetize, #225 Open Source, #227 HumHub, #228 Mobile App). 🧠 Follow-up: productionize a fuzzy plan↔live reconcile so this doesn't recur.
+
 ### Image-prompt quality (Nano Banana 2 / Gemini)
 - ✅ **New editable guide `data/image_prompt_guide.md`** — there was no md/plugin for image prompts (logic was hardcoded). The guide is tuned for **Nano Banana 2 / Gemini image**: rich natural-language scene descriptions (subject, composition, lighting, lens, palette, mood), `16:9 + negative space for headline`, explicit no-text/logo constraints, topic-type cues, and a worked example.
 - ✅ **`image_handler._build_image_prompt` rewritten** to use the guide as the system prompt — drops the old "max 25 words" instruction and the Midjourney-style keyword-soup suffix (`ultra-realistic, 4K…`) on the LLM path (that style hurts Gemini). Falls back to the pillar templates if the guide is missing or the output is too short. 6 tests added (`tests/test_image_prompt.py`).
