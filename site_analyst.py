@@ -309,6 +309,30 @@ def critique_and_refine_plan(plan: Dict, existing: List[Dict], wp_posts: List[Di
     return plan
 
 
+def _drop_duplicate_topics(site_id: int, plan: Dict) -> Dict:
+    """Deterministically remove proposed topics that already exist in the DB (any
+    status) or live, and report what was dropped. The LLM critique alone is not
+    reliable for this; this is the hard gate."""
+    topics = plan.get("topics", [])
+    if not topics:
+        return plan
+    try:
+        from wp_sync import find_plan_duplicates
+        res = find_plan_duplicates(site_id, topics)
+    except Exception as exc:
+        print(YELLOW(f"  ⚠ Duplicate check skipped: {exc}"))
+        return plan
+    if res["duplicates"]:
+        plan["topics"] = res["unique"]
+        print(RED(f"  ⚠ Removed {len(res['duplicates'])} duplicate topic(s) already in DB/live:"))
+        for d in res["duplicates"][:12]:
+            print(RED(f"      • {d['title'][:46]}  ↳ {d['match'][:40]} ({d['source']}, {d['via']})"))
+        print(DIM(f"  Plan now has {len(plan['topics'])} unique topics."))
+    else:
+        print(GREEN(f"  ✓ Duplicate check passed — all {len(topics)} topics are unique"))
+    return plan
+
+
 # ── Display plan ──────────────────────────────────────────────────────────────
 
 def display_plan(plan: Dict, site_name: str = ""):
@@ -534,6 +558,10 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         after = len(plan.get("topics", []))
         print(GREEN(f"  ✓ Plan refined ({before} → {after} topics after dedupe/cannibalisation check)"))
 
+        # Deterministic dedup gate: hard-drop any proposed topic that already exists
+        # in the DB (any status) or live — the LLM check above is not reliable alone.
+        plan = _drop_duplicate_topics(site_id, plan)
+
     display_plan(plan, site_name)
 
     # Interactive refinement loop
@@ -596,6 +624,22 @@ def _import_plan(site_id: int, plan: Dict, intake: Dict):
     topics = plan.get("topics", [])
     if not topics:
         print(RED("No topics in plan — nothing to import."))
+        return
+
+    # Hard gate at insert time — never import a topic that duplicates existing
+    # DB/live content (covers both the initial and any refined plan).
+    try:
+        from wp_sync import find_plan_duplicates
+        res = find_plan_duplicates(site_id, topics)
+        if res["duplicates"]:
+            print(RED(f"  ⚠ Skipping {len(res['duplicates'])} duplicate topic(s) at import:"))
+            for d in res["duplicates"][:12]:
+                print(RED(f"      • {d['title'][:46]}  ↳ {d['match'][:40]} ({d['source']})"))
+            topics = res["unique"]
+    except Exception as exc:
+        print(YELLOW(f"  ⚠ Import dedup check skipped: {exc}"))
+    if not topics:
+        print(RED("All proposed topics were duplicates — nothing new to import."))
         return
 
     import json
