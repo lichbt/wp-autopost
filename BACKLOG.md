@@ -17,7 +17,7 @@ back *what* changed, *why*, and *where* (commit / PR / external system).
 - ✅ **Regenerated the ShaunSocial article** with corrected facts and **updated draft #3581 in place** — verified every pricing mention now separates $149 (web) vs $559 (native apps), incl. an explicit FAQ "Does the $149 license include native apps? No."
 - ✅ **`wp_publisher.publish_post(update_post_id=…)`** — new param to update an existing WP post in place (POST to `/posts/{id}`), enabling regeneration without creating duplicate drafts.
 
-🧠 Note: ShaunSocial has **no pending plan topics in the DB** (88 published, mostly wp_sync imports); its topics live in `data/shaunsocial-june-plan.html` (12-article June plan). Consider importing that plan into the DB so the scheduler/dedup can track it.
+- ✅ **Imported the ShaunSocial June 12-article plan into the DB** (was only in `data/shaunsocial-june-plan.html`). Created plan **#10**, topics **#217–#228**; #217 (Best Social Network Software) marked `draft` + linked to WP #3581; #218–#228 pending, scheduled ~3/week (06-11 → 07-04). Verified 0 dedup title collisions with the 88 published, so the scheduler/dedup now track the plan.
 
 ---
 
