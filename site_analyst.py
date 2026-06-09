@@ -129,7 +129,7 @@ def _fmt_wp_posts(posts: List[Dict], limit: int = 300) -> str:
     return "\n".join(lines)
 
 
-def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int, wp_posts: List[Dict] = None) -> str:
+def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dict], num_topics: int, wp_posts: List[Dict] = None, planner_signals: str = "") -> str:
     site_name = intake.get("name", "Unknown Site")
     site_url = intake.get("url", "")
     niche = intake.get("niche", "")
@@ -156,6 +156,8 @@ def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dic
     existing_str = _fmt_existing_topics(existing)
     wp_posts_list = wp_posts or []
     wp_posts_str = _fmt_wp_posts(wp_posts_list)
+    signals_block = (f"\n## 📊 PERFORMANCE SIGNALS — let these DRIVE the plan\n{planner_signals}\n"
+                     if planner_signals else "")
 
     # Available content-structure templates (discovered from the templates dir),
     # offered to the planner so it can pick the best-fit structure per topic.
@@ -199,15 +201,22 @@ covers the same subject matter, even with a different year or angle:
 
 ## GA4 — Top Pages by Sessions (last 30 days)
 {ga4_top}
-
+{signals_block}
 ## TASK
 Today: {today}
 Generate exactly {num_topics} blog topics for a {horizon_days}-day publishing plan
 at {posts_per_day} post(s) per day.
 
-Optimise for TWO goals simultaneously:
-1. Google SEO — target queries shown in GSC data above; fix low-CTR pages with better title/angle; cover gaps competitors own.
-2. GEO (Generative Engine Optimisation) — structure topics so AI systems (ChatGPT, Perplexity, Gemini, Claude) will cite them.
+PRIORITISE BY PERFORMANCE (most important):
+0. STRIKING DISTANCE FIRST — for queries already ranking pos 8–20 (see PERFORMANCE SIGNALS),
+   create or refresh a focused article to push them onto page 1. These are the highest-ROI topics.
+   If a page already exists for that query, propose action="refresh" with its target_url instead of a new post.
+1. DOUBLE DOWN on pillars/article patterns that already perform well; AVOID the underperformer patterns.
+2. REFRESH decaying pages (listed under DECAYING PAGES) rather than writing new ones on the same subject.
+
+Then optimise for TWO goals simultaneously:
+A. Google SEO — target the GSC queries above; fix low-CTR pages with better title/angle; cover gaps competitors own.
+B. GEO (Generative Engine Optimisation) — structure topics so AI systems (ChatGPT, Perplexity, Gemini, Claude) will cite them.
    GEO priority order: vs_comparison > best_of > buyer_guide > setup_tutorial > feature_explainer > use_case
 
 CRITICAL: Do NOT suggest any topic whose title or subject closely matches any entry
@@ -220,14 +229,24 @@ For each topic return:
     Choose one of: [{available_templates}]. It usually matches the pillar, but pick a
     different one when the SERP/intent calls for it (e.g. a topic filed under "best_of"
     that is really a walkthrough → "setup_tutorial"). Use null to fall back to the pillar default.
-  - priority: high / medium / low
+  - action: "new" (write a new post) or "refresh" (improve an existing live post). Use "refresh"
+    for decaying pages and for striking-distance queries that already have a page.
+  - target_url: for action="refresh", the existing URL to update; otherwise null.
+  - priority: high / medium / low (striking-distance & refresh items should usually be high)
   - intent: commercial / informational / navigational
   - target_keywords: array of 3–5 keyword strings
   - internal_links: array of URLs to link to within this post (or [])
   - special_instructions: specific writing guidance (what tables, what comparisons, what data to include)
   - scheduled_date: YYYY-MM-DD (distribute evenly, {posts_per_day}/day, starting tomorrow)
+  - cluster: the topic-cluster/hub this article belongs to (a short theme name, e.g. "WoWonder alternatives").
+    Organise ALL topics into 3–5 clusters. Each cluster has ONE pillar/hub page plus supporting articles.
+  - is_pillar_page: true for the single hub page of its cluster, false for supporting articles.
   - geo_rationale: 1-sentence reason this will be cited by AI systems
   - gsc_opportunity: the specific GSC query this targets (or null)
+
+Topic-cluster rules: group topics into 3–5 clusters around your highest-value themes. In each cluster,
+the pillar page targets the broad head term and each supporting article targets a specific long-tail/intent.
+Set internal_links so supporting articles link to their pillar page and the pillar links back to supporters.
 
 Also return a "global" object:
   - strategy_summary: 3-sentence executive summary
@@ -238,6 +257,56 @@ Also return a "global" object:
 
 Return valid JSON only — no commentary.
 JSON structure: {{"topics": [...], "global": {{...}}}}"""
+
+
+# ── Tier 2: self-critique / refine pass ───────────────────────────────────────
+
+def build_critique_prompt(plan: Dict, existing: List[Dict], wp_posts: List[Dict],
+                          planner_signals: str = "") -> str:
+    """Prompt a skeptical editor pass to prune duplicates/cannibalisation, tighten
+    clusters, and swap weak topics for higher-opportunity ones."""
+    return f"""You are a skeptical senior content editor reviewing a DRAFT content plan before it ships.
+Return an IMPROVED version of the plan. Apply these checks rigorously:
+
+1. DEDUPE & CANNIBALISATION — remove or merge topics that duplicate each other, or that closely match
+   any entry in EXISTING CONTENT or LIVE WORDPRESS POSTS below (two pages targeting the same query hurt
+   each other). When two drafts overlap, keep the stronger one.
+2. CLUSTER COHERENCE — every topic must belong to a cluster; each cluster has exactly ONE pillar/hub page
+   (is_pillar_page=true) and ≥2 supporting articles, with internal_links wiring supporters↔pillar.
+3. INTENT MIX — ensure a healthy mix of commercial and informational intent; fix obvious gaps.
+4. OPPORTUNITY — drop vague/low-value topics. If you drop any, REPLACE them (keep the same total count)
+   with stronger topics that exploit the PERFORMANCE SIGNALS (striking-distance queries, winning pillars).
+5. Preserve every required field, including action/target_url for refreshes and recommended_template.
+
+=== DRAFT PLAN ===
+{json.dumps(plan, ensure_ascii=False)[:14000]}
+
+=== EXISTING CONTENT IN DB ===
+{_fmt_existing_topics(existing)}
+
+=== LIVE WORDPRESS POSTS ===
+{_fmt_wp_posts(wp_posts or [])}
+
+=== PERFORMANCE SIGNALS ===
+{planner_signals or '(none)'}
+
+Return the improved plan as valid JSON ONLY, same schema: {{"topics": [...], "global": {{...}}}}."""
+
+
+def critique_and_refine_plan(plan: Dict, existing: List[Dict], wp_posts: List[Dict],
+                             planner_signals: str = "") -> Dict:
+    """Run one editor pass; return the refined plan, or the original on any failure
+    or if the critique returns fewer than half the topics (likely a parse problem)."""
+    try:
+        raw = _call_claude([{"role": "user", "content":
+                             build_critique_prompt(plan, existing, wp_posts, planner_signals)}])
+        refined = _parse_plan_json(raw)
+        if len(refined.get("topics", [])) >= max(1, len(plan.get("topics", [])) // 2):
+            return refined
+        logger.warning("[critique] refined plan too small — keeping original")
+    except Exception as exc:
+        logger.warning(f"[critique] refine pass failed, keeping original: {exc}")
+    return plan
 
 
 # ── Display plan ──────────────────────────────────────────────────────────────
@@ -402,6 +471,33 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         except Exception as exc:
             print(YELLOW(f"  ⚠ Could not fetch live WP posts: {exc}"))
 
+    # Tier 1: performance feedback signals (striking-distance, pillar perf, decay)
+    planner_signals = ""
+    sig = {}
+    try:
+        from content_strategist import get_planner_signals, format_planner_signals
+        sig = get_planner_signals(site_id)
+        planner_signals = format_planner_signals(sig)
+        if planner_signals:
+            sd = len([l for l in planner_signals.splitlines() if l.strip().startswith("•")])
+            print(GREEN(f"  ✓ Performance signals loaded ({sd} data points)"))
+    except Exception as exc:
+        print(YELLOW(f"  ⚠ Could not load performance signals: {exc}"))
+
+    # Tier 3: live SERP keyword research (related searches, PAA, AI-Overview flags)
+    if not DRY_RUN:
+        try:
+            from keyword_research import get_keyword_research_block, serper_available
+            if serper_available():
+                seeds = [q.get("query") for q in sig.get("striking_distance", [])]
+                seeds += [q.get("query") for q in gsc.get("top_queries", [])[:6]]
+                kw_block = get_keyword_research_block([s for s in seeds if s])
+                if kw_block:
+                    planner_signals = (planner_signals + "\n\n" + kw_block).strip()
+                    print(GREEN(f"  ✓ Live SERP keyword research added ({len(kw_block.splitlines())} lines)"))
+        except Exception as exc:
+            print(YELLOW(f"  ⚠ Keyword research skipped: {exc}"))
+
     print(f"  Existing topics in DB: {len(existing)}")
     print(f"  GSC query rows: {len(gsc.get('top_queries', []))}")
     print(f"  GA4 page rows:  {len(ga4.get('top_pages', []))}")
@@ -412,7 +508,8 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         plan = _get_mock_plan(site_name, num_topics)
         print(YELLOW("  [DRY RUN] Mock plan generated — install/log in the claude CLI for real output."))
     else:
-        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics, wp_posts=wp_posts)
+        analysis_prompt = build_analysis_prompt(intake, gsc, ga4, existing, num_topics,
+                                                wp_posts=wp_posts, planner_signals=planner_signals)
         messages: List[Dict] = [{"role": "user", "content": analysis_prompt}]
         try:
             raw = _call_claude(messages)
@@ -422,6 +519,13 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
         except Exception as e:
             print(RED(f"Claude failed: {e}"))
             sys.exit(1)
+
+        # Tier 2: self-critique / refine pass (dedupe, cannibalisation, clusters)
+        print("Refining plan (self-critique pass)...")
+        before = len(plan.get("topics", []))
+        plan = critique_and_refine_plan(plan, existing, wp_posts, planner_signals)
+        after = len(plan.get("topics", []))
+        print(GREEN(f"  ✓ Plan refined ({before} → {after} topics after dedupe/cannibalisation check)"))
 
     display_plan(plan, site_name)
 
