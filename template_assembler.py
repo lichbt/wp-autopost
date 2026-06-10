@@ -35,18 +35,25 @@ def _extract_faq_items(faq_html: str) -> list:
 
 
 def _build_faq_schema(faq_html: str) -> str:
-    """Build FAQPage JSON-LD schema from FAQ HTML."""
+    """Build FAQPage JSON-LD schema from FAQ HTML.
+
+    Wrapped in a Gutenberg <!-- wp:html --> block so the raw <script> survives
+    re-saves through the WordPress block editor. A bare <script> is silently
+    stripped when an admin opens & updates the post in wp-admin, which leaves
+    Yoast's FAQPage page-type with no mainEntity → an invalid FAQ schema.
+    """
     items = _extract_faq_items(faq_html)
     if not items:
         return ""
-    
+
     schema = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": items
     }
-    
-    return f'<script type="application/ld+json">{json.dumps(schema, ensure_ascii=False)}</script>'
+
+    script = f'<script type="application/ld+json">{json.dumps(schema, ensure_ascii=False)}</script>'
+    return f'<!-- wp:html -->\n{script}\n<!-- /wp:html -->'
 
 
 def assemble_final_html(
