@@ -228,6 +228,13 @@ def publish_post(
                 }
                 yoast_fields = {
                     "_yoast_wpseo_schema_article_type": schema_map.get(schema_type, "Article"),
+                    # Force the page schema type to WebPage. Some sites set a
+                    # site-wide Yoast default of FAQPage, which stamps an EMPTY
+                    # FAQPage (no mainEntity) onto every post — invalid in Google
+                    # Rich Results. Our real FAQ schema is emitted as a separate
+                    # FAQPage node via template_assembler, so the page itself must
+                    # stay a plain WebPage.
+                    "_yoast_wpseo_schema_page_type": "WebPage",
                 }
                 if meta_description:
                     yoast_fields["_yoast_wpseo_metadesc"] = meta_description[:155]
