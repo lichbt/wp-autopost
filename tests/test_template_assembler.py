@@ -1,5 +1,25 @@
 import pytest
-from template_assembler import assemble_final_html
+from template_assembler import assemble_final_html, _build_faq_schema
+
+
+class TestFaqSchema:
+    """FAQ JSON-LD must be valid AND survive wp-admin re-saves."""
+
+    def test_faq_schema_is_wp_html_wrapped(self):
+        """Bare <script> gets stripped on editor re-save → invalid FAQPage.
+        The schema must be wrapped in a Gutenberg wp:html block."""
+        faq = ('<div class="faq-item"><h3>What is it?</h3><p>An answer.</p></div>'
+               '<div class="faq-item"><h3>How much?</h3><p>$149 one-time.</p></div>')
+        out = _build_faq_schema(faq)
+        assert out.startswith("<!-- wp:html -->")
+        assert out.rstrip().endswith("<!-- /wp:html -->")
+        assert '"@type": "FAQPage"' in out
+        assert out.count('"@type": "Question"') == 2
+        assert '"acceptedAnswer"' in out
+
+    def test_faq_schema_empty_when_no_items(self):
+        assert _build_faq_schema("") == ""
+        assert _build_faq_schema("<p>no questions here</p>") == ""
 
 
 class TestTemplateAssembler:
