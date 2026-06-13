@@ -187,10 +187,20 @@ def import_plan(site_id: int, raw_markdown: str) -> int:
         extracted_json=json.dumps(parsed)
     )
     
-    # Store topics
+    # Store topics — first drop any that duplicate existing DB/live articles
     topics = parsed.get("topics", [])
+    if topics:
+        try:
+            from wp_sync import find_plan_duplicates
+            res = find_plan_duplicates(site_id, topics)
+            if res["duplicates"]:
+                logger.warning(f"[import_plan] dropped {len(res['duplicates'])} duplicate topic(s) "
+                               f"already in DB/live; keeping {len(res['unique'])} unique")
+                topics = res["unique"]
+        except Exception as exc:
+            logger.warning(f"[import_plan] dedup check skipped: {exc}")
     if topics:
         add_topics_bulk(site_id, plan_id, topics)
         logger.info(f"Imported {len(topics)} topics for site {site_id}")
-    
+
     return plan_id
