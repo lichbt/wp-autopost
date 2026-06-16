@@ -45,12 +45,35 @@ def _load_site_facts(site: Dict) -> str:
     return ""
 
 
+def _fetch_db_internal_links(site: Dict) -> List[Dict]:
+    """Internal-link candidates from the DB (for non-WordPress sites).
+    Uses published/draft topics for this site that have a known URL."""
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        rows = conn.execute(
+            "SELECT title, target_url FROM topics "
+            "WHERE site_id = ? AND status IN ('published','draft') "
+            "AND target_url IS NOT NULL AND target_url != '' "
+            "ORDER BY updated_at DESC LIMIT 40",
+            (site.get("id"),),
+        ).fetchall()
+        conn.close()
+        return [{"title": r["title"], "url": r["target_url"]} for r in rows]
+    except Exception as e:
+        logger.warning(f"Could not load DB internal-link candidates: {e}")
+        return []
+
+
 def _fetch_published_posts(site: Dict) -> List[Dict]:
     """
-    Fetch published posts from the WordPress site for use as internal link targets.
-    Returns a list of {title, url} dicts, capped at 40 most recent.
+    Fetch published posts for use as internal link targets ({title, url}, max 40).
+    WordPress sites use the live REST API; other platforms fall back to the DB.
     Non-blocking: returns [] on any error.
     """
+    from publisher import is_wordpress
+    if not is_wordpress(site):
+        return _fetch_db_internal_links(site)
     try:
         wp_url = site.get("wp_url", "").rstrip("/")
         auth = (site["wp_username"], site["wp_app_password"])

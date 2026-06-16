@@ -192,7 +192,9 @@ def import_plan(site_id: int, raw_markdown: str) -> int:
     if topics:
         try:
             from wp_sync import find_plan_duplicates
-            res = find_plan_duplicates(site_id, topics)
+            from publisher import is_wordpress
+            from database import get_site
+            res = find_plan_duplicates(site_id, topics, include_live=is_wordpress(get_site(site_id)))
             if res["duplicates"]:
                 logger.warning(f"[import_plan] dropped {len(res['duplicates'])} duplicate topic(s) "
                                f"already in DB/live; keeping {len(res['unique'])} unique")
