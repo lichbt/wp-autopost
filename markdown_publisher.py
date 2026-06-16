@@ -15,6 +15,16 @@ from markdownify import markdownify as _md
 from logger import logger
 
 
+def _slugify(text: str, max_len: int = 60) -> str:
+    """Title → URL slug. Lowercase, alnum-only, hyphen-separated, trimmed to a
+    word boundary near max_len. Used as a fallback when no slug is supplied."""
+    s = re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+    if len(s) <= max_len:
+        return s
+    cut = s[:max_len]
+    return cut.rsplit("-", 1)[0] if "-" in cut else cut
+
+
 def _to_md(html: str) -> str:
     """Convert generated HTML to clean Markdown (ATX headings, no stray blanks)."""
     if not html:
@@ -59,8 +69,12 @@ def export_markdown(
         logger.error("[md_export] site has no content_repo_path — cannot write file")
         return None
     if not slug:
-        logger.error("[md_export] missing slug — cannot name file")
-        return None
+        # No slug supplied (generator/topic didn't set one) — derive from the title.
+        slug = _slugify(title or meta_title)
+        if not slug:
+            logger.error("[md_export] missing slug and no title to derive one — cannot name file")
+            return None
+        logger.info(f"[md_export] no slug supplied; derived '{slug}' from title")
 
     body = _to_md(content_html)
     faq_md = _to_md(faq_html)
@@ -81,4 +95,4 @@ def export_markdown(
     base = (site.get("wp_url") or "").rstrip("/")
     url = f"{base}/{slug}" if base else f"/{slug}"
     logger.info(f"[md_export] wrote {path} ({len(document)} chars)")
-    return {"kind": "md", "path": path, "url": url}
+    return {"kind": "md", "path": path, "url": url, "slug": slug}

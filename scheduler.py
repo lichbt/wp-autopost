@@ -176,7 +176,7 @@ def run_automation_cycle(site_id: int) -> int:
                 content_html=publish_body,
                 status="draft",
                 category=site.get("default_category"),
-                slug=topic.get("slug"),
+                slug=topic.get("slug") or content.get("slug"),
                 meta_description=content.get("meta_description"),
                 focus_keyword=content.get("focus_keyword") or topic.get("generated_focus_keyword", ""),
                 seo_title=content.get("meta_title") or title,
@@ -191,7 +191,7 @@ def run_automation_cycle(site_id: int) -> int:
                 log_action(topic_id, "published", f"Published as draft. WP Post ID: {res['id']}")
             else:
                 update_topic_status(topic_id, "draft",
-                                    target_url=res["url"], generated_slug=topic.get("slug"))
+                                    target_url=res["url"], generated_slug=res.get("slug"))
                 log_action(topic_id, "published", f"Wrote markdown file: {res['path']}")
 
             processed += 1
