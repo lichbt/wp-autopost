@@ -74,7 +74,11 @@ def get_wp_sites_from_env() -> list:
         name = os.getenv(f"WP_NAME_SITE{i}", f"Site {i}")
         gsc_url = os.getenv(f"GSC_SITE_URL_SITE{i}", url.rstrip("/") + "/")
         ga4_property_id = os.getenv(f"GA4_PROPERTY_ID_SITE{i}", "")
-        if username and password:
+        platform = (os.getenv(f"PLATFORM_SITE{i}", "wordpress") or "wordpress").strip()
+        content_repo_path = os.getenv(f"CONTENT_REPO_PATH_SITE{i}") or None
+        is_wp = platform == "wordpress"
+        # WordPress sites need credentials; non-WP (e.g. markdown_export) don't.
+        if (username and password) or not is_wp:
             sites.append({
                 "name": name,
                 "wp_url": url.rstrip("/"),
@@ -83,6 +87,8 @@ def get_wp_sites_from_env() -> list:
                 "posts_per_day": posts_per_day,
                 "gsc_url": gsc_url,
                 "ga4_property_id": ga4_property_id,
+                "platform": platform,
+                "content_repo_path": content_repo_path,
                 "env_index": i,
             })
         i += 1
