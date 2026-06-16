@@ -71,5 +71,60 @@ competitor_gaps:
   - dating app clone script
   - tinder clone script
 
+# Topical-authority clusters (from GSC striking-distance + competitor gaps).
+# The planner FILLS these: each pillar => one hub page (is_pillar_page),
+# spokes => supporting articles prioritised by GSC data, wired with internal links.
+clusters:
+  - pillar: "PHP Dating Script"
+    keyword: "php dating script"
+    spokes:
+      - best php dating script
+      - dating script php
+      - php dating software
+      - open source dating script
+      - self-hosted dating script
+      - ready-made dating website script
+      - dating website script
+      - dating cms script
+  - pillar: "Dating App Clone Scripts"
+    keyword: "tinder clone script"
+    spokes:
+      - tinder clone script
+      - bumble clone script
+      - hinge clone app
+      - grindr clone script
+      - dating app clone
+      - build a dating app like tinder
+      - tinder clone open source
+  - pillar: "Dating Script Alternatives"
+    keyword: "skadate alternative"
+    spokes:
+      - skadate alternative
+      - dating pro alternative
+      - wpdating alternative
+      - chameleon social alternative
+      - vldpersonals alternative
+      - sweetdate alternative
+      - best dating software
+  - pillar: "Build & Launch a Dating Site"
+    keyword: "how to start a dating website"
+    spokes:
+      - how to build a dating app
+      - dating website development cost
+      - dating site monetization
+      - how to make money with a dating site
+      - dating app features checklist
+      - how to launch a dating site in 30 days
+      - white label dating platform
+  - pillar: "Niche Dating Site Use-Cases"
+    keyword: "niche dating site"
+    spokes:
+      - senior dating site
+      - lgbtq dating app
+      - religious dating site
+      - professional dating platform
+      - local dating app
+      - niche dating site ideas
+
 posts_per_day: 2
 geo_focus: global (English-speaking markets)

@@ -370,8 +370,18 @@ def _dedup_tokens(text: str) -> set:
     return {_stem(t) for t in toks if len(t) > 2 and t not in _DEDUP_STOP}
 
 
+# Overlap coefficient divides by the smaller token set, so a very short existing
+# title (e.g. "What is a Dating Script?" → {dating, script}) would score 1.0 against
+# every topic sharing those nouns and wrongly suppress a whole niche. Only trust the
+# overlap rule when the shorter title has enough distinct tokens; otherwise Jaccard
+# (which still catches near-identical generic titles) decides.
+_MIN_OVERLAP_TOKENS = 4
+
+
 def _overlap(a: set, b: set) -> float:
     if not a or not b:
+        return 0.0
+    if min(len(a), len(b)) < _MIN_OVERLAP_TOKENS:
         return 0.0
     return len(a & b) / min(len(a), len(b))
 
