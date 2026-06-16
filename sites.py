@@ -61,7 +61,8 @@ def sync_sites_from_env() -> list:
             cursor.execute("""
                 UPDATE sites
                 SET name = ?, wp_username = ?, wp_app_password = ?,
-                    posts_per_day = ?, gsc_url = ?, ga4_property_id = ?
+                    posts_per_day = ?, gsc_url = ?, ga4_property_id = ?,
+                    platform = ?, content_repo_path = ?
                 WHERE id = ?
             """, (
                 site_config["name"],
@@ -70,20 +71,26 @@ def sync_sites_from_env() -> list:
                 site_config["posts_per_day"],
                 site_config.get("gsc_url", ""),
                 site_config.get("ga4_property_id", ""),
+                site_config.get("platform", "wordpress"),
+                site_config.get("content_repo_path"),
                 site_id,
             ))
+            conn.commit()  # release the write lock before any add_site() (separate connection)
             logger.info(f"Updated site from env: {site_config['name']} (ID: {site_id})")
         else:
-            # Create new site
+            # Create new site — non-WP sites skip the WP HTML template (assembler bypassed)
+            platform = site_config.get("platform", "wordpress")
             site_id = add_site(
                 name=site_config["name"],
                 wp_url=site_config["wp_url"],
                 wp_username=site_config["wp_username"],
                 wp_app_password=site_config["wp_app_password"],
-                blog_template=DEFAULT_TEMPLATE,
+                blog_template=DEFAULT_TEMPLATE if platform == "wordpress" else "",
                 posts_per_day=site_config["posts_per_day"],
                 gsc_url=site_config.get("gsc_url", ""),
                 ga4_property_id=site_config.get("ga4_property_id", ""),
+                platform=platform,
+                content_repo_path=site_config.get("content_repo_path"),
             )
             logger.info(f"Created site from env: {site_config['name']} (ID: {site_id})")
         
