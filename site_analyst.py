@@ -318,7 +318,8 @@ def _drop_duplicate_topics(site_id: int, plan: Dict) -> Dict:
         return plan
     try:
         from wp_sync import find_plan_duplicates
-        res = find_plan_duplicates(site_id, topics)
+        from publisher import is_wordpress
+        res = find_plan_duplicates(site_id, topics, include_live=is_wordpress(get_site(site_id)))
     except Exception as exc:
         print(YELLOW(f"  ⚠ Duplicate check skipped: {exc}"))
         return plan
@@ -485,9 +486,11 @@ def generate_plan_interactive(site_id: int, num_topics: int = 30, fresh_data: bo
     ga4 = get_ga4_summary(site_id)
     existing = get_topics_summary(site_id)
 
-    # Fetch live WP posts so Claude avoids proposing duplicates
+    # Fetch live WP posts so Claude avoids proposing duplicates.
+    # WordPress-only — non-WP (markdown_export) sites dedup against the DB only.
+    from publisher import is_wordpress
     wp_posts: List[Dict] = []
-    if not DRY_RUN:
+    if not DRY_RUN and is_wordpress(site):
         try:
             from wp_sync import get_wp_post_list
             wp_posts = get_wp_post_list(site)
@@ -630,7 +633,8 @@ def _import_plan(site_id: int, plan: Dict, intake: Dict):
     # DB/live content (covers both the initial and any refined plan).
     try:
         from wp_sync import find_plan_duplicates
-        res = find_plan_duplicates(site_id, topics)
+        from publisher import is_wordpress
+        res = find_plan_duplicates(site_id, topics, include_live=is_wordpress(get_site(site_id)))
         if res["duplicates"]:
             print(RED(f"  ⚠ Skipping {len(res['duplicates'])} duplicate topic(s) at import:"))
             for d in res["duplicates"][:12]:

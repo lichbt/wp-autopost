@@ -6,7 +6,7 @@ from database import (
 )
 from content_generator import generate_post_content
 from template_assembler import assemble_final_html
-from wp_publisher import publish_post
+from publisher import publish_for_site, is_wordpress
 from logger import logger
 
 
@@ -30,15 +30,17 @@ def run_automation_cycle(site_id: int) -> int:
 
     # Self-heal: mark pending topics that already exist live as published, so we
     # never re-write a duplicate when a plan slug differs from the live slug.
-    try:
-        from wp_sync import reconcile_pending_against_live
-        rec = reconcile_pending_against_live(site_id, apply=True)
-        if rec.get("published"):
-            logger.info(f"[cycle] reconcile auto-marked {len(rec['published'])} already-live topic(s) published")
-        if rec.get("review"):
-            logger.warning(f"[cycle] reconcile flagged {len(rec['review'])} topic(s) as possible live duplicates — review")
-    except Exception as exc:
-        logger.warning(f"[cycle] reconcile skipped: {exc}")
+    # WordPress-only — non-WP (markdown_export) sites have no live API to reconcile against.
+    if is_wordpress(site):
+        try:
+            from wp_sync import reconcile_pending_against_live
+            rec = reconcile_pending_against_live(site_id, apply=True)
+            if rec.get("published"):
+                logger.info(f"[cycle] reconcile auto-marked {len(rec['published'])} already-live topic(s) published")
+            if rec.get("review"):
+                logger.warning(f"[cycle] reconcile flagged {len(rec['review'])} topic(s) as possible live duplicates — review")
+        except Exception as exc:
+            logger.warning(f"[cycle] reconcile skipped: {exc}")
 
     # Check daily limit
     published_today = count_published_today(site_id)
@@ -120,20 +122,23 @@ def run_automation_cycle(site_id: int) -> int:
             )
             log_action(topic_id, "content_generated", "Content generated successfully")
             
-            # Assemble final HTML
-            logger.info(f"Assembling HTML for: {title}")
-            final_html = assemble_final_html(
-                site=site,
-                title=title,
-                tldr=content.get("tldr", ""),
-                content=content.get("content", ""),
-                faq=content.get("faq", ""),
-                meta_description=content.get("meta_description", ""),
-                meta_title=content.get("meta_title") or title  # Use generated or fallback to title
-            )
-            
-            update_topic_status(topic_id, "content_generated", final_html=final_html)
-            
+            # Assemble final HTML (WordPress only — markdown_export skips the HTML wrapper
+            # and converts the raw content body to Markdown at output time).
+            if is_wordpress(site):
+                logger.info(f"Assembling HTML for: {title}")
+                publish_body = assemble_final_html(
+                    site=site,
+                    title=title,
+                    tldr=content.get("tldr", ""),
+                    content=content.get("content", ""),
+                    faq=content.get("faq", ""),
+                    meta_description=content.get("meta_description", ""),
+                    meta_title=content.get("meta_title") or title  # Use generated or fallback to title
+                )
+                update_topic_status(topic_id, "content_generated", final_html=publish_body)
+            else:
+                publish_body = content.get("content", "")
+
             # Map pillar → schema type
             _PILLAR_SCHEMA = {
                 "how_to": "HowTo",
@@ -151,12 +156,12 @@ def run_automation_cycle(site_id: int) -> int:
             pillar = topic.get("pillar", "")
             schema_type = _PILLAR_SCHEMA.get(pillar, "Article")
 
-            # Publish to WordPress
-            logger.info(f"Publishing '{title}' to WordPress...")
-            wp_post_id = publish_post(
+            # Output: WordPress draft OR markdown file (routed by platform)
+            logger.info(f"Publishing '{title}' ({site.get('platform') or 'wordpress'})...")
+            res = publish_for_site(
                 site=site,
                 title=title,
-                content_html=final_html,
+                content_html=publish_body,
                 status="draft",
                 category=site.get("default_category"),
                 slug=topic.get("slug"),
@@ -166,15 +171,17 @@ def run_automation_cycle(site_id: int) -> int:
                 schema_type=schema_type,
                 faq_html=content.get("faq", ""),
             )
-            
-            # Update topic with WP post ID
-            update_topic_status(
-                topic_id,
-                "draft",
-                wp_post_id=wp_post_id
-            )
-            log_action(topic_id, "published", f"Published as draft. WP Post ID: {wp_post_id}")
-            
+            if not res:
+                raise Exception("Publishing/output returned no result")
+
+            if res["kind"] == "wp":
+                update_topic_status(topic_id, "draft", wp_post_id=res["id"])
+                log_action(topic_id, "published", f"Published as draft. WP Post ID: {res['id']}")
+            else:
+                update_topic_status(topic_id, "draft",
+                                    target_url=res["url"], generated_slug=topic.get("slug"))
+                log_action(topic_id, "published", f"Wrote markdown file: {res['path']}")
+
             processed += 1
             logger.info(f"✓ Successfully processed: {title}")
             

@@ -203,6 +203,10 @@ def _run_migrations():
     new_site_cols = [
         ("gsc_url", "TEXT"),
         ("ga4_property_id", "TEXT"),
+        # Publishing target: 'wordpress' (default) or 'markdown_export'
+        ("platform", "TEXT DEFAULT 'wordpress'"),
+        # For non-WP sites: local directory where generated content files are written
+        ("content_repo_path", "TEXT"),
     ]
     new_topic_cols = [
         ("generated_focus_keyword", "TEXT"),
@@ -253,16 +257,20 @@ def add_site(
     posts_per_day: int = 2,
     gsc_url: str = "",
     ga4_property_id: str = "",
+    platform: str = "wordpress",
+    content_repo_path: str = None,
 ) -> int:
     conn = get_db_connection()
     cursor = conn.cursor()
     encrypted_pw = encrypt_password(wp_app_password)
     cursor.execute("""
         INSERT INTO sites (name, wp_url, wp_username, wp_app_password, blog_template,
-                          default_category, default_author, posts_per_day, gsc_url, ga4_property_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          default_category, default_author, posts_per_day, gsc_url, ga4_property_id,
+                          platform, content_repo_path)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (name, wp_url, wp_username, encrypted_pw, blog_template,
-          default_category, default_author, posts_per_day, gsc_url, ga4_property_id))
+          default_category, default_author, posts_per_day, gsc_url, ga4_property_id,
+          platform, content_repo_path))
     site_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -465,6 +473,8 @@ def update_topic_status(topic_id: int, status: str, **kwargs):
         "wp_post_id", "generated_tldr", "generated_body", "generated_faq",
         "generated_meta_description", "generated_focus_keyword", "generated_seo_title",
         "generated_schema_type", "final_html", "last_error", "attempts", "slug",
+        # Non-WP (markdown_export) output: public URL of the produced file
+        "target_url",
         # Feature 1
         "writing_persona",
         # Feature 3
