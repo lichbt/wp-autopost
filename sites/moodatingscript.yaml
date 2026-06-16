@@ -1,8 +1,8 @@
 # Site intake for MooDateScript
-# Used by: python main.py --site 1 --generate-plan
+# Used by: python main.py --site 2 --generate-plan
 # Edit this file to keep Claude's context current.
 
-site_id: 1  # Must match the DB site ID (check with --list-sites)
+site_id: 2  # Must match the DB site ID (check with --list-sites)
 
 name: MooDateScript
 url: https://moodatingscript.com

@@ -1,8 +1,8 @@
 # Site intake for ShaunSocial
-# Used by: python main.py --site 2 --generate-plan
+# Used by: python main.py --site 4 --generate-plan
 # Edit this file to keep Claude's context current.
 
-site_id: 2  # Must match the DB site ID (check with --list-sites)
+site_id: 4  # Must match the DB site ID (check with --list-sites)
 
 name: ShaunSocial
 url: https://shaunsocial.com
