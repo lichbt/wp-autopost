@@ -1,0 +1,140 @@
+# Site intake for PlainVoices
+# Used by: python main.py --site 5 --generate-plan
+# Platform: markdown_export (content-only .md output; user deploys separately)
+# Edit this file to keep Claude's context current.
+
+site_id: 5  # Must match the DB site ID (check with --list-sites)
+
+name: PlainVoices
+url: https://www.plainvoices.com
+niche: free online invoice generator / invoicing tools for freelancers
+product_name: PlainVoices
+
+target_audience:
+  - freelancers and independent contractors invoicing clients
+  - solopreneurs and consultants who bill for their time
+  - gig workers and side-hustlers sending their first invoices
+  - small one-person service businesses without accounting software
+
+# Main conversion goal: get readers into the free invoice generator.
+main_cta: https://www.plainvoices.com/new/
+demo_url: https://www.plainvoices.com/new/
+
+competitors:
+  - name: Invoice Simple
+    url: https://www.invoicesimple.com
+    notes: popular freemium invoice generator + mobile app, strong brand
+  - name: invoice-generator.com
+    url: https://invoice-generator.com
+    notes: free no-signup generator, very high SEO authority in the space
+  - name: Zoho Invoice
+    url: https://www.zoho.com/invoice
+    notes: free invoicing tool from a large SaaS suite, feature-rich
+  - name: Wave
+    url: https://www.waveapps.com
+    notes: free invoicing + accounting, popular with freelancers
+  - name: PlainInvoice
+    url: https://plaininvoice.com
+    notes: free invoice generator, no signup — closest direct comparable
+  - name: FreshBooks
+    url: https://www.freshbooks.com
+    notes: paid invoicing/accounting SaaS, strong content marketing
+
+content_pillars:
+  - how_to              # [GEO ★★★] How to invoice, write/send invoices, get paid
+  - definition          # [GEO ★★★] What is an invoice, invoice vs receipt, types of invoices
+  - best_of             # [GEO ★★] Best invoice templates / generators / tools
+  - feature_explainer   # [GEO ★★] Payment terms, invoice numbering, late fees explained
+  - use_case            # [GEO ★] Invoicing for specific freelance niches (design, writing, dev)
+  - vs_comparison       # [GEO ★★] PlainVoices vs other free invoice generators
+
+tone: friendly, plain-spoken, practical — no jargon; reassuring for first-time invoicers
+
+# Content themes to prioritize
+priority_topics:
+  - How to write an invoice (step by step)
+  - Free invoice template for freelancers
+  - What to include on an invoice
+  - How to send an invoice to a client
+  - Invoice payment terms explained (Net 30, etc.)
+  - How to ask a client for payment politely
+  - Invoice vs receipt — what's the difference
+  - Best free invoice generators in 2026
+  - How to follow up on an unpaid invoice
+  - Do freelancers need to charge tax on invoices
+
+# Queries you're ALREADY ranking for (pull from GSC — update regularly).
+# New domain: GSC is sparse so far (brand terms only).
+ranking_queries:
+  - plainvoices
+
+# Competitor content gaps — high-volume invoicing topics to own
+competitor_gaps:
+  - invoice template
+  - free invoice generator
+  - how to write an invoice
+  - net 30 payment terms
+
+# Topical-authority clusters (invoicing-for-freelancers).
+# The planner FILLS these: each pillar => one hub page (is_pillar_page),
+# spokes => supporting articles wired with internal links to the /new/ generator.
+clusters:
+  - pillar: "Invoice Templates"
+    keyword: "invoice template"
+    spokes:
+      - free invoice template
+      - freelance invoice template
+      - consulting invoice template
+      - hourly invoice template
+      - contractor invoice template
+      - invoice template word
+      - invoice template excel
+      - invoice template google docs
+      - simple invoice template
+  - pillar: "How to Invoice (Freelancer Guides)"
+    keyword: "how to write an invoice"
+    spokes:
+      - how to write an invoice
+      - how to send an invoice
+      - how to invoice a client
+      - what to include on an invoice
+      - how to invoice for hourly work
+      - invoice numbering system
+      - first invoice as a freelancer
+      - how to invoice an international client
+  - pillar: "Getting Paid & Payment Terms"
+    keyword: "invoice payment terms"
+    spokes:
+      - net 30 payment terms
+      - how to ask for payment politely
+      - late payment fees on invoices
+      - payment reminder email template
+      - how to follow up on an unpaid invoice
+      - how to get clients to pay on time
+      - deposit invoice for freelancers
+      - how to accept payments as a freelancer
+  - pillar: "Invoicing Basics & Compliance"
+    keyword: "what is an invoice"
+    spokes:
+      - invoice vs receipt
+      - types of invoices
+      - proforma vs commercial invoice
+      - invoice vs bill
+      - do freelancers charge tax on invoices
+      - what makes an invoice legal
+      - recurring invoices explained
+      - credit note vs invoice
+  - pillar: "Free Invoice Generators & Tools"
+    keyword: "free invoice generator"
+    spokes:
+      - best free invoice generator
+      - invoice generator no signup
+      - online invoice maker
+      - how to create an invoice online
+      - invoice simple alternative
+      - zoho invoice alternative
+      - wave invoicing alternative
+      - freshbooks alternative for freelancers
+
+posts_per_day: 1
+geo_focus: global (English-speaking markets)
