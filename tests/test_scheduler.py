@@ -67,11 +67,13 @@ class TestScheduler:
         monkeypatch.setattr("content_generator.DRY_RUN", True)
         monkeypatch.setattr("wp_publisher.DRY_RUN", True)
         
-        # Make content generation fail by patching in scheduler's namespace
+        # Make content generation fail. Generation now flows through
+        # seo_validator.generate_and_validate, which imports generate_post_content
+        # from content_generator at call time — patch it there.
         def mock_generate_fail(*args, **kwargs):
             raise Exception("LLM API Error")
-        
-        monkeypatch.setattr("scheduler.generate_post_content", mock_generate_fail)
+
+        monkeypatch.setattr("content_generator.generate_post_content", mock_generate_fail)
         
         # Run cycle
         processed = run_automation_cycle(sample_site)

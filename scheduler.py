@@ -7,6 +7,7 @@ from database import (
 from content_generator import generate_post_content
 from template_assembler import assemble_final_html
 from publisher import publish_for_site, is_wordpress
+import seo_validator
 from logger import logger
 
 
@@ -83,10 +84,10 @@ def run_automation_cycle(site_id: int) -> int:
             attempts = topic.get("attempts", 0) + 1
             update_topic_status(topic_id, "pending", attempts=attempts)
             
-            # Generate content
+            # Generate content + SEO validation (auto-revises once if it fails)
             logger.info(f"Generating content for: {title}")
             try:
-                content = generate_post_content(topic, site, plan_context)
+                content, seo_val = seo_validator.generate_and_validate(topic, site, plan_context)
             except Exception as e:
                 error_msg = str(e)
                 logger.error(f"Failed to generate content for topic {topic_id}: {error_msg}")
@@ -138,6 +139,17 @@ def run_automation_cycle(site_id: int) -> int:
                 update_topic_status(topic_id, "content_generated", final_html=publish_body)
             else:
                 publish_body = content.get("content", "")
+
+            # SEO gate — if the article still failed after the auto-revision pass,
+            # hold it for review (leave status content_generated, do NOT publish).
+            if not seo_val.get("passed"):
+                issues = "; ".join(f["detail"] for f in seo_val["findings"][:6])
+                msg = f"SEO gate: {seo_val['score']}/100 — held for review. {issues}"
+                update_topic_status(topic_id, "content_generated", last_error=msg,
+                                    final_html=publish_body if is_wordpress(site) else "")
+                log_action(topic_id, "seo_hold", msg)
+                logger.warning(f"[seo] HOLD topic {topic_id}: {msg}")
+                continue  # skip publish
 
             # Map pillar → schema type
             _PILLAR_SCHEMA = {
