@@ -44,7 +44,24 @@ def test_export_markdown_writes_clean_md(tmp_path):
 
 def test_export_markdown_requires_path_and_slug(tmp_path):
     assert export_markdown({"content_repo_path": None}, slug="x", content_html="<p>y</p>") is None
+    # no slug AND no title to derive one → cannot name the file
     assert export_markdown(_site(tmp_path), slug="", content_html="<p>y</p>") is None
+
+
+def test_export_markdown_derives_slug_from_title(tmp_path):
+    """When no slug is supplied, the filename is derived from the title."""
+    site = _site(tmp_path)
+    res = export_markdown(
+        site, slug="",
+        content_html="<p>body</p>",
+        title="Free Invoice Template for Freelancers: Create, Customize & Send (2026)",
+    )
+    assert res and res["kind"] == "md"
+    # slugified, lowercased, hyphenated, trimmed at a word boundary (<= 60 chars)
+    assert res["slug"] == "free-invoice-template-for-freelancers-create-customize-send"
+    assert len(res["slug"]) <= 60
+    assert os.path.exists(os.path.join(str(tmp_path), res["slug"] + ".md"))
+    assert res["url"].endswith("/" + res["slug"])
 
 
 def test_is_wordpress_default_and_override():
