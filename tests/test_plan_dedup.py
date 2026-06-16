@@ -51,6 +51,23 @@ def test_string_items_supported(db_conn, sample_site):
     assert res["unique"] == ["Brand new unrelated topic about pricing models"]
 
 
+def test_short_generic_title_does_not_nuke_niche(db_conn, sample_site):
+    """A 2-token existing title ('What is a Dating Script?' → {dating, script}) must NOT
+    drop every topic that merely shares those nouns via the overlap rule."""
+    plan_id = add_plan(sample_site, "raw", None)
+    add_topics_bulk(sample_site, plan_id, [
+        {"title": "What is a Dating Script?", "slug": "what-is-a-dating-script", "pillar": "definition"},
+    ])
+    proposed = [
+        {"title": "Self-Hosted Dating Script: How to Launch a Site Without Coding", "slug": "p1"},
+        {"title": "Dating Website Development Cost in 2026: Script vs Custom Build", "slug": "p2"},
+        {"title": "Best SkaDate Alternatives: Top PHP Dating Scripts Compared", "slug": "p3"},
+    ]
+    res = wp_sync.find_plan_duplicates(sample_site, proposed, include_live=False)
+    assert res["duplicates"] == [], f"unexpected drops: {[d['title'] for d in res['duplicates']]}"
+    assert len(res["unique"]) == 3
+
+
 def test_no_existing_all_unique(db_conn, sample_site):
     res = wp_sync.find_plan_duplicates(sample_site, [{"title": "Anything", "slug": "a"}], include_live=False)
     assert res["duplicates"] == [] and len(res["unique"]) == 1
