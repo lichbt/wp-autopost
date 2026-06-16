@@ -159,6 +159,26 @@ def build_analysis_prompt(intake: Dict, gsc: Dict, ga4: Dict, existing: List[Dic
     signals_block = (f"\n## 📊 PERFORMANCE SIGNALS — let these DRIVE the plan\n{planner_signals}\n"
                      if planner_signals else "")
 
+    # Predefined topical-authority clusters (e.g. from the `seo plan` skill),
+    # stored in the intake YAML. When present, the planner FILLS these clusters
+    # instead of inventing its own.
+    clusters = intake.get("clusters") or []
+    clusters_block = ""
+    if clusters:
+        lines = ["\n## 🏛️ PREDEFINED TOPIC CLUSTERS — build the plan to FILL these (do NOT invent new clusters)"]
+        for c in clusters:
+            pillar = c.get("pillar", "") if isinstance(c, dict) else str(c)
+            kw = c.get("keyword", "") if isinstance(c, dict) else ""
+            spokes = c.get("spokes", []) if isinstance(c, dict) else []
+            lines.append(f'- CLUSTER "{pillar}"' + (f' (head keyword: {kw})' if kw else ''))
+            if spokes:
+                lines.append("    spokes: " + "; ".join(spokes))
+        lines.append("Rules: every topic maps to ONE of these clusters; include each cluster's pillar/hub "
+                     "page (is_pillar_page=true) and turn the spoke keywords into supporting articles "
+                     "(is_pillar_page=false). Prioritise spokes that match the striking-distance/GSC data above. "
+                     "Set internal_links so supporters link to their pillar and the pillar links back.")
+        clusters_block = "\n".join(lines) + "\n"
+
     # Available content-structure templates (discovered from the templates dir),
     # offered to the planner so it can pick the best-fit structure per topic.
     try:
@@ -201,7 +221,7 @@ covers the same subject matter, even with a different year or angle:
 
 ## GA4 — Top Pages by Sessions (last 30 days)
 {ga4_top}
-{signals_block}
+{signals_block}{clusters_block}
 ## TASK
 Today: {today}
 Generate exactly {num_topics} blog topics for a {horizon_days}-day publishing plan
@@ -239,12 +259,14 @@ For each topic return:
   - special_instructions: specific writing guidance (what tables, what comparisons, what data to include)
   - scheduled_date: YYYY-MM-DD (distribute evenly, {posts_per_day}/day, starting tomorrow)
   - cluster: the topic-cluster/hub this article belongs to (a short theme name, e.g. "WoWonder alternatives").
-    Organise ALL topics into 3–5 clusters. Each cluster has ONE pillar/hub page plus supporting articles.
+    Use the PREDEFINED TOPIC CLUSTERS above if provided; otherwise organise ALL topics into 3–5 clusters.
+    Each cluster has ONE pillar/hub page plus supporting articles.
   - is_pillar_page: true for the single hub page of its cluster, false for supporting articles.
   - geo_rationale: 1-sentence reason this will be cited by AI systems
   - gsc_opportunity: the specific GSC query this targets (or null)
 
-Topic-cluster rules: group topics into 3–5 clusters around your highest-value themes. In each cluster,
+Topic-cluster rules: fill the PREDEFINED TOPIC CLUSTERS above if given, else group topics into 3–5
+clusters around your highest-value themes. In each cluster,
 the pillar page targets the broad head term and each supporting article targets a specific long-tail/intent.
 Set internal_links so supporting articles link to their pillar page and the pillar links back to supporters.
 

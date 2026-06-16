@@ -74,5 +74,60 @@ competitor_gaps:
   - social network platform for business
   - internal social network for companies
 
+# Topical-authority clusters (from `seo plan` + GSC striking-distance).
+# The planner FILLS these: each pillar => one hub page (is_pillar_page),
+# spokes => supporting articles prioritised by GSC data, wired with internal links.
+clusters:
+  - pillar: "Social Network Software"
+    keyword: "social network software"
+    spokes:
+      - social networking software
+      - php social network script
+      - open source social network software
+      - social network CMS
+      - enterprise social networking software
+      - self-hosted social network
+      - laravel social network
+      - social networking website development
+  - pillar: "White-Label Community Platform"
+    keyword: "white label social media platform"
+    spokes:
+      - white label social media software
+      - white label community platform
+      - white label social network app
+      - white label social media platform for agencies
+      - branded community platform
+  - pillar: "Social Network Script Alternatives"
+    keyword: "phpfox alternative"
+    spokes:
+      - phpfox alternative
+      - socialengine alternative
+      - wowonder alternative
+      - dolphin pro alternative
+      - humhub alternative
+      - sngine alternative
+      - mighty networks alternative
+      - bettermode alternative
+  - pillar: "Build & Launch a Social Network"
+    keyword: "how to build a social network website"
+    spokes:
+      - how to create a social networking website
+      - how to start a social network
+      - social network development cost
+      - how to host a social network
+      - social network monetization
+      - add a mobile app to a social network
+      - social network features checklist
+      - migrate from phpfox to shaunsocial
+  - pillar: "Community Platform Use-Cases"
+    keyword: "niche social network"
+    spokes:
+      - social network for business
+      - internal social network for companies
+      - community platform for nonprofits
+      - fan community platform
+      - member portal software
+      - niche social network ideas
+
 posts_per_day: 2
 geo_focus: global (English-speaking markets)
